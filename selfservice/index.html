@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Self-Service - Sistema de Cadastro de Crianças</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .header h1 {
+            color: #667eea;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .header .subtitle {
+            color: #6c757d;
+            font-size: 1.1rem;
+        }
+        
+        .card-feature {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            margin-bottom: 30px;
+            height: 100%;
+        }
+        
+        .card-feature:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .card-feature .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 20px;
+            font-weight: 600;
+        }
+        
+        .card-feature i {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+        
+        .btn-primary-custom {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .installation-steps {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 30px 0;
+        }
+        
+        .step {
+            display: flex;
+            align-items: start;
+            margin-bottom: 25px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .step-number {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin-right: 20px;
+            flex-shrink: 0;
+        }
+        
+        .step-content h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        
+        .feature-item {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .feature-item:hover {
+            background: #e9ecef;
+            transform: translateY(-5px);
+        }
+        
+        .feature-item i {
+            font-size: 3rem;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        .tech-badge {
+            display: inline-block;
+            padding: 8px 15px;
+            background: #e7f3ff;
+            color: #667eea;
+            border-radius: 20px;
+            margin: 5px;
+            font-weight: 600;
+        }
+        
+        .alert-custom {
+            border-left: 4px solid #667eea;
+            background: #e7f3ff;
+            border-radius: 10px;
+        }
+        
+        .file-list {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 50px;
+            padding-top: 30px;
+            border-top: 2px solid #e9ecef;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Header -->
+        <div class="header">
+            <i class="fas fa-users" style="font-size: 4rem; color: #667eea;"></i>
+            <h1>Sistema Self-Service</h1>
+            <p class="subtitle">Cadastro de Crianças - Plataforma Multi-Tenancy</p>
+            <p class="text-muted">Versão 1.0 | Fevereiro 2026</p>
+        </div>
+        
+        <!-- Descrição -->
+        <div class="alert alert-custom">
+            <h4><i class="fas fa-info-circle"></i> Sobre o Sistema</h4>
+            <p class="mb-0">
+                Este é um sistema completo de auto-atendimento que permite criar instâncias isoladas 
+                do Sistema de Cadastro de Crianças. Cada usuário recebe sua própria cópia do sistema 
+                com dados completamente separados, ideal para igrejas, eventos e organizações.
+            </p>
+        </div>
+        
+        <!-- Features -->
+        <h2 class="text-center mt-5 mb-4"><i class="fas fa-star"></i> Principais Funcionalidades</h2>
+        <div class="features-grid">
+            <div class="feature-item">
+                <i class="fas fa-rocket"></i>
+                <h5>Instalação Rápida</h5>
+                <p>Configure em menos de 5 minutos</p>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-shield-alt"></i>
+                <h5>100% Seguro</h5>
+                <p>Dados isolados e criptografados</p>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-copy"></i>
+                <h5>Multi-Tenancy</h5>
+                <p>Instâncias independentes</p>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-cogs"></i>
+                <h5>Auto-Configurável</h5>
+                <p>Setup automático completo</p>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-chart-line"></i>
+                <h5>Painel Admin</h5>
+                <p>Controle total centralizado</p>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-mobile-alt"></i>
+                <h5>Responsivo</h5>
+                <p>Funciona em todos os dispositivos</p>
+            </div>
+        </div>
+        
+        <!-- Tecnologias -->
+        <h3 class="text-center mt-5 mb-3"><i class="fas fa-code"></i> Tecnologias Utilizadas</h3>
+        <div class="text-center mb-4">
+            <span class="tech-badge"><i class="fab fa-php"></i> PHP 7.4+</span>
+            <span class="tech-badge"><i class="fab fa-html5"></i> HTML5</span>
+            <span class="tech-badge"><i class="fab fa-css3-alt"></i> CSS3</span>
+            <span class="tech-badge"><i class="fab fa-js"></i> JavaScript</span>
+            <span class="tech-badge"><i class="fab fa-bootstrap"></i> Bootstrap 4</span>
+            <span class="tech-badge"><i class="fas fa-database"></i> File-Based DB</span>
+        </div>
+        
+        <!-- Instalação -->
+        <h2 class="text-center mt-5 mb-4"><i class="fas fa-download"></i> Instalação</h2>
+        <div class="installation-steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h4>Upload dos Arquivos</h4>
+                    <p>Faça upload de todos os arquivos para seu servidor web (Apache/Nginx).</p>
+                    <code>Exemplo: /public_html/selfservice/</code>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h4>Configurar Template</h4>
+                    <p>Copie seu arquivo do sistema original (ebi.txt) para a pasta <code>template/</code></p>
+                    <code>template/ebi.txt</code>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h4>Executar Instalador</h4>
+                    <p>Acesse o instalador automático no navegador:</p>
+                    <code>http://seudominio.com/selfservice/install.php</code>
+                    <p class="mt-2 mb-0"><strong>⚠️ Importante:</strong> Copie a senha de admin gerada!</p>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h4>Pronto!</h4>
+                    <p>Acesse o painel administrativo e comece a usar:</p>
+                    <div class="mt-3">
+                        <a href="admin.php" class="btn btn-primary-custom mr-2">
+                            <i class="fas fa-cog"></i> Painel Admin
+                        </a>
+                        <a href="selfservice.php" class="btn btn-outline-primary">
+                            <i class="fas fa-user-plus"></i> Página de Cadastro
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Arquivos do Pacote -->
+        <h3 class="mt-5 mb-3"><i class="fas fa-folder-open"></i> Arquivos do Pacote</h3>
+        <div class="file-list">
+📦 ESTRUTURA DE ARQUIVOS
+├── 📄 selfservice.php          → Página de cadastro público
+├── 📄 admin.php                → Painel administrativo
+├── 📄 criar_instancia.php      → Motor de criação de instâncias
+├── 📄 install.php              → Instalador automático
+├── 📄 index.html               → Esta página
+├── 📄 README.md                → Documentação completa
+├── 📄 INICIO_RAPIDO.txt        → Guia rápido
+├── 📁 template/
+│   └── 📄 ebi.txt              → (Você deve copiar seu sistema aqui)
+├── 📁 instances/               → (Criado automaticamente)
+├── 📁 data/                    → (Criado automaticamente)
+└── 📁 backups/                 → (Criado automaticamente)
+        </div>
+        
+        <!-- Requisitos -->
+        <div class="row mt-5">
+            <div class="col-md-6">
+                <div class="card card-feature">
+                    <div class="card-header">
+                        <i class="fas fa-server"></i> Requisitos do Servidor
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success"></i> PHP 7.4 ou superior</li>
+                            <li><i class="fas fa-check text-success"></i> Apache ou Nginx</li>
+                            <li><i class="fas fa-check text-success"></i> Extensões: curl, gd, mbstring, xml</li>
+                            <li><i class="fas fa-check text-success"></i> Permissões de escrita em diretórios</li>
+                            <li><i class="fas fa-check text-success"></i> mod_rewrite (Apache)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card card-feature">
+                    <div class="card-header">
+                        <i class="fas fa-lock"></i> Segurança
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success"></i> Senhas criptografadas (bcrypt)</li>
+                            <li><i class="fas fa-check text-success"></i> Validação de inputs</li>
+                            <li><i class="fas fa-check text-success"></i> Proteção XSS e SQL Injection</li>
+                            <li><i class="fas fa-check text-success"></i> Isolamento de dados</li>
+                            <li><i class="fas fa-check text-success"></i> Logs de auditoria</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Documentação -->
+        <div class="alert alert-info mt-5">
+            <h4><i class="fas fa-book"></i> Documentação</h4>
+            <p>Para instruções detalhadas, consulte:</p>
+            <ul>
+                <li><strong>README.md</strong> - Documentação completa do sistema</li>
+                <li><strong>INICIO_RAPIDO.txt</strong> - Guia rápido de início</li>
+                <li>Comentários no código-fonte dos arquivos PHP</li>
+            </ul>
+        </div>
+        
+        <!-- Links Rápidos -->
+        <div class="text-center mt-5">
+            <h3 class="mb-4"><i class="fas fa-link"></i> Links Rápidos</h3>
+            <div class="btn-group" role="group">
+                <a href="install.php" class="btn btn-primary-custom btn-lg">
+                    <i class="fas fa-play"></i> Iniciar Instalação
+                </a>
+                <a href="README.md" class="btn btn-outline-primary btn-lg" target="_blank">
+                    <i class="fas fa-file-alt"></i> Ler Documentação
+                </a>
+                <a href="INICIO_RAPIDO.txt" class="btn btn-outline-secondary btn-lg" target="_blank">
+                    <i class="fas fa-bolt"></i> Guia Rápido
+                </a>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="footer">
+            <p>
+                <i class="fas fa-heart text-danger"></i> 
+                Desenvolvido para a comunidade
+            </p>
+            <p class="mb-0">
+                <small>
+                    Sistema Self-Service - Cadastro de Crianças | Versão 1.0 | Fevereiro 2026
+                </small>
+            </p>
+        </div>
+    </div>
+    
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

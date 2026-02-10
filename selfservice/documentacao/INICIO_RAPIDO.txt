@@ -1,0 +1,221 @@
+╔═══════════════════════════════════════════════════════════════════╗
+║                                                                   ║
+║          SISTEMA SELF-SERVICE - CADASTRO DE CRIANÇAS             ║
+║                      GUIA RÁPIDO DE INÍCIO                        ║
+║                                                                   ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+📦 CONTEÚDO DO PACOTE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ selfservice.php       → Página de cadastro para usuários
+✅ admin.php             → Painel administrativo
+✅ criar_instancia.php   → Motor de criação de instâncias
+✅ install.php           → Instalador automático
+✅ README.md             → Documentação completa
+📁 template/             → Pasta para o arquivo base do sistema
+📁 instances/            → Armazena as instâncias dos usuários
+📁 data/                 → Dados e logs do sistema
+📁 backups/              → Backups automáticos
+
+
+🚀 INSTALAÇÃO EM 3 PASSOS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1️⃣  UPLOAD
+   ✦ Faça upload de todos os arquivos para seu servidor
+   ✦ Estrutura sugerida: /public_html/selfservice/
+
+2️⃣  CONFIGURAR TEMPLATE
+   ✦ Copie seu arquivo do sistema (ebi.txt) para a pasta template/
+   ✦ O arquivo deve se chamar: template/ebi.txt
+
+3️⃣  INSTALAR
+   ✦ Acesse: http://seudominio.com/selfservice/install.php
+   ✦ Siga as instruções na tela
+   ✦ IMPORTANTE: Copie a senha de admin gerada!
+   ✦ Delete o install.php após a instalação
+
+
+⚙️  CONFIGURAÇÃO INICIAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📝 Senha de Admin
+   • A senha é gerada automaticamente durante a instalação
+   • Você pode alterá-la editando admin.php:
+     define('SENHA_ADMIN', 'SuaNovaSenha');
+
+🔐 Permissões de Arquivos
+   chmod 755 instances/
+   chmod 755 data/
+   chmod 755 backups/
+   chmod 644 *.php
+
+🌐 Configurar URL Base (se necessário)
+   • O sistema detecta automaticamente a URL
+   • Se precisar alterar, edite criar_instancia.php
+
+
+🎯 COMO USAR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+👥 PARA USUÁRIOS:
+
+1. Acessar: http://seudominio.com/selfservice/selfservice.php
+2. Preencher formulário de cadastro
+3. Receber link da instância personalizada
+4. Acessar o link e começar a usar
+
+🔧 PARA ADMINISTRADORES:
+
+1. Acessar: http://seudominio.com/selfservice/admin.php
+2. Login com a senha de admin
+3. Visualizar todas as instâncias criadas
+4. Gerenciar usuários e sistemas
+
+
+📊 PAINEL ADMINISTRATIVO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+O painel admin oferece:
+
+📈 Estatísticas
+   • Total de instâncias criadas
+   • Total de usuários cadastrados
+   • Instâncias criadas hoje
+
+🔍 Busca e Filtros
+   • Buscar por nome, email, cidade, comum
+   • Filtrar resultados
+
+🛠️  Ações por Instância
+   • 🔗 Acessar sistema
+   • 📋 Copiar link
+   • 🗑️  Remover instância
+
+
+🗂️  ESTRUTURA DE UMA INSTÂNCIA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+instances/user_xxxxx/
+├── config/
+│   ├── config.ini              → Configurações personalizadas
+│   ├── cadastro_criancas.txt   → Dados das crianças
+│   └── painel_criancas.txt     → Dados do painel
+├── public_html/
+│   └── ebi/
+│       └── index.php           → Sistema completo
+├── README.txt                  → Instruções para o usuário
+└── system.log                  → Log de atividades
+
+
+🔒 SEGURANÇA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ Implementado:
+   • Validação de todos os inputs
+   • Sanitização contra XSS
+   • Senhas criptografadas (bcrypt)
+   • Isolamento de dados por usuário
+   • Proteção .htaccess
+   • Logs de auditoria
+
+⚠️  Recomendações:
+   • Use HTTPS em produção
+   • Altere a senha de admin padrão
+   • Faça backups regulares
+   • Monitore os logs
+   • Mantenha o PHP atualizado
+
+
+📁 ARQUIVOS DE LOG
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+data/instancias_criadas.log     → Registro de criações
+data/instancias_removidas.log   → Registro de remoções
+data/erros.log                  → Erros do sistema
+data/selfservice_users.txt      → Banco de dados de usuários
+
+
+🆘 SOLUÇÃO DE PROBLEMAS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ "Arquivo de configuração não encontrado"
+   → Verifique se template/ebi.txt existe
+   → Verifique permissões de leitura
+
+❌ "Erro ao criar diretório"
+   → Verifique permissões: chmod 755 instances/
+   → Verifique espaço em disco
+
+❌ "Senha incorreta" no admin
+   → Verifique a senha em admin.php
+   → Limpe cache do navegador
+
+❌ Link da instância não funciona
+   → Verifique se o arquivo index.php foi criado
+   → Verifique permissões do diretório
+   → Veja data/erros.log para mais detalhes
+
+
+📚 DOCUMENTAÇÃO COMPLETA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Para informações detalhadas, consulte:
+→ README.md
+
+
+💡 DICAS E BOAS PRÁTICAS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ Faça backup semanal do diretório instances/
+✓ Monitore o crescimento do banco de dados
+✓ Revise os logs regularmente
+✓ Teste em ambiente de desenvolvimento primeiro
+✓ Documente suas personalizações
+✓ Mantenha uma cópia do template original
+
+
+🎨 PERSONALIZAÇÃO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Você pode personalizar:
+
+• Cores e estilo: Edite os CSS nos arquivos .php
+• Template base: Modifique template/ebi.txt
+• Campos do cadastro: Edite selfservice.php
+• Layout do admin: Modifique admin.php
+
+
+📞 SUPORTE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Para suporte técnico ou dúvidas:
+• Consulte README.md
+• Verifique os logs em data/
+• Entre em contato com o desenvolvedor
+
+
+═══════════════════════════════════════════════════════════════════
+
+             Desenvolvido com ❤️  para a comunidade
+                    Versão 1.0 - Fevereiro 2026
+
+═══════════════════════════════════════════════════════════════════
+
+
+⚡ CHECKLIST PÓS-INSTALAÇÃO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+□ Instalação concluída com sucesso
+□ Senha de admin copiada e guardada
+□ install.php deletado
+□ template/ebi.txt configurado
+□ Permissões verificadas
+□ Teste de criação de instância realizado
+□ Painel admin acessível
+□ Página de cadastro acessível
+□ Backups configurados
+□ HTTPS configurado (produção)
+
+Se todos os itens estão marcados, você está pronto! 🎉
