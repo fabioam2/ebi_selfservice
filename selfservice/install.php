@@ -115,17 +115,32 @@ foreach (['data', 'instances', 'backups'] as $dir) {
 
 echo "</div>";
 
-// PASSO 3: Verificar Template
+// PASSO 3: Verificar Template (estrutura refatorada)
 echo "<div class='step'>";
 echo "<h3>📄 Passo 3: Verificando Template</h3>";
 
-$templateFile = __DIR__ . '/template/ebi.txt';
-if (!file_exists($templateFile)) {
-    echo "<p class='warning'>⚠️ Arquivo template/ebi.txt não encontrado</p>";
-    echo "<p>Por favor, copie seu arquivo do sistema para <code>template/ebi.txt</code></p>";
-    $avisos[] = "Template não configurado";
+$templateBase = __DIR__ . '/template/';
+$arquivosTemplate = [
+    'index.php',
+    'config.ini',
+    'inc/bootstrap.php',
+    'inc/auth.php',
+    'inc/funcoes.php',
+    'inc/actions.php',
+    'views/login.php',
+    'views/main.php',
+];
+$templateOk = true;
+foreach ($arquivosTemplate as $arq) {
+    if (!file_exists($templateBase . $arq)) {
+        echo "<p class='warning'>⚠️ Arquivo template/$arq não encontrado</p>";
+        $templateOk = false;
+    }
+}
+if ($templateOk) {
+    echo "<p class='success'>✅ Template refatorado completo (index.php + inc/ + views/)</p>";
 } else {
-    echo "<p class='success'>✅ Template encontrado (" . number_format(filesize($templateFile) / 1024, 2) . " KB)</p>";
+    $avisos[] = "Template incompleto - certifique-se de que template/ contém a estrutura refatorada";
 }
 
 echo "</div>";
@@ -234,7 +249,7 @@ if ($tudoOk && empty($erros)) {
     echo "<h4>Próximos Passos:</h4>";
     echo "<ol>";
     echo "<li><strong>COPIE A SENHA DE ADMIN</strong> mostrada acima</li>";
-    echo "<li>Copie seu arquivo do sistema para <code>template/ebi.txt</code> (se ainda não fez)</li>";
+    echo "<li>Verifique se a pasta <code>template/</code> contém a estrutura refatorada (index.php, inc/, views/, config.ini)</li>";
     echo "<li>Delete este arquivo (install.php) por segurança</li>";
     echo "<li>Acesse <a href='admin.php'>admin.php</a> com a senha gerada</li>";
     echo "<li>Configure seu sistema</li>";

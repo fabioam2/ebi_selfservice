@@ -88,6 +88,7 @@ TAMPULSEIRA = 269
 DOTS = 8
 FECHO = 30
 FECHOINI = 1
+URL_IMPRESSORA = \"http://127.0.0.1:9100/write\"
 LARGURA_PULSEIRA = 192
 IMPRIMIR_QRCODE = false
 TAMANHO_QRCODE = 4
@@ -171,13 +172,33 @@ VERIFICAR_INTEGRIDADE = true
         file_put_contents($configDir . 'cadastro_criancas.txt', $headerCadastro);
         file_put_contents($configDir . 'painel_criancas.txt', $headerCadastro);
         
-        // 3. Copiar arquivo principal do sistema (ebi.txt -> index.php)
-        $ebiContent = file_get_contents(__DIR__ . '/template/ebi.txt');
-        if ($ebiContent === false) {
-            throw new Exception("Erro ao ler arquivo template ebi.txt");
+        // 3. Copiar estrutura refatorada do sistema (index.php + inc/ + views/)
+        $templateDir = __DIR__ . '/template/';
+        $arquivosRefatorados = [
+            'index.php' => 'index.php',
+            'inc/bootstrap.php' => 'inc/bootstrap.php',
+            'inc/auth.php' => 'inc/auth.php',
+            'inc/funcoes.php' => 'inc/funcoes.php',
+            'inc/actions.php' => 'inc/actions.php',
+            'views/login.php' => 'views/login.php',
+            'views/main.php' => 'views/main.php',
+        ];
+        foreach ($arquivosRefatorados as $origem => $destino) {
+            $caminhoOrigem = $templateDir . $origem;
+            if (!file_exists($caminhoOrigem)) {
+                throw new Exception("Arquivo do template não encontrado: $origem");
+            }
+            $caminhoDestino = $publicDir . $destino;
+            $dirDestino = dirname($caminhoDestino);
+            if (!file_exists($dirDestino)) {
+                mkdir($dirDestino, 0755, true);
+            }
+            if (copy($caminhoOrigem, $caminhoDestino) === false) {
+                throw new Exception("Erro ao copiar: $origem");
+            }
         }
-        
-        file_put_contents($publicDir . 'index.php', $ebiContent);
+        // Config.ini na pasta da aplicação (refatorada espera config.ini junto ao index.php)
+        file_put_contents($publicDir . 'config.ini', $configContent);
         
         // 4. Criar arquivo .htaccess para segurança
         $htaccessContent = "# Proteção de diretório

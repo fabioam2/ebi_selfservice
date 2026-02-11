@@ -52,17 +52,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['cadastrar'])) {
         $erros[] = "As senhas não coincidem";
     }
     
-    // Verificar se email já existe
-    if (file_exists(DB_SELFSERVICE)) {
-        $usuarios = file(DB_SELFSERVICE, FILE_IGNORE_NEW_LINES);
-        foreach ($usuarios as $usuario) {
-            $dados = explode('|', $usuario);
-            if (isset($dados[1]) && $dados[1] === $email) {
-                $erros[] = "Este email já está cadastrado";
-                break;
-            }
-        }
-    }
+    // Permite criar várias instâncias mesmo com o mesmo e-mail (cada cadastro gera nova instância)
     
     if (empty($erros)) {
         // Gerar ID único para o usuário
