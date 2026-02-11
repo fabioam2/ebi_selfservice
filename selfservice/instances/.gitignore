@@ -1,0 +1,5 @@
+# Ignorar todas as instâncias de usuários
+*
+
+# Manter apenas este arquivo .gitignore
+!.gitignore

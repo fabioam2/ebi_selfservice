@@ -39,6 +39,10 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Atualizar timestamp de último acesso da instância
+$lastAccessFile = dirname(dirname(ARQUIVO_DADOS)) . '/.lastaccess';
+@file_put_contents($lastAccessFile, time());
+
 function sanitize_for_html($string) {
     return htmlspecialchars(trim((string)($string ?? '')), ENT_QUOTES, 'UTF-8');
 }
