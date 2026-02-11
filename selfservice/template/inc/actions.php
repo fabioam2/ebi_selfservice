@@ -282,7 +282,10 @@ if (isset($_POST['imprimir'])) {
 })();
 </script>";
         }
-        echo $scriptsParaExecutar;
+
+        // Salvar scripts na sessão para execução após redirect
+        $_SESSION['scripts_impressao'] = $scriptsParaExecutar;
+        header("Location: " . sanitize_for_html($_SERVER['PHP_SELF']));
         return;
     }
 

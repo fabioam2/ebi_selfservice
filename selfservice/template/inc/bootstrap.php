@@ -73,3 +73,36 @@ function csrf_validate() {
 function csrf_regenerate() {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
+
+/** Obtém a versão do sistema baseada no último commit git ou data de modificação. */
+function obter_versao_sistema() {
+    static $versao = null;
+
+    if ($versao !== null) {
+        return $versao;
+    }
+
+    // Tenta obter data do último commit git
+    $gitDir = dirname(dirname(__DIR__));
+    if (is_dir($gitDir . '/.git')) {
+        $comando = "cd " . escapeshellarg($gitDir) . " && git log -1 --format=%cd --date=format:'%Y%m%d%H%M' 2>/dev/null";
+        $output = @shell_exec($comando);
+        if ($output && preg_match('/^\d{12}$/', trim($output))) {
+            $versao = trim($output);
+            return $versao;
+        }
+    }
+
+    // Fallback: usa data de modificação do arquivo index.php
+    $indexFile = dirname(__DIR__) . '/index.php';
+    if (file_exists($indexFile)) {
+        $versao = date('YmdHi', filemtime($indexFile));
+        return $versao;
+    }
+
+    // Fallback final: data atual
+    $versao = date('YmdHi');
+    return $versao;
+}
+
+define('VERSAO_SISTEMA', obter_versao_sistema());

@@ -58,8 +58,9 @@ foreach ($todosOsCadastros as $cadastro) {
 $mensagemSucesso = $_SESSION['mensagemSucesso'] ?? '';
 $mensagemErro = $_SESSION['mensagemErro'] ?? '';
 $exibirModalRecuperacao = $_SESSION['exibirModalRecuperacao'] ?? false;
+$scriptsImpressao = $_SESSION['scripts_impressao'] ?? '';
 
-unset($_SESSION['mensagemSucesso'], $_SESSION['mensagemErro'], $_SESSION['exibirModalRecuperacao']);
+unset($_SESSION['mensagemSucesso'], $_SESSION['mensagemErro'], $_SESSION['exibirModalRecuperacao'], $_SESSION['scripts_impressao']);
 
 $backupsDisponiveis = [];
 if ($exibirModalRecuperacao) {

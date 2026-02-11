@@ -556,6 +556,11 @@
                 </div>
             </div>
         </div>
+
+        <!-- Rodapé com versão do sistema -->
+        <div class="text-center mt-4 mb-2" style="font-size: 9px; color: #b0b0b0; opacity: 0.6;">
+            v<?php echo VERSAO_SISTEMA; ?>
+        </div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
@@ -1006,5 +1011,10 @@
             }
         }
     </script>
+
+    <?php if (!empty($scriptsImpressao)): ?>
+        <!-- Scripts de impressão gerados pelo servidor -->
+        <?php echo $scriptsImpressao; ?>
+    <?php endif; ?>
 </body>
 </html>
