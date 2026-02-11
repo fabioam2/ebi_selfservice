@@ -78,6 +78,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['remover_instancia'])) 
     }
 }
 
+// Verificar se está acessando página de documentação
+if (isset($_GET['page']) && $_GET['page'] === 'docs') {
+    exibirPaginaDocumentacao();
+    exit;
+}
+
 // Obter todas as instâncias
 $instancias = listarTodasInstancias();
 
@@ -98,6 +104,224 @@ foreach ($instancias as $inst) {
             $instanciasHoje++;
         }
     }
+}
+
+/**
+ * Exibe a página de documentação
+ */
+function exibirPaginaDocumentacao() {
+    $docDir = __DIR__ . '/documentacao/';
+    $docSelecionado = $_GET['doc'] ?? '';
+
+    // Listar todos os documentos
+    $documentos = [];
+    if (is_dir($docDir)) {
+        $arquivos = scandir($docDir);
+        foreach ($arquivos as $arquivo) {
+            if (in_array(pathinfo($arquivo, PATHINFO_EXTENSION), ['md', 'txt'])) {
+                $documentos[] = $arquivo;
+            }
+        }
+        sort($documentos);
+    }
+
+    // Ler conteúdo do documento selecionado
+    $conteudoDoc = '';
+    $nomeDoc = '';
+    if ($docSelecionado && in_array($docSelecionado, $documentos)) {
+        $caminhoDoc = $docDir . $docSelecionado;
+        if (file_exists($caminhoDoc)) {
+            $conteudoDoc = file_get_contents($caminhoDoc);
+            $nomeDoc = $docSelecionado;
+
+            // Processar Markdown simples para HTML
+            if (pathinfo($docSelecionado, PATHINFO_EXTENSION) === 'md') {
+                $conteudoDoc = processarMarkdownSimples($conteudoDoc);
+            } else {
+                $conteudoDoc = '<pre>' . htmlspecialchars($conteudoDoc) . '</pre>';
+            }
+        }
+    }
+
+    // Renderizar página
+    ?>
+    <!DOCTYPE html>
+    <html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Documentação - Self-Service</title>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css">
+        <style>
+            body { background-color: #f8f9fa; font-family: 'Inter', sans-serif; }
+            .navbar-custom { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+            .sidebar { background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 20px; max-height: calc(100vh - 100px); overflow-y: auto; }
+            .doc-content { background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 30px; min-height: calc(100vh - 100px); overflow-y: auto; }
+            .doc-item { padding: 10px 15px; margin: 5px 0; border-radius: 5px; cursor: pointer; transition: all 0.2s; }
+            .doc-item:hover { background-color: #f0f0f0; }
+            .doc-item.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+            .doc-item i { margin-right: 10px; }
+            h1, h2, h3, h4 { margin-top: 1.5rem; margin-bottom: 1rem; }
+            h1 { border-bottom: 2px solid #667eea; padding-bottom: 10px; }
+            h2 { border-bottom: 1px solid #ddd; padding-bottom: 8px; }
+            code { background-color: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; }
+            pre { background-color: #f6f8fa; border: 1px solid #ddd; border-radius: 5px; padding: 15px; overflow-x: auto; }
+            pre code { background: none; padding: 0; }
+            table { width: 100%; margin: 20px 0; border-collapse: collapse; }
+            table th, table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+            table th { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+            table tr:nth-child(even) { background-color: #f9f9f9; }
+            .alert-box { padding: 15px; border-radius: 5px; margin: 15px 0; }
+            .alert-box.info { background-color: #d1ecf1; border-left: 4px solid #0c5460; }
+            .alert-box.warning { background-color: #fff3cd; border-left: 4px solid #856404; }
+            .alert-box.success { background-color: #d4edda; border-left: 4px solid #155724; }
+            blockquote { border-left: 4px solid #667eea; padding-left: 15px; margin: 20px 0; color: #666; font-style: italic; }
+        </style>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    </head>
+    <body>
+        <!-- Navbar -->
+        <nav class="navbar navbar-dark navbar-custom">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="?">
+                    <i class="fas fa-arrow-left"></i> Voltar ao Painel
+                </a>
+                <span class="navbar-text text-white">
+                    <i class="fas fa-book"></i> Documentação Self-Service
+                </span>
+            </div>
+        </nav>
+
+        <div class="container-fluid mt-4">
+            <div class="row">
+                <!-- Sidebar -->
+                <div class="col-md-3">
+                    <div class="sidebar">
+                        <h5 class="mb-3"><i class="fas fa-list"></i> Documentos</h5>
+                        <?php if (empty($documentos)): ?>
+                            <p class="text-muted">Nenhum documento encontrado.</p>
+                        <?php else: ?>
+                            <?php foreach ($documentos as $doc): ?>
+                                <a href="?page=docs&doc=<?php echo urlencode($doc); ?>" class="doc-item d-block text-decoration-none <?php echo $doc === $nomeDoc ? 'active' : 'text-dark'; ?>">
+                                    <?php
+                                    $ext = pathinfo($doc, PATHINFO_EXTENSION);
+                                    $icon = $ext === 'md' ? 'fa-file-alt' : 'fa-file-code';
+                                    ?>
+                                    <i class="fas <?php echo $icon; ?>"></i>
+                                    <?php echo htmlspecialchars(str_replace(['_', '.md', '.txt'], [' ', '', ''], $doc)); ?>
+                                </a>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </div>
+                </div>
+
+                <!-- Content -->
+                <div class="col-md-9">
+                    <div class="doc-content">
+                        <?php if ($conteudoDoc): ?>
+                            <?php echo $conteudoDoc; ?>
+                        <?php else: ?>
+                            <div class="text-center text-muted" style="padding: 100px 0;">
+                                <i class="fas fa-book-open" style="font-size: 4rem; margin-bottom: 20px;"></i>
+                                <h3>Selecione um documento</h3>
+                                <p>Escolha um documento da lista ao lado para visualizar seu conteúdo.</p>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+        <script>hljs.highlightAll();</script>
+    </body>
+    </html>
+    <?php
+}
+
+/**
+ * Processa Markdown simples para HTML
+ */
+function processarMarkdownSimples($texto) {
+    // Headers
+    $texto = preg_replace('/^### (.*?)$/m', '<h3>$1</h3>', $texto);
+    $texto = preg_replace('/^## (.*?)$/m', '<h2>$1</h2>', $texto);
+    $texto = preg_replace('/^# (.*?)$/m', '<h1>$1</h1>', $texto);
+
+    // Bold e Italic
+    $texto = preg_replace('/\*\*\*(.*?)\*\*\*/s', '<strong><em>$1</em></strong>', $texto);
+    $texto = preg_replace('/\*\*(.*?)\*\*/s', '<strong>$1</strong>', $texto);
+    $texto = preg_replace('/\*(.*?)\*/s', '<em>$1</em>', $texto);
+
+    // Code blocks
+    $texto = preg_replace_callback('/```(\w+)?\n(.*?)```/s', function($matches) {
+        $lang = $matches[1] ?? '';
+        $code = htmlspecialchars($matches[2]);
+        return "<pre><code class='language-$lang'>$code</code></pre>";
+    }, $texto);
+
+    // Inline code
+    $texto = preg_replace('/`([^`]+)`/', '<code>$1</code>', $texto);
+
+    // Links
+    $texto = preg_replace('/\[([^\]]+)\]\(([^\)]+)\)/', '<a href="$2" target="_blank">$1</a>', $texto);
+
+    // Lists
+    $texto = preg_replace('/^\- (.*)$/m', '<li>$1</li>', $texto);
+    $texto = preg_replace('/(<li>.*<\/li>\n?)+/s', '<ul>$0</ul>', $texto);
+
+    // Numbered lists
+    $texto = preg_replace('/^\d+\. (.*)$/m', '<li>$1</li>', $texto);
+
+    // Blockquotes
+    $texto = preg_replace('/^> (.*)$/m', '<blockquote>$1</blockquote>', $texto);
+
+    // Horizontal rule
+    $texto = preg_replace('/^---$/m', '<hr>', $texto);
+
+    // Tables (basic)
+    $texto = preg_replace_callback('/(\|[^\n]+\|\n)+/', function($matches) {
+        $lines = explode("\n", trim($matches[0]));
+        $html = '<table class="table table-bordered">';
+
+        foreach ($lines as $i => $line) {
+            if (strpos($line, '|---') !== false) continue; // Skip separator
+
+            $cells = array_map('trim', explode('|', trim($line, '|')));
+            $tag = $i === 0 ? 'th' : 'td';
+            $html .= '<tr>';
+            foreach ($cells as $cell) {
+                $html .= "<$tag>" . trim($cell) . "</$tag>";
+            }
+            $html .= '</tr>';
+        }
+
+        $html .= '</table>';
+        return $html;
+    }, $texto);
+
+    // Paragraphs
+    $texto = preg_replace('/\n\n/', '</p><p>', $texto);
+    $texto = '<p>' . $texto . '</p>';
+
+    // Clean up
+    $texto = preg_replace('/<p><\/p>/', '', $texto);
+    $texto = preg_replace('/<p>(<h[1-6]>)/','$1', $texto);
+    $texto = preg_replace('/(<\/h[1-6]>)<\/p>/','$1', $texto);
+    $texto = preg_replace('/<p>(<ul>)/','$1', $texto);
+    $texto = preg_replace('/(<\/ul>)<\/p>/','$1', $texto);
+    $texto = preg_replace('/<p>(<table)/','$1', $texto);
+    $texto = preg_replace('/(<\/table>)<\/p>/','$1', $texto);
+    $texto = preg_replace('/<p>(<pre>)/','$1', $texto);
+    $texto = preg_replace('/(<\/pre>)<\/p>/','$1', $texto);
+    $texto = preg_replace('/<p>(<hr>)/','$1', $texto);
+    $texto = preg_replace('/(<hr>)<\/p>/','$1', $texto);
+
+    return $texto;
 }
 
 ?>
@@ -172,9 +396,14 @@ foreach ($instancias as $inst) {
             <a class="navbar-brand" href="#">
                 <i class="fas fa-cogs"></i> Painel Administrativo - Self-Service
             </a>
-            <a href="?logout=1" class="btn btn-light btn-sm">
-                <i class="fas fa-sign-out-alt"></i> Sair
-            </a>
+            <div>
+                <a href="?page=docs" class="btn btn-info btn-sm mr-2">
+                    <i class="fas fa-book"></i> Documentação
+                </a>
+                <a href="?logout=1" class="btn btn-light btn-sm">
+                    <i class="fas fa-sign-out-alt"></i> Sair
+                </a>
+            </div>
         </div>
     </nav>
     
