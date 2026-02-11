@@ -1,3 +1,22 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Crianças</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #eef2f7; }
+        .container { margin-top: 20px; padding: 20px; background-color: #ffffff; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); max-width: 1300px; }
+        .tabela-scrollable { max-height: 400px; overflow-y: auto; margin-bottom: 20px; border: 1px solid #dee2e6; border-radius: 8px; }
+        .tabela-scrollable table { width: 100%; margin-bottom: 0; }
+        .tabela-scrollable th { background-color: #007bff; color: white; position: sticky; top: 0; z-index: 10; font-size: 0.9rem; padding: 0.5rem; text-align: center; }
+        .tabela-scrollable td { font-size: 0.85rem; padding: 0.4rem; vertical-align: middle; }
+        .tabela-scrollable th:nth-child(6), .tabela-scrollable th:nth-child(7), .tabela-scrollable th:nth-child(10) { text-align: left;}
+        .tabela-scrollable td:nth-child(6), .tabela-scrollable td:nth-child(7), .tabela-scrollable td:nth-child(10) { text-align: left;}
+
+        .form-control-sm { height: calc(1.5em + .5rem + 2px); padding: .25rem .5rem; font-size: .875rem; line-height: 1.5; border-radius: .2rem; }
+        .btn { margin-right: 8px; border-radius: 5px; padding: 8px 15px; transition: all 0.2s ease-in-out; }
         .btn:hover { transform: translateY(-2px); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         .alert { border-radius: 8px; margin-bottom: 15px; }
         header h1 img { border: 2px solid #007bff; }
