@@ -12,13 +12,19 @@ function gerenciarBackups($caminhoArquivoBase) {
         $backupProximo = $caminhoArquivoBase . '.bkp.' . ($i + 1);
         if (file_exists($backupAtual)) {
             if ($i == MAX_BACKUPS) {
-                @unlink($backupAtual);
+                if (!@unlink($backupAtual)) {
+                    error_log("[EBI] Backup: falha ao remover " . $backupAtual);
+                }
             } else {
-                @rename($backupAtual, $backupProximo);
+                if (!@rename($backupAtual, $backupProximo)) {
+                    error_log("[EBI] Backup: falha ao renomear " . $backupAtual . " -> " . $backupProximo);
+                }
             }
         }
     }
-    @copy($caminhoArquivoBase, $caminhoArquivoBase . '.bkp.1');
+    if (!@copy($caminhoArquivoBase, $caminhoArquivoBase . '.bkp.1')) {
+        error_log("[EBI] Backup: falha ao criar .bkp.1 de " . $caminhoArquivoBase);
+    }
 }
 
 function listarBackups($caminhoArquivoBase) {
@@ -158,6 +164,33 @@ function gerarCodigoZPLResponsavel($nomeResponsavel, $nomesCriancasDoGrupo, $cod
     $zpl .= "^PQ1,0,1,Y" . PHP_EOL;
     $zpl .= "^XZ" . PHP_EOL;
     return $zpl;
+}
+
+/**
+ * Calcula totais especiais (geral, 3 anos, Bonfim) a partir da lista de cadastros.
+ * @param array $cadastros Array associativo id => cadastro
+ * @return array ['total_geral' => int, 'total_3_anos' => int, 'total_bonfim' => int]
+ */
+function calcular_totais_especiais($cadastros) {
+    $totalGeral = count($cadastros);
+    $total3Anos = 0;
+    $palavrasChaveBonfim = ['bonfim', 'bofim', 'bonfin', 'bomfim', 'bon fim', 'bom fin', 'bom fim', 'bon fin'];
+    $totalBonfim = 0;
+    foreach ($cadastros as $cadastro) {
+        if (isset($cadastro['idade']) && in_array(trim($cadastro['idade']), ['3', '03'], true)) {
+            $total3Anos++;
+        }
+        if (isset($cadastro['comum']) && trim($cadastro['comum']) !== '') {
+            $comumLower = strtolower(trim($cadastro['comum']));
+            foreach ($palavrasChaveBonfim as $palavra) {
+                if (stripos($comumLower, $palavra) !== false) {
+                    $totalBonfim++;
+                    break;
+                }
+            }
+        }
+    }
+    return ['total_geral' => $totalGeral, 'total_3_anos' => $total3Anos, 'total_bonfim' => $totalBonfim];
 }
 
 function salvarTodosCadastros($caminhoArquivo, $cadastros) {

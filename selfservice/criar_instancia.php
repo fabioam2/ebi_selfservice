@@ -44,6 +44,7 @@ function criarInstanciaUsuario($user_id, $nome, $email, $cidade, $comum, $senha)
         
         // 1. Criar arquivo config.ini personalizado (versão expandida com segurança)
         $dataCriacao = date('Y-m-d H:i:s');
+        $senhaHash = password_hash($senha, PASSWORD_DEFAULT);
         $configContent = "; ═══════════════════════════════════════════════════════════════════
 ; ARQUIVO DE CONFIGURAÇÃO - Sistema de Cadastro de Crianças
 ; Instância de: $nome ($email)
@@ -75,8 +76,8 @@ NUM_CAMPOS_POR_LINHA_NO_ARQUIVO = 8
 TIMEZONE = \"America/Sao_Paulo\"
 
 [SEGURANCA]
-SENHA_ADMIN_REAL = \"$senha\"
-SENHA_PAINEL = \"$senha\"
+SENHA_ADMIN_REAL = \"$senhaHash\"
+SENHA_PAINEL = \"$senhaHash\"
 TEMPO_SESSAO = 1800
 MAX_TENTATIVAS_LOGIN = 5
 TEMPO_BLOQUEIO = 300

@@ -25,6 +25,8 @@ define('NUM_CAMPOS_POR_LINHA_NO_ARQUIVO', $config['GERAL']['NUM_CAMPOS_POR_LINHA
 
 define('SENHA_ADMIN_REAL', $config['SEGURANCA']['SENHA_ADMIN_REAL']);
 define('SENHA_LOGIN', SENHA_ADMIN_REAL);
+define('TEMPO_SESSAO', (int)($config['SEGURANCA']['TEMPO_SESSAO'] ?? 1800));
+define('APP_VERSION', isset($config['INFO_SISTEMA']['VERSAO']) ? $config['INFO_SISTEMA']['VERSAO'] : '2.0');
 
 define('TAMPULSEIRA', $config['IMPRESSORA_ZPL']['TAMPULSEIRA']);
 define('DOTS', $config['IMPRESSORA_ZPL']['DOTS']);

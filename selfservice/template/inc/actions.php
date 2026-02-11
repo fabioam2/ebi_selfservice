@@ -253,7 +253,7 @@ if (isset($_POST['acao']) && $_POST['acao'] === 'apagar_linha') {
 }
 
 if (isset($_POST['zerar_arquivo_confirmado'])) {
-    if (isset($_POST['admin_senha']) && $_POST['admin_senha'] === SENHA_ADMIN_REAL) {
+    if (isset($_POST['admin_senha']) && senha_valida($_POST['admin_senha'], SENHA_ADMIN_REAL)) {
         $bkp1_path = ARQUIVO_DADOS . '.bkp.1';
 
         if (file_exists(ARQUIVO_DADOS) && filesize(ARQUIVO_DADOS) > 0) {
@@ -266,7 +266,9 @@ if (isset($_POST['zerar_arquivo_confirmado'])) {
             for ($i = 2; $i <= MAX_BACKUPS; $i++) {
                 $backupParaApagar = ARQUIVO_DADOS . '.bkp.' . $i;
                 if (file_exists($backupParaApagar)) {
-                    @unlink($backupParaApagar);
+                    if (!@unlink($backupParaApagar)) {
+                        error_log("[EBI] Zerar: falha ao remover " . $backupParaApagar);
+                    }
                     $outrosRemovidos = true;
                 }
             }
@@ -275,7 +277,9 @@ if (isset($_POST['zerar_arquivo_confirmado'])) {
             $backupsRestantes = listarBackups(ARQUIVO_DADOS);
             if (count($backupsRestantes) === 1 && basename($backupsRestantes[0]) === basename($bkp1_path)) {
                 if (file_exists($bkp1_path)) {
-                    @unlink($bkp1_path);
+                    if (!@unlink($bkp1_path)) {
+                        error_log("[EBI] Zerar: falha ao remover " . $bkp1_path);
+                    }
                     $_SESSION['mensagemSucesso'] .= " Backup .bkp.1 (sendo o único restante) também foi removido.";
                 }
             } elseif (file_exists($bkp1_path)) {
@@ -308,7 +312,7 @@ if (isset($_POST['limpar_flag_modal_recuperacao'])) {
 }
 
 if (isset($_POST['confirmar_recuperacao'])) {
-    if (isset($_POST['admin_senha'], $_POST['arquivo_backup_selecionado']) && $_POST['admin_senha'] === SENHA_ADMIN_REAL) {
+    if (isset($_POST['admin_senha'], $_POST['arquivo_backup_selecionado']) && senha_valida($_POST['admin_senha'], SENHA_ADMIN_REAL)) {
         $backupSelecionadoNome = basename(sanitize_for_file($_POST['arquivo_backup_selecionado']));
         $diretorioBase = dirname(ARQUIVO_DADOS);
         $caminhoBackupSelecionado = ($diretorioBase === '.' ? '' : $diretorioBase . DIRECTORY_SEPARATOR) . $backupSelecionadoNome;
@@ -326,7 +330,7 @@ if (isset($_POST['confirmar_recuperacao'])) {
             $_SESSION['mensagemErro'] = "Arquivo de backup '" . sanitize_for_html($backupSelecionadoNome) . "' inválido ou não encontrado.";
         }
     } else {
-        $_SESSION['mensagemErro'] = (isset($_POST['admin_senha']) && $_POST['admin_senha'] !== SENHA_ADMIN_REAL)
+        $_SESSION['mensagemErro'] = (isset($_POST['admin_senha']) && !senha_valida($_POST['admin_senha'], SENHA_ADMIN_REAL))
             ? "Senha administrativa incorreta para recuperação."
             : "Informações insuficientes para recuperação.";
     }
