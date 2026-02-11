@@ -127,20 +127,40 @@ if (isset($_POST['imprimir'])) {
     var payload = " . $jsonPayloadCrianca . ";
     var currentId = " . $idSelecionado . ";
     var nomeCrianca = \"" . addslashes(sanitize_for_html($crianca['nomeCrianca'])) . "\";
-    fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-    .then(response => {
-        if (!response.ok) return response.text().then(text => { throw new Error('Falha (criança ' + nomeCrianca + '): ' + response.status + ' ' + text); });
-        return response.text();
-    })
-    .then(result => {
-        console.log('Etiqueta CRIANÇA ID ' + currentId + ' (' + nomeCrianca + ') enviada. Resposta: ' + result);
-        var row = $('tr[data-id=\"' + currentId + '\"]');
-        if (row.length) {
-            row.find('.status-icon').html('<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" fill=\"green\" class=\"bi bi-check-circle-fill\" viewBox=\"0 0 16 16\"><path d=\"M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z\"/></svg>');
-            row.find('.checkbox-crianca').prop('checked', false);
-        }
-    })
-    .catch(error => { console.error('Erro CRIANÇA ID ' + currentId + ' (' + nomeCrianca + '):', error); });
+    var zplCode = payload.data;
+    var modoDebug = localStorage.getItem('modoDebugImpressao') === 'true';
+
+    if (modoDebug) {
+        // Modo debug: abrir modal com ZPL
+        if (!window.debugPrintQueue) window.debugPrintQueue = [];
+        window.debugPrintQueue.push({
+            zpl: zplCode,
+            url: url,
+            info: {
+                nomeCrianca: nomeCrianca,
+                codigo: currentId,
+                tipo: 'Pulseira Criança',
+                urlImpressora: url
+            },
+            currentId: currentId
+        });
+    } else {
+        // Modo normal: enviar diretamente
+        fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+        .then(response => {
+            if (!response.ok) return response.text().then(text => { throw new Error('Falha (criança ' + nomeCrianca + '): ' + response.status + ' ' + text); });
+            return response.text();
+        })
+        .then(result => {
+            console.log('Etiqueta CRIANÇA ID ' + currentId + ' (' + nomeCrianca + ') enviada. Resposta: ' + result);
+            var row = $('tr[data-id=\"' + currentId + '\"]');
+            if (row.length) {
+                row.find('.status-icon').html('<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"18\" height=\"18\" fill=\"green\" class=\"bi bi-check-circle-fill\" viewBox=\"0 0 16 16\"><path d=\"M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z\"/></svg>');
+                row.find('.checkbox-crianca').prop('checked', false);
+            }
+        })
+        .catch(error => { console.error('Erro CRIANÇA ID ' + currentId + ' (' + nomeCrianca + '):', error); });
+    }
 })();
 </script>";
                 $todosOsCadastros[$idSelecionado]['statusImpresso'] = 'S';
@@ -181,13 +201,33 @@ if (isset($_POST['imprimir'])) {
     var payload = " . $jsonPayloadResponsavel . ";
     var codResp = \"" . addslashes(sanitize_for_html($codResp)) . "\";
     var nomeResp = \"" . addslashes(sanitize_for_html($dataResp['nomeResponsavel'])) . "\";
-    fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
-    .then(response => {
-        if (!response.ok) return response.text().then(text => { throw new Error('Falha (responsável ' + nomeResp + '): ' + response.status + ' ' + text); });
-        return response.text();
-    })
-    .then(result => { console.log('Etiqueta RESPONSÁVEL Cód. Lote ' + codResp + ' (' + nomeResp + ') enviada. Resposta: ' + result); })
-    .catch(error => { console.error('Erro RESPONSÁVEL Cód. Lote ' + codResp + ' (' + nomeResp + '):', error); });
+    var zplCode = payload.data;
+    var modoDebug = localStorage.getItem('modoDebugImpressao') === 'true';
+
+    if (modoDebug) {
+        // Modo debug: abrir modal com ZPL
+        if (!window.debugPrintQueue) window.debugPrintQueue = [];
+        window.debugPrintQueue.push({
+            zpl: zplCode,
+            url: url,
+            info: {
+                nomeCrianca: 'Responsável: ' + nomeResp,
+                codigo: codResp,
+                tipo: 'Pulseira Responsável',
+                urlImpressora: url
+            },
+            codResp: codResp
+        });
+    } else {
+        // Modo normal: enviar diretamente
+        fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+        .then(response => {
+            if (!response.ok) return response.text().then(text => { throw new Error('Falha (responsável ' + nomeResp + '): ' + response.status + ' ' + text); });
+            return response.text();
+        })
+        .then(result => { console.log('Etiqueta RESPONSÁVEL Cód. Lote ' + codResp + ' (' + nomeResp + ') enviada. Resposta: ' + result); })
+        .catch(error => { console.error('Erro RESPONSÁVEL Cód. Lote ' + codResp + ' (' + nomeResp + '):', error); });
+    }
 })();
 </script>";
                     $contadorImpressoesResponsaveis++;
@@ -212,6 +252,32 @@ if (isset($_POST['imprimir'])) {
         setTimeout(function() {
             if ($('.checkbox-crianca:checked').length === 0) { $('#selecionarTodos').prop('checked', false); }
         }, 2000);
+
+        // Processar fila de debug se modo debug estiver ativo
+        if (localStorage.getItem('modoDebugImpressao') === 'true' && window.debugPrintQueue && window.debugPrintQueue.length > 0) {
+            var currentDebugIndex = 0;
+
+            function mostrarProximoDebug() {
+                if (currentDebugIndex < window.debugPrintQueue.length) {
+                    var item = window.debugPrintQueue[currentDebugIndex];
+                    abrirModalDebugZPL(item.zpl, item.info);
+
+                    // Quando o modal fechar, mostrar o próximo
+                    $('#modalDebugZPL').off('hidden.bs.modal').on('hidden.bs.modal', function() {
+                        currentDebugIndex++;
+                        if (currentDebugIndex < window.debugPrintQueue.length) {
+                            setTimeout(mostrarProximoDebug, 500);
+                        } else {
+                            // Limpar a fila após processar todos
+                            window.debugPrintQueue = [];
+                        }
+                    });
+                }
+            }
+
+            // Iniciar processamento da fila após um pequeno delay
+            setTimeout(mostrarProximoDebug, 1000);
+        }
     });
 })();
 </script>";
@@ -302,6 +368,47 @@ if (isset($_POST['preparar_recuperacao'])) {
 
 if (isset($_POST['limpar_flag_modal_recuperacao'])) {
     $_SESSION['exibirModalRecuperacao'] = false;
+    $_SESSION['focar_apos_acao'] = true;
+    header("Location: " . sanitize_for_html($_SERVER['PHP_SELF']));
+    return;
+}
+
+if (isset($_POST['salvar_config_impressora'])) {
+    if (isset($_POST['admin_senha']) && $_POST['admin_senha'] === SENHA_ADMIN_REAL) {
+        $config_file = __DIR__ . '/../config.ini';
+
+        // Validar inputs
+        $tampulseira = intval($_POST['config_tampulseira'] ?? 269);
+        $dots = intval($_POST['config_dots'] ?? 8);
+        $fecho = intval($_POST['config_fecho'] ?? 30);
+        $fechoini = intval($_POST['config_fechoini'] ?? 1);
+        $url_impressora = trim($_POST['config_url_impressora'] ?? 'http://127.0.0.1:9100/write');
+        $largura_pulseira = intval($_POST['config_largura_pulseira'] ?? 192);
+
+        // Ler o arquivo config.ini atual
+        $config_content = file_get_contents($config_file);
+
+        if ($config_content !== false) {
+            // Atualizar valores usando regex
+            $config_content = preg_replace('/^TAMPULSEIRA\s*=\s*.+$/m', 'TAMPULSEIRA = ' . $tampulseira, $config_content);
+            $config_content = preg_replace('/^DOTS\s*=\s*.+$/m', 'DOTS = ' . $dots, $config_content);
+            $config_content = preg_replace('/^FECHO\s*=\s*.+$/m', 'FECHO = ' . $fecho, $config_content);
+            $config_content = preg_replace('/^FECHOINI\s*=\s*.+$/m', 'FECHOINI = ' . $fechoini, $config_content);
+            $config_content = preg_replace('/^URL_IMPRESSORA\s*=\s*.+$/m', 'URL_IMPRESSORA = "' . addslashes($url_impressora) . '"', $config_content);
+            $config_content = preg_replace('/^LARGURA_PULSEIRA\s*=\s*.+$/m', 'LARGURA_PULSEIRA = ' . $largura_pulseira, $config_content);
+
+            // Salvar arquivo
+            if (file_put_contents($config_file, $config_content, LOCK_EX) !== false) {
+                $_SESSION['mensagemSucesso'] = "Configurações da impressora salvas com sucesso! As alterações entrarão em vigor no próximo acesso.";
+            } else {
+                $_SESSION['mensagemErro'] = "Erro ao salvar as configurações no arquivo config.ini.";
+            }
+        } else {
+            $_SESSION['mensagemErro'] = "Erro ao ler o arquivo config.ini.";
+        }
+    } else {
+        $_SESSION['mensagemErro'] = "Senha administrativa incorreta.";
+    }
     $_SESSION['focar_apos_acao'] = true;
     header("Location: " . sanitize_for_html($_SERVER['PHP_SELF']));
     return;

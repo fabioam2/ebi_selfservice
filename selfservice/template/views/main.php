@@ -279,6 +279,15 @@
                         Ações Admin
                     </button>
                     <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuAdmin">
+                        <button class="dropdown-item" type="button" onclick="abrirModalConfigImpressora()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer mr-1" viewBox="0 0 16 16"><path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/><path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/></svg>
+                            Configurar Impressora
+                        </button>
+                        <button class="dropdown-item" type="button" onclick="toggleModoDebugImpressao()" id="btnToggleDebug">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bug mr-1" viewBox="0 0 16 16"><path d="M4.355.522a.5.5 0 0 1 .623.333l.291.956A4.979 4.979 0 0 1 8 1c1.007 0 1.946.298 2.731.811l.29-.956a.5.5 0 1 1 .957.29l-.41 1.352A4.985 4.985 0 0 1 13 6h.5a.5.5 0 0 0 0-1h-.538l-.853-2.56a.5.5 0 1 1 .957-.29l.956 2.87A2 2 0 0 1 15.5 7.5v1a2 2 0 0 1-2 2h-.5v.5a5 5 0 0 1-10 0V10h-.5a2 2 0 0 1-2-2v-1a2 2 0 0 1 1.478-1.93l.956-2.87a.5.5 0 1 1 .957.29L2.538 5H2a.5.5 0 0 0 0 1h.5a4.985 4.985 0 0 1 1.432-3.503l-.41-1.352a.5.5 0 0 1 .333-.623zM4 7v4a4 4 0 0 0 8 0V7a4 4 0 0 0-8 0z"/></svg>
+                            <span id="labelDebugMode">Modo Debug: OFF</span>
+                        </button>
+                        <div class="dropdown-divider"></div>
                         <button class="dropdown-item" type="button" onclick="abrirModalZerarArquivo()">Zerar Arquivo</button>
                         <button class="dropdown-item" type="submit" name="preparar_recuperacao" form="formListaCriancas">Recuperar Backup <small class="text-muted">(.bkp.1 é o mais recente)</small></button>
                         <div class="dropdown-divider"></div>
@@ -405,6 +414,148 @@
                 </div>
             </div>
         <?php endif; ?>
+
+        <!-- Modal Configuração da Impressora -->
+        <div class="modal fade" id="modalConfigImpressora" tabindex="-1" role="dialog" aria-labelledby="modalConfigImpressoraLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <form method="post" action="<?php echo sanitize_for_html($_SERVER["PHP_SELF"]); ?>" id="formConfigImpressora">
+                        <?php echo csrf_field(); ?>
+                        <div class="modal-header bg-info text-white">
+                            <h5 class="modal-title" id="modalConfigImpressoraLabel">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-printer mr-2" viewBox="0 0 16 16"><path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/><path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/></svg>
+                                Configuração da Impressora
+                            </h5>
+                            <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="alert alert-info">
+                                <strong>Atenção:</strong> Essas configurações serão salvas no arquivo config.ini. Altere apenas se souber o que está fazendo.
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="config_tampulseira">Tamanho da Pulseira (mm)</label>
+                                        <input type="number" class="form-control" id="config_tampulseira" name="config_tampulseira" value="<?php echo TAMPULSEIRA; ?>" required>
+                                        <small class="form-text text-muted">Tamanho total da pulseira em milímetros</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="config_dots">Dots por Milímetro</label>
+                                        <input type="number" class="form-control" id="config_dots" name="config_dots" value="<?php echo DOTS; ?>" required>
+                                        <small class="form-text text-muted">Resolução da impressora (normalmente 8)</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="config_fecho">Tamanho do Fecho (mm)</label>
+                                        <input type="number" class="form-control" id="config_fecho" name="config_fecho" value="<?php echo FECHO; ?>" required>
+                                        <small class="form-text text-muted">Tamanho do fecho da pulseira</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="config_fechoini">Posição Inicial do Fecho</label>
+                                        <input type="number" class="form-control" id="config_fechoini" name="config_fechoini" value="<?php echo FECHOINI; ?>" required>
+                                        <small class="form-text text-muted">Posição inicial (normalmente 1)</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="config_url_impressora">URL da Impressora</label>
+                                <input type="text" class="form-control" id="config_url_impressora" name="config_url_impressora" value="<?php echo URL_IMPRESSORA; ?>" required>
+                                <small class="form-text text-muted">Ex: http://127.0.0.1:9100/write ou http://IP_DA_IMPRESSORA:9100/write</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="config_largura_pulseira">Largura da Pulseira (dots)</label>
+                                <input type="number" class="form-control" id="config_largura_pulseira" name="config_largura_pulseira" value="<?php echo $config['IMPRESSORA_ZPL']['LARGURA_PULSEIRA'] ?? 192; ?>" required>
+                                <small class="form-text text-muted">Largura em dots (24mm = 192 dots)</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="admin_senha_config">Senha Administrativa</label>
+                                <input type="password" class="form-control" id="admin_senha_config" name="admin_senha" required>
+                                <small class="form-text text-muted">Digite a senha administrativa para confirmar as alterações</small>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary" name="salvar_config_impressora">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-save mr-1" viewBox="0 0 16 16"><path d="M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z"/></svg>
+                                Salvar Configurações
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Debug ZPL -->
+        <div class="modal fade" id="modalDebugZPL" tabindex="-1" role="dialog" aria-labelledby="modalDebugZPLLabel" aria-hidden="true">
+            <div class="modal-dialog modal-xl" role="document">
+                <div class="modal-content">
+                    <div class="modal-header bg-warning">
+                        <h5 class="modal-title" id="modalDebugZPLLabel">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-bug-fill mr-2" viewBox="0 0 16 16"><path d="M4.978.855a.5.5 0 1 0-.956.29L4.3 2.003a4.98 4.98 0 0 0-2.106 1.098L.75 1.655a.5.5 0 0 0-.707.707l1.446 1.446a4.98 4.98 0 0 0-.967 2.197l-1.02.156a.5.5 0 0 0 .153.988l1.028-.157a5.01 5.01 0 0 0 .848 1.653L.085 9.992a.5.5 0 0 0 .707.707l1.446-1.446a4.98 4.98 0 0 0 2.106 1.098l-.278 1.858a.5.5 0 1 0 .956.29l.278-1.858a5.017 5.017 0 0 0 2.4 0l.278 1.858a.5.5 0 1 0 .956-.29l-.278-1.858a4.98 4.98 0 0 0 2.106-1.098l1.446 1.446a.5.5 0 0 0 .707-.707l-1.446-1.446a4.98 4.98 0 0 0 .848-1.653l1.028.157a.5.5 0 1 0 .153-.988l-1.02-.156a4.98 4.98 0 0 0-.967-2.197l1.446-1.446a.5.5 0 0 0-.707-.707l-1.446 1.446a4.98 4.98 0 0 0-2.106-1.098l.278-1.858a.5.5 0 1 0-.956-.29l-.278 1.858a5.017 5.017 0 0 0-2.4 0l-.278-1.858z"/><path d="M7.8 5.5a.8.8 0 1 1-1.6 0 .8.8 0 0 1 1.6 0z"/><path d="M9.8 5.5a.8.8 0 1 1-1.6 0 .8.8 0 0 1 1.6 0z"/></svg>
+                            Modo Debug - Comando ZPL
+                        </h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-warning">
+                            <strong>Modo Debug Ativo!</strong> Você pode editar o código ZPL antes de enviar para a impressora.
+                        </div>
+
+                        <div class="form-group">
+                            <label for="debug_info">Informações:</label>
+                            <div id="debug_info" class="p-2 bg-light border rounded">
+                                <strong>Criança:</strong> <span id="debug_nome_crianca"></span><br>
+                                <strong>Código:</strong> <span id="debug_codigo"></span><br>
+                                <strong>Tipo:</strong> <span id="debug_tipo_pulseira"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="debug_zpl_code">Código ZPL:</label>
+                            <textarea class="form-control" id="debug_zpl_code" rows="15" style="font-family: 'Courier New', monospace; font-size: 12px;"></textarea>
+                            <small class="form-text text-muted">Você pode editar o código ZPL diretamente aqui antes de enviar</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="debug_url_impressora">URL da Impressora:</label>
+                            <input type="text" class="form-control" id="debug_url_impressora" value="<?php echo URL_IMPRESSORA; ?>">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Comando cURL equivalente:</label>
+                            <textarea class="form-control" id="debug_curl_command" rows="4" readonly style="font-family: 'Courier New', monospace; font-size: 11px; background-color: #f8f9fa;"></textarea>
+                            <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="copiarCurl()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/></svg>
+                                Copiar cURL
+                            </button>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-success" onclick="enviarZPLDebug()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send-fill mr-1" viewBox="0 0 16 16"><path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z"/></svg>
+                            Enviar para Impressora
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
@@ -676,7 +827,150 @@
             });
 
 
-        }); 
+            // Inicializar modo debug
+            atualizarEstadoModoDebug();
+
+        });
+
+        // ============ FUNÇÕES DE CONFIGURAÇÃO E DEBUG ============
+
+        function abrirModalConfigImpressora() {
+            $('#modalConfigImpressora').modal('show');
+        }
+
+        function toggleModoDebugImpressao() {
+            const modoDebugAtual = localStorage.getItem('modoDebugImpressao') === 'true';
+            const novoEstado = !modoDebugAtual;
+            localStorage.setItem('modoDebugImpressao', novoEstado);
+            atualizarEstadoModoDebug();
+
+            if (novoEstado) {
+                alert('Modo Debug de Impressão ATIVADO!\n\nAgora, ao clicar em "Imprimir", uma janela será aberta mostrando o código ZPL antes de enviar para a impressora.');
+            } else {
+                alert('Modo Debug de Impressão DESATIVADO.\n\nAs impressões serão enviadas diretamente para a impressora.');
+            }
+        }
+
+        function atualizarEstadoModoDebug() {
+            const modoDebugAtivo = localStorage.getItem('modoDebugImpressao') === 'true';
+            const label = $('#labelDebugMode');
+            const btn = $('#btnToggleDebug');
+
+            if (modoDebugAtivo) {
+                label.text('Modo Debug: ON').css('font-weight', 'bold').css('color', '#ffc107');
+                btn.css('background-color', '#fff3cd');
+            } else {
+                label.text('Modo Debug: OFF').css('font-weight', 'normal').css('color', '');
+                btn.css('background-color', '');
+            }
+        }
+
+        // Variável global para armazenar os dados de debug
+        window.debugPrintQueue = [];
+
+        function abrirModalDebugZPL(zplCode, info) {
+            $('#debug_zpl_code').val(zplCode);
+            $('#debug_nome_crianca').text(info.nomeCrianca || 'N/A');
+            $('#debug_codigo').text(info.codigo || 'N/A');
+            $('#debug_tipo_pulseira').text(info.tipo || 'Criança');
+            $('#debug_url_impressora').val(info.urlImpressora || '<?php echo URL_IMPRESSORA; ?>');
+
+            atualizarCurlCommand();
+            $('#modalDebugZPL').modal('show');
+        }
+
+        function atualizarCurlCommand() {
+            const zpl = $('#debug_zpl_code').val();
+            const url = $('#debug_url_impressora').val();
+
+            const payload = {
+                "device": {
+                    "name": "ZDesigner 105SL",
+                    "uid": "ZDesigner 105SL",
+                    "connection": "driver",
+                    "deviceType": "printer",
+                    "version": 2,
+                    "provider": "com.zebra.ds.webdriver.desktop.provider.DefaultDeviceProvider",
+                    "manufacturer": "Zebra Technologies"
+                },
+                "data": zpl
+            };
+
+            const curlCmd = `curl -X POST '${url}' \\
+  -H 'Content-Type: application/json' \\
+  -d '${JSON.stringify(payload).replace(/'/g, "'\\''")}'`;
+
+            $('#debug_curl_command').val(curlCmd);
+        }
+
+        $('#debug_zpl_code, #debug_url_impressora').on('input', function() {
+            atualizarCurlCommand();
+        });
+
+        function copiarCurl() {
+            const curlText = $('#debug_curl_command').val();
+            navigator.clipboard.writeText(curlText).then(function() {
+                alert('Comando cURL copiado para a área de transferência!');
+            }, function() {
+                // Fallback para navegadores mais antigos
+                const textarea = document.createElement('textarea');
+                textarea.value = curlText;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert('Comando cURL copiado para a área de transferência!');
+            });
+        }
+
+        function enviarZPLDebug() {
+            const zpl = $('#debug_zpl_code').val();
+            const url = $('#debug_url_impressora').val();
+
+            if (!zpl.trim()) {
+                alert('O código ZPL está vazio!');
+                return;
+            }
+
+            const payload = {
+                "device": {
+                    "name": "ZDesigner 105SL",
+                    "uid": "ZDesigner 105SL",
+                    "connection": "driver",
+                    "deviceType": "printer",
+                    "version": 2,
+                    "provider": "com.zebra.ds.webdriver.desktop.provider.DefaultDeviceProvider",
+                    "manufacturer": "Zebra Technologies"
+                },
+                "data": zpl
+            };
+
+            $('#modalDebugZPL').modal('hide');
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        throw new Error('Falha na impressão: ' + response.status + ' ' + text);
+                    });
+                }
+                return response.text();
+            })
+            .then(result => {
+                console.log('Impressão enviada com sucesso:', result);
+                alert('✓ Comando ZPL enviado para a impressora com sucesso!\n\nResposta: ' + result);
+            })
+            .catch(error => {
+                console.error('Erro ao enviar impressão:', error);
+                alert('✗ Erro ao enviar para impressora:\n\n' + error.message);
+            });
+        }
 
         function abrirModalZerarArquivo() {
             $('#modalZerarArquivo').modal('show');
