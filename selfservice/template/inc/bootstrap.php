@@ -1,0 +1,75 @@
+<?php
+/**
+ * Bootstrap: carrega configuração, constantes, sessão e helpers.
+ * Assume que este arquivo está em template/inc/, config.ini em template/.
+ */
+
+$config_file = __DIR__ . '/../config.ini';
+if (!file_exists($config_file)) {
+    die("Erro: Arquivo de configuração não encontrado em: " . htmlspecialchars($config_file));
+}
+
+$config = parse_ini_file($config_file, true, INI_SCANNER_TYPED);
+
+if (!isset($config['GERAL'], $config['SEGURANCA'], $config['IMPRESSORA_ZPL'])) {
+    die("Erro: Falta uma ou mais seções ([GERAL], [SEGURANCA], [IMPRESSORA_ZPL]) no arquivo de configuração.");
+}
+
+$baseDir = dirname(__DIR__);
+$data_file_path = $baseDir . $config['GERAL']['ARQUIVO_DADOS'];
+define('ARQUIVO_DADOS', $data_file_path);
+define('DELIMITADOR', $config['GERAL']['DELIMITADOR']);
+define('MAX_BACKUPS', $config['GERAL']['MAX_BACKUPS']);
+define('NUM_LINHAS_FORMULARIO_CADASTRO', $config['GERAL']['NUM_LINHAS_FORMULARIO_CADASTRO']);
+define('NUM_CAMPOS_POR_LINHA_NO_ARQUIVO', $config['GERAL']['NUM_CAMPOS_POR_LINHA_NO_ARQUIVO']);
+
+define('SENHA_ADMIN_REAL', $config['SEGURANCA']['SENHA_ADMIN_REAL']);
+define('SENHA_LOGIN', SENHA_ADMIN_REAL);
+
+define('TAMPULSEIRA', $config['IMPRESSORA_ZPL']['TAMPULSEIRA']);
+define('DOTS', $config['IMPRESSORA_ZPL']['DOTS']);
+define('FECHO', $config['IMPRESSORA_ZPL']['FECHO']);
+define('FECHOINI', $config['IMPRESSORA_ZPL']['FECHOINI'] ?? 1);
+define('PULSEIRAUTIL', (TAMPULSEIRA - FECHO) * DOTS);
+
+$urlImpressora = $config['IMPRESSORA_ZPL']['URL_IMPRESSORA'] ?? 'http://127.0.0.1:9100/write';
+define('URL_IMPRESSORA', rtrim($urlImpressora, '/'));
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+function sanitize_for_html($string) {
+    return htmlspecialchars(trim((string)($string ?? '')), ENT_QUOTES, 'UTF-8');
+}
+
+function sanitize_for_file($string) {
+    return str_replace(DELIMITADOR, '-', trim($string ?? ''));
+}
+
+// --- CSRF ---
+function csrf_token() {
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['csrf_token'];
+}
+
+function csrf_field() {
+    return '<input type="hidden" name="csrf_token" value="' . sanitize_for_html(csrf_token()) . '">';
+}
+
+function csrf_validate() {
+    $token = $_POST['csrf_token'] ?? '';
+    $valid = !empty($token) && hash_equals(csrf_token(), $token);
+    if (!$valid) {
+        $_SESSION['mensagemErro'] = 'Requisição inválida (token de segurança). Tente novamente.';
+        header('Location: ' . sanitize_for_html($_SERVER['PHP_SELF']));
+        exit;
+    }
+}
+
+/** Regenera o token após login (opcional, evita fixação). */
+function csrf_regenerate() {
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
