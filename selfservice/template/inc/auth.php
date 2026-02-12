@@ -10,6 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['tentativa_login'])) {
     csrf_validate();
     if (isset($_POST['senha_login']) && $_POST['senha_login'] === SENHA_LOGIN) {
         $_SESSION['logado'] = true;
+        $_SESSION['ultimo_acesso'] = time();
         csrf_regenerate();
         header('Location: ' . sanitize_for_html($_SERVER['PHP_SELF']));
         exit;

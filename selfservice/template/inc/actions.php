@@ -112,7 +112,7 @@ if (isset($_POST['imprimir'])) {
             if (isset($todosOsCadastros[$idSelecionado])) {
                 $crianca = $todosOsCadastros[$idSelecionado];
                 $codigoZPLCrianca = gerarCodigoZPL($crianca['nomeCrianca'], $crianca['nomeResponsavel'], $crianca['idade'], $crianca['id'], $crianca['telefone']);
-                $payloadCrianca = ["device" => ["name" => "ZDesigner 105SL", "uid" => "ZDesigner 105SL", "connection" => "driver", "deviceType" => "printer", "version" => 2, "provider" => "com.zebra.ds.webdriver.desktop.provider.DefaultDeviceProvider", "manufacturer" => "Zebra Technologies"], "data" => $codigoZPLCrianca];
+                $payloadCrianca = ["device" => obterPayloadDispositivo(), "data" => $codigoZPLCrianca];
 
                 $jsonPayloadCrianca = json_encode($payloadCrianca);
                 if ($jsonPayloadCrianca === false) {
@@ -186,7 +186,7 @@ if (isset($_POST['imprimir'])) {
             foreach ($responsaveisParaEtiquetas as $codResp => $dataResp) {
                 if (!empty($dataResp['criancas'])) {
                     $codigoZPLResponsavel = gerarCodigoZPLResponsavel($dataResp['nomeResponsavel'], $dataResp['criancas'], $codResp);
-                    $payloadResponsavel = ["device" => ["name" => "ZDesigner 105SL", "uid" => "ZDesigner 105SL", "connection" => "driver", "deviceType" => "printer", "version" => 2, "provider" => "com.zebra.ds.webdriver.desktop.provider.DefaultDeviceProvider", "manufacturer" => "Zebra Technologies"], "data" => $codigoZPLResponsavel];
+                    $payloadResponsavel = ["device" => obterPayloadDispositivo(), "data" => $codigoZPLResponsavel];
 
                     $jsonPayloadResponsavel = json_encode($payloadResponsavel);
                     if ($jsonPayloadResponsavel === false) {

@@ -41,15 +41,29 @@ foreach ($todosOsCadastros as $cadastro) {
     }
 }
 
-$palavrasChaveBonfim = ['bonfim', 'bofim', 'bonfin', 'bomfim', 'bon fim', 'bom fin', 'bom fim', 'bon fin'];
-$totalBonfim = 0;
-foreach ($todosOsCadastros as $cadastro) {
-    if (isset($cadastro['comum']) && trim($cadastro['comum']) !== '') {
-        $comumLower = strtolower(trim($cadastro['comum']));
-        foreach ($palavrasChaveBonfim as $palavra) {
-            if (stripos($comumLower, $palavra) !== false) {
-                $totalBonfim++;
-                break;
+// Contador de comum destacado - configurável via config.ini
+$comumDestaque = $config['INTERFACE']['COMUM_DESTAQUE'] ?? '';
+$palavrasChaveComumDestaque = [];
+if (!empty($comumDestaque)) {
+    $palavrasChaveComumDestaque = array_map('trim', explode(',', strtolower($comumDestaque)));
+} else {
+    // Fallback: usar o comum do próprio usuário da instância
+    $comumUsuario = $config['INFO_USUARIO']['COMUM'] ?? '';
+    if (!empty($comumUsuario)) {
+        $palavrasChaveComumDestaque = [strtolower(trim($comumUsuario))];
+    }
+}
+$nomeComumDestaque = $config['INTERFACE']['NOME_COMUM_DESTAQUE'] ?? ($config['INFO_USUARIO']['COMUM'] ?? 'Comum');
+$totalComumDestaque = 0;
+if (!empty($palavrasChaveComumDestaque)) {
+    foreach ($todosOsCadastros as $cadastro) {
+        if (isset($cadastro['comum']) && trim($cadastro['comum']) !== '') {
+            $comumLower = strtolower(trim($cadastro['comum']));
+            foreach ($palavrasChaveComumDestaque as $palavra) {
+                if (stripos($comumLower, $palavra) !== false) {
+                    $totalComumDestaque++;
+                    break;
+                }
             }
         }
     }
