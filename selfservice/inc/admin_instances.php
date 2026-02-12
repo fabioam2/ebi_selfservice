@@ -35,7 +35,7 @@
         <div class="card stats-card warning">
             <div class="text-center">
                 <i class="fas fa-chart-line icon"></i>
-                <h3 class="mb-0"><?php echo count($instancias) > 0 ? round(($ instanciasHoje / count($instancias)) * 100, 1) : 0; ?>%</h3>
+                <h3 class="mb-0"><?php echo count($instancias) > 0 ? round(($instanciasHoje / count($instancias)) * 100, 1) : 0; ?>%</h3>
                 <p class="mb-0">Taxa Hoje</p>
             </div>
         </div>

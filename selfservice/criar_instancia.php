@@ -51,9 +51,14 @@ function criarInstanciaUsuario(string $user_id, string $nome, string $email, str
         $comum_safe = sanitize_ini_value($comum);
         $senha_safe = sanitize_ini_value($senha);
 
-        // Diretórios base
-        $instancesDir = __DIR__ . '/instances/';
-        $templateDir = __DIR__ . '/template/';
+        // Carregar configuração de caminhos dinâmicos
+        if (!defined('INSTANCE_BASE_PATH')) {
+            require_once __DIR__ . '/inc/paths.php';
+        }
+
+        // Diretórios base (agora usando caminhos dinâmicos)
+        $instancesDir = INSTANCE_BASE_PATH . '/';
+        $templateDir = TEMPLATE_PATH . '/';
         
         // Criar diretório da instância do usuário
         $userInstanceDir = $instancesDir . $user_id . '/';
@@ -205,7 +210,6 @@ VERIFICAR_INTEGRIDADE = true
         file_put_contents($configDir . 'painel_criancas.txt', $headerCadastro);
         
         // 3. Copiar estrutura refatorada do sistema (index.php + inc/ + views/)
-        $templateDir = __DIR__ . '/template/';
         $arquivosRefatorados = [
             'index.php' => 'index.php',
             'inc/bootstrap.php' => 'inc/bootstrap.php',
@@ -306,7 +310,7 @@ ID da Instância: $user_id
         $link = $baseUrl . $currentPath . '/instances/' . $user_id . '/public_html/ebi/index.php';
         
         // 8. Salvar log de criação no arquivo central
-        $logCentral = __DIR__ . '/data/instancias_criadas.log';
+        $logCentral = DATA_PATH . '/instancias_criadas.log';
         $logEntry = date('Y-m-d H:i:s') . "|$user_id|$nome|$email|$cidade|$comum|$link\n";
         file_put_contents($logCentral, $logEntry, FILE_APPEND | LOCK_EX);
         
@@ -318,7 +322,7 @@ ID da Instância: $user_id
         $resultado['erro'] = $e->getMessage();
         
         // Log de erro
-        $errorLog = __DIR__ . '/data/erros.log';
+        $errorLog = DATA_PATH . '/erros.log';
         $errorEntry = date('Y-m-d H:i:s') . "|$user_id|$email|ERRO: " . $e->getMessage() . "\n";
         file_put_contents($errorLog, $errorEntry, FILE_APPEND | LOCK_EX);
     }
@@ -333,7 +337,11 @@ ID da Instância: $user_id
  * @return bool True se a instância existe, false caso contrário
  */
 function verificarInstanciaExiste(string $user_id): bool {
-    $instancesDir = __DIR__ . '/instances/';
+    if (!defined('INSTANCE_BASE_PATH')) {
+        require_once __DIR__ . '/inc/paths.php';
+    }
+
+    $instancesDir = INSTANCE_BASE_PATH . '/';
     $userInstanceDir = $instancesDir . $user_id . '/';
 
     return file_exists($userInstanceDir) && is_dir($userInstanceDir);
@@ -346,7 +354,11 @@ function verificarInstanciaExiste(string $user_id): bool {
  * @return array|null Array com informações do usuário ou null se não encontrado
  */
 function obterInfoInstancia(string $user_id): ?array {
-    $instancesDir = __DIR__ . '/instances/';
+    if (!defined('INSTANCE_BASE_PATH')) {
+        require_once __DIR__ . '/inc/paths.php';
+    }
+
+    $instancesDir = INSTANCE_BASE_PATH . '/';
     $configFile = $instancesDir . $user_id . '/config/config.ini';
 
     if (!file_exists($configFile)) {
@@ -370,7 +382,11 @@ function obterInfoInstancia(string $user_id): ?array {
  * @return array<int, array> Array de arrays com informações de cada instância
  */
 function listarTodasInstancias(): array {
-    $instancesDir = __DIR__ . '/instances/';
+    if (!defined('INSTANCE_BASE_PATH')) {
+        require_once __DIR__ . '/inc/paths.php';
+    }
+
+    $instancesDir = INSTANCE_BASE_PATH . '/';
     $instancias = [];
 
     if (!is_dir($instancesDir)) {
@@ -486,12 +502,17 @@ function criarBackupZip(string $sourceDir, string $zipFile): bool {
  * @return array{sucesso: bool, erro?: string} Array com resultado da operação
  */
 function removerInstancia(string $user_id): array {
+    // Carregar paths se ainda não foram carregados
+    if (!defined('INSTANCE_BASE_PATH')) {
+        require_once __DIR__ . '/inc/paths.php';
+    }
+
     // Validar user_id para evitar path traversal
     if (empty($user_id) || preg_match('/[\/\\\\\\.]/', $user_id)) {
         return ['sucesso' => false, 'erro' => 'ID de usuário inválido'];
     }
 
-    $instancesDir = __DIR__ . '/instances/';
+    $instancesDir = INSTANCE_BASE_PATH . '/';
     $userInstanceDir = $instancesDir . $user_id . '/';
 
     if (!file_exists($userInstanceDir)) {
@@ -499,7 +520,7 @@ function removerInstancia(string $user_id): array {
     }
 
     // Criar backup ZIP antes de remover
-    $backupDir = __DIR__ . '/backups/';
+    $backupDir = BACKUP_PATH . '/';
     if (!file_exists($backupDir)) {
         mkdir($backupDir, 0755, true);
     }
@@ -511,7 +532,7 @@ function removerInstancia(string $user_id): array {
         rrmdir($userInstanceDir);
 
         // Log de remoção
-        $logRemocao = __DIR__ . '/data/instancias_removidas.log';
+        $logRemocao = DATA_PATH . '/instancias_removidas.log';
         $backupInfo = file_exists($backupFile) ? "backup: $backupFile" : "sem backup ZIP";
         $logEntry = date('Y-m-d H:i:s') . "|$user_id|Removida com sucesso|$backupInfo\n";
         file_put_contents($logRemocao, $logEntry, FILE_APPEND | LOCK_EX);
