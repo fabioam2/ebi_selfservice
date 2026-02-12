@@ -24,10 +24,7 @@
         "psr-4": {
             "EBI\\SelfService\\": "selfservice/src/",
             "EBI\\Template\\": "selfservice/template/inc/"
-        },
-        "files": [
-            "selfservice/criar_instancia.php"
-        ]
+        }
     },
     "autoload-dev": {
         "psr-4": {
