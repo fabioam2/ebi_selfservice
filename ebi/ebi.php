@@ -36,7 +36,8 @@ if (isset($config['GERAL'], $config['SEGURANCA'], $config['IMPRESSORA_ZPL'])) {
     define('DOTS', $config['IMPRESSORA_ZPL']['DOTS']);
     define('FECHO', $config['IMPRESSORA_ZPL']['FECHO']);
     define('FECHOINI', $config['IMPRESSORA_ZPL']['FECHOINI']);
-    
+    define('PALAVRA_CONTADOR_COMUM', $config['IMPRESSORA_ZPL']['PALAVRA_CONTADOR_COMUM'] ?? 'bonfim');
+
     // Constante Calculada (Depende de TAMPULSEIRA, FECHO e DOTS, não pode ser definida no INI)
     define('PULSEIRAUTIL', (TAMPULSEIRA-FECHO)*DOTS);
     
@@ -50,6 +51,84 @@ if (isset($config['GERAL'], $config['SEGURANCA'], $config['IMPRESSORA_ZPL'])) {
 
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
+}
+
+/**
+ * Gera variações similares de uma palavra para busca tolerante a erros de digitação.
+ *
+ * Exemplos de variações geradas:
+ * - Troca m por n e vice-versa (comum em erros de digitação)
+ * - Troca terminações im por in e vice-versa
+ * - Adiciona espaços em posições estratégicas
+ *
+ * @param string $palavra Palavra base (ex: "bonfim")
+ * @return array Lista de variações similares
+ *
+ * Exemplo: gerarVariacoesPalavra("bonfim") retorna:
+ * ["bonfim", "bofim", "bonfin", "bomfim", "bon fim", "bom fin", "bom fim", "bon fin"]
+ */
+function gerarVariacoesPalavra($palavra) {
+    if (empty($palavra)) {
+        return [];
+    }
+
+    $palavra = strtolower(trim($palavra));
+    $variacoes = [$palavra];
+
+    // Substituições de caracteres comuns em erros de digitação
+    $substituicoes = [
+        ['m', 'n'],  // m ↔ n
+        ['im', 'in'], // im ↔ in
+    ];
+
+    // Gerar variações com substituições
+    $palavrasParaProcessar = [$palavra];
+
+    foreach ($substituicoes as $par) {
+        $novasPalavras = [];
+        foreach ($palavrasParaProcessar as $p) {
+            // Substituir par[0] por par[1]
+            if (strpos($p, $par[0]) !== false) {
+                $nova = str_replace($par[0], $par[1], $p);
+                if (!in_array($nova, $variacoes)) {
+                    $variacoes[] = $nova;
+                    $novasPalavras[] = $nova;
+                }
+            }
+            // Substituir par[1] por par[0]
+            if (strpos($p, $par[1]) !== false) {
+                $nova = str_replace($par[1], $par[0], $p);
+                if (!in_array($nova, $variacoes)) {
+                    $variacoes[] = $nova;
+                    $novasPalavras[] = $nova;
+                }
+            }
+        }
+        $palavrasParaProcessar = array_merge($palavrasParaProcessar, $novasPalavras);
+    }
+
+    // Gerar variações com espaços (para palavras compostas)
+    // Procura por padrões como "bonfim" → "bon fim"
+    $todasVariacoes = array_unique($variacoes);
+    foreach ($todasVariacoes as $v) {
+        // Se a palavra tem 6+ caracteres, tenta adicionar espaço no meio
+        if (strlen($v) >= 6) {
+            $meio = floor(strlen($v) / 2);
+
+            // Tenta posições próximas ao meio
+            for ($offset = -1; $offset <= 1; $offset++) {
+                $pos = $meio + $offset;
+                if ($pos > 0 && $pos < strlen($v)) {
+                    $comEspaco = substr($v, 0, $pos) . ' ' . substr($v, $pos);
+                    if (!in_array($comEspaco, $variacoes)) {
+                        $variacoes[] = $comEspaco;
+                    }
+                }
+            }
+        }
+    }
+
+    return array_unique($variacoes);
 }
 
 function sanitize_for_html($string) {
@@ -418,7 +497,8 @@ foreach ($todosOsCadastros as $cadastro) {
 
 
 // Definição das palavras-chave para a contagem "Comum"
-$palavrasChaveComum = ["bonfim", "bofim", "bonfin", "bomfim", "bon fim", "bom fin", "bom fim", "bon fin"];
+// Gera variações automáticas da palavra configurada (ex: "bonfim" → ["bonfim", "bofim", "bonfin", "bomfim", "bon fim", etc.])
+$palavrasChaveComum = gerarVariacoesPalavra(PALAVRA_CONTADOR_COMUM);
 $totalComum = 0;
 
 foreach ($todosOsCadastros as $cadastro) {
