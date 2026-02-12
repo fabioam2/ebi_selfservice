@@ -37,6 +37,7 @@ if (isset($config['GERAL'], $config['SEGURANCA'], $config['IMPRESSORA_ZPL'])) {
     define('FECHO', $config['IMPRESSORA_ZPL']['FECHO']);
     define('FECHOINI', $config['IMPRESSORA_ZPL']['FECHOINI']);
     define('PALAVRA_CONTADOR_COMUM', $config['IMPRESSORA_ZPL']['PALAVRA_CONTADOR_COMUM'] ?? 'bonfim');
+    define('LISTA_PALAVRAS_CONTADOR_COMUM', $config['IMPRESSORA_ZPL']['LISTA_PALAVRAS_CONTADOR_COMUM'] ?? 'parque, parqui, par que');
 
     // Constante Calculada (Depende de TAMPULSEIRA, FECHO e DOTS, não pode ser definida no INI)
     define('PULSEIRAUTIL', (TAMPULSEIRA-FECHO)*DOTS);
@@ -499,6 +500,16 @@ foreach ($todosOsCadastros as $cadastro) {
 // Definição das palavras-chave para a contagem "Comum"
 // Gera variações automáticas da palavra configurada (ex: "bonfim" → ["bonfim", "bofim", "bonfin", "bomfim", "bon fim", etc.])
 $palavrasChaveComum = gerarVariacoesPalavra(PALAVRA_CONTADOR_COMUM);
+
+// Adiciona palavras adicionais da lista configurável (verificadas exatamente como digitadas)
+if (!empty(LISTA_PALAVRAS_CONTADOR_COMUM)) {
+    $listaPalavras = array_map('trim', explode(',', LISTA_PALAVRAS_CONTADOR_COMUM));
+    $listaPalavras = array_map('strtolower', $listaPalavras);
+    $listaPalavras = array_filter($listaPalavras); // Remove vazias
+    $palavrasChaveComum = array_merge($palavrasChaveComum, $listaPalavras);
+}
+
+$palavrasChaveComum = array_unique($palavrasChaveComum); // Remove duplicatas
 $totalComum = 0;
 
 foreach ($todosOsCadastros as $cadastro) {
