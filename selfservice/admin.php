@@ -1,11 +1,44 @@
 <?php
+/**
+ * Painel Administrativo - EBI Self-Service
+ *
+ * Sistema completo de administração com:
+ * - Gerenciamento de usuários (CRUD)
+ * - Gerenciamento de instâncias (seleção múltipla, ações em lote)
+ * - Configurações do sistema
+ * - Documentação
+ *
+ * @version 3.0
+ * @author EBI Team
+ */
+
 session_start();
+
+// Carregar dependências
+require_once __DIR__ . '/criar_instancia.php';
+require_once __DIR__ . '/inc/user_manager.php';
+
+// Carregar .env se existir
+if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
+    require __DIR__ . '/../vendor/autoload.php';
+    if (class_exists('Dotenv\Dotenv') && file_exists(__DIR__ . '/../.env')) {
+        $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
+        $dotenv->safeLoad();
+    }
+}
 
 // Senha de administrador - hash bcrypt (use password_hash('SuaSenha', PASSWORD_DEFAULT) para gerar)
 // Senha padrão: Admin@2024!
-define('SENHA_ADMIN_HASH', '$2y$12$zS/zF79Sc2tVmkIppd72xew8.36YCIxFQm1t/dONXx4.1LiH4i/MO');
+$adminPasswordHash = $_ENV['ADMIN_PASSWORD_HASH'] ?? '$2y$12$zS/zF79Sc2tVmkIppd72xew8.36YCIxFQm1t/dONXx4.1LiH4i/MO';
+define('SENHA_ADMIN_HASH', $adminPasswordHash);
 
-// --- CSRF ---
+// ============================================================================
+// FUNÇÕES AUXILIARES
+// ============================================================================
+
+/**
+ * Gera token CSRF
+ */
 function admin_csrf_token() {
     if (empty($_SESSION['admin_csrf_token'])) {
         $_SESSION['admin_csrf_token'] = bin2hex(random_bytes(32));
@@ -13,10 +46,16 @@ function admin_csrf_token() {
     return $_SESSION['admin_csrf_token'];
 }
 
+/**
+ * Gera campo hidden de CSRF
+ */
 function admin_csrf_field() {
     return '<input type="hidden" name="csrf_token" value="' . htmlspecialchars(admin_csrf_token(), ENT_QUOTES, 'UTF-8') . '">';
 }
 
+/**
+ * Valida token CSRF
+ */
 function admin_csrf_validate() {
     $token = $_POST['csrf_token'] ?? '';
     if (empty($token) || !hash_equals(admin_csrf_token(), $token)) {
@@ -27,10 +66,24 @@ function admin_csrf_validate() {
     return true;
 }
 
-// Processar login
+/**
+ * Exibe mensagem de alerta
+ */
+function exibirAlerta($mensagem, $tipo = 'info') {
+    return '<div class="alert alert-' . $tipo . ' alert-dismissible fade show">
+                ' . htmlspecialchars($mensagem) . '
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+            </div>';
+}
+
+// ============================================================================
+// PROCESSAR LOGIN
+// ============================================================================
+
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
     if (admin_csrf_validate() && password_verify($_POST['senha_admin'] ?? '', SENHA_ADMIN_HASH)) {
         $_SESSION['admin_logado'] = true;
+        $_SESSION['admin_login_time'] = time();
         header("Location: admin.php");
         exit;
     } else {
@@ -38,14 +91,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
     }
 }
 
-// Processar logout
+// ============================================================================
+// PROCESSAR LOGOUT
+// ============================================================================
+
 if (isset($_GET['logout'])) {
-    $_SESSION['admin_logado'] = false;
+    session_destroy();
     header("Location: admin.php");
     exit;
 }
 
-// Verificar se está logado
+// ============================================================================
+// VERIFICAR SE ESTÁ LOGADO
+// ============================================================================
+
 if (!isset($_SESSION['admin_logado']) || $_SESSION['admin_logado'] !== true) {
     ?>
     <!DOCTYPE html>
@@ -55,25 +114,60 @@ if (!isset($_SESSION['admin_logado']) || $_SESSION['admin_logado'] !== true) {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Login Admin - Self-Service</title>
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
         <style>
-            body { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-            .login-box { background: white; padding: 40px; border-radius: 10px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); max-width: 400px; width: 100%; }
+            body {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 100vh;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                font-family: 'Inter', sans-serif;
+            }
+            .login-box {
+                background: white;
+                padding: 40px;
+                border-radius: 15px;
+                box-shadow: 0 15px 50px rgba(0,0,0,0.3);
+                max-width: 400px;
+                width: 100%;
+            }
+            .login-box h2 {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+            .btn-primary {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                border: none;
+            }
+            .btn-primary:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            }
         </style>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     </head>
     <body>
         <div class="login-box">
             <h2 class="text-center mb-4">🔐 Admin Login</h2>
             <?php if (isset($erro_login)): ?>
-                <div class="alert alert-danger"><?php echo $erro_login; ?></div>
+                <div class="alert alert-danger"><?php echo htmlspecialchars($erro_login); ?></div>
             <?php endif; ?>
             <form method="post" action="admin.php">
                 <?php echo admin_csrf_field(); ?>
                 <div class="form-group">
-                    <label>Senha de Administrador</label>
+                    <label><i class="fas fa-lock mr-2"></i>Senha de Administrador</label>
                     <input type="password" name="senha_admin" class="form-control" required autofocus>
                 </div>
-                <button type="submit" name="login" class="btn btn-primary btn-block">Entrar</button>
+                <button type="submit" name="login" class="btn btn-primary btn-block">
+                    <i class="fas fa-sign-in-alt mr-2"></i>Entrar
+                </button>
             </form>
+            <div class="text-center mt-3">
+                <small class="text-muted">EBI Self-Service v3.0</small>
+            </div>
         </div>
     </body>
     </html>
@@ -81,50 +175,247 @@ if (!isset($_SESSION['admin_logado']) || $_SESSION['admin_logado'] !== true) {
     exit;
 }
 
-// Carregar funções
-require_once 'criar_instancia.php';
+// ============================================================================
+// PROCESSAR AÇÕES DO SISTEMA
+// ============================================================================
 
-// Processar ações
 $mensagem = '';
 $tipo_mensagem = '';
+$page = $_GET['page'] ?? 'dashboard';
 
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['remover_instancia'])) {
-    if (!admin_csrf_validate()) {
-        $mensagem = "Requisição inválida (token de segurança). Tente novamente.";
-        $tipo_mensagem = "danger";
-    } else {
-    $user_id = $_POST['user_id'] ?? '';
-    if ($user_id) {
-        $resultado = removerInstancia($user_id);
-        if ($resultado['sucesso']) {
-            $mensagem = "Instância removida com sucesso!";
-            $tipo_mensagem = "success";
-        } else {
-            $mensagem = "Erro ao remover instância: " . $resultado['erro'];
+// --- AÇÕES DE INSTÂNCIAS ---
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
+    // Remover instância única
+    if (isset($_POST['remover_instancia'])) {
+        if (!admin_csrf_validate()) {
+            $mensagem = "Requisição inválida (token de segurança).";
             $tipo_mensagem = "danger";
+        } else {
+            $user_id = $_POST['user_id'] ?? '';
+            if ($user_id) {
+                $resultado = removerInstancia($user_id);
+                if ($resultado['sucesso']) {
+                    $mensagem = "Instância removida com sucesso!";
+                    $tipo_mensagem = "success";
+                } else {
+                    $mensagem = "Erro ao remover instância: " . $resultado['erro'];
+                    $tipo_mensagem = "danger";
+                }
+            }
         }
     }
-    } // end CSRF valid
+
+    // Remover instâncias em lote
+    if (isset($_POST['remover_instancias_lote'])) {
+        if (!admin_csrf_validate()) {
+            $mensagem = "Requisição inválida (token de segurança).";
+            $tipo_mensagem = "danger";
+        } else {
+            $user_ids = $_POST['instance_ids'] ?? [];
+            if (is_array($user_ids) && count($user_ids) > 0) {
+                $removidas = 0;
+                $erros = 0;
+
+                foreach ($user_ids as $user_id) {
+                    $resultado = removerInstancia($user_id);
+                    if ($resultado['sucesso']) {
+                        $removidas++;
+                    } else {
+                        $erros++;
+                    }
+                }
+
+                $mensagem = "{$removidas} instância(s) removida(s) com sucesso";
+                if ($erros > 0) {
+                    $mensagem .= " ({$erros} erro(s))";
+                    $tipo_mensagem = "warning";
+                } else {
+                    $tipo_mensagem = "success";
+                }
+            } else {
+                $mensagem = "Nenhuma instância selecionada";
+                $tipo_mensagem = "warning";
+            }
+        }
+    }
+
+    // --- AÇÕES DE USUÁRIOS ---
+
+    // Criar usuário
+    if (isset($_POST['criar_usuario'])) {
+        if (!admin_csrf_validate()) {
+            $mensagem = "Requisição inválida (token de segurança).";
+            $tipo_mensagem = "danger";
+        } else {
+            $resultado = createUser([
+                'username' => $_POST['username'] ?? '',
+                'email' => $_POST['email'] ?? '',
+                'full_name' => $_POST['full_name'] ?? '',
+                'role' => $_POST['role'] ?? 'user',
+                'permissions' => $_POST['permissions'] ?? [],
+                'notes' => $_POST['notes'] ?? ''
+            ]);
+
+            $mensagem = $resultado['message'];
+            $tipo_mensagem = $resultado['success'] ? 'success' : 'danger';
+        }
+    }
+
+    // Editar usuário
+    if (isset($_POST['editar_usuario'])) {
+        if (!admin_csrf_validate()) {
+            $mensagem = "Requisição inválida (token de segurança).";
+            $tipo_mensagem = "danger";
+        } else {
+            $resultado = updateUser($_POST['user_id'], [
+                'username' => $_POST['username'] ?? '',
+                'email' => $_POST['email'] ?? '',
+                'full_name' => $_POST['full_name'] ?? '',
+                'role' => $_POST['role'] ?? 'user',
+                'permissions' => $_POST['permissions'] ?? [],
+                'notes' => $_POST['notes'] ?? ''
+            ]);
+
+            $mensagem = $resultado['message'];
+            $tipo_mensagem = $resultado['success'] ? 'success' : 'danger';
+        }
+    }
+
+    // Bloquear/Desbloquear usuário
+    if (isset($_POST['toggle_user_status'])) {
+        if (!admin_csrf_validate()) {
+            $mensagem = "Requisição inválida (token de segurança).";
+            $tipo_mensagem = "danger";
+        } else {
+            $userId = $_POST['user_id'] ?? '';
+            $block = $_POST['action'] === 'block';
+
+            $resultado = toggleUserStatus($userId, $block);
+            $mensagem = $resultado['message'];
+            $tipo_mensagem = $resultado['success'] ? 'success' : 'danger';
+        }
+    }
+
+    // Apagar usuário
+    if (isset($_POST['apagar_usuario'])) {
+        if (!admin_csrf_validate()) {
+            $mensagem = "Requisição inválida (token de segurança).";
+            $tipo_mensagem = "danger";
+        } else {
+            $userId = $_POST['user_id'] ?? '';
+            $resultado = deleteUser($userId);
+
+            $mensagem = $resultado['message'];
+            $tipo_mensagem = $resultado['success'] ? 'success' : 'danger';
+        }
+    }
+
+    // --- AÇÕES DE CONFIGURAÇÕES ---
+
+    // Alterar senha do admin
+    if (isset($_POST['alterar_senha'])) {
+        if (!admin_csrf_validate()) {
+            $mensagem = "Requisição inválida (token de segurança).";
+            $tipo_mensagem = "danger";
+        } else {
+            $senhaAtual = $_POST['senha_atual'] ?? '';
+            $senhaNova = $_POST['senha_nova'] ?? '';
+            $senhaConfirmar = $_POST['senha_confirmar'] ?? '';
+
+            if (!password_verify($senhaAtual, SENHA_ADMIN_HASH)) {
+                $mensagem = "Senha atual incorreta";
+                $tipo_mensagem = "danger";
+            } elseif ($senhaNova !== $senhaConfirmar) {
+                $mensagem = "As senhas não coincidem";
+                $tipo_mensagem = "danger";
+            } elseif (strlen($senhaNova) < 8) {
+                $mensagem = "A senha deve ter pelo menos 8 caracteres";
+                $tipo_mensagem = "danger";
+            } else {
+                $novoHash = password_hash($senhaNova, PASSWORD_BCRYPT);
+
+                // Atualizar no .env
+                $envFile = __DIR__ . '/../.env';
+                if (file_exists($envFile)) {
+                    $envContent = file_get_contents($envFile);
+                    $envContent = preg_replace(
+                        '/ADMIN_PASSWORD_HASH=.*/m',
+                        "ADMIN_PASSWORD_HASH='{$novoHash}'",
+                        $envContent
+                    );
+
+                    if (file_put_contents($envFile, $envContent)) {
+                        $mensagem = "Senha alterada com sucesso! Faça login novamente.";
+                        $tipo_mensagem = "success";
+
+                        // Fazer logout
+                        session_destroy();
+                        header("Refresh: 3; url=admin.php");
+                    } else {
+                        $mensagem = "Erro ao salvar senha no arquivo .env";
+                        $tipo_mensagem = "danger";
+                    }
+                } else {
+                    $mensagem = "Arquivo .env não encontrado. Crie-o a partir do .env.example";
+                    $tipo_mensagem = "danger";
+                }
+            }
+        }
+    }
+
+    // Atualizar configurações
+    if (isset($_POST['atualizar_config'])) {
+        if (!admin_csrf_validate()) {
+            $mensagem = "Requisição inválida (token de segurança).";
+            $tipo_mensagem = "danger";
+        } else {
+            $envFile = __DIR__ . '/../.env';
+            if (file_exists($envFile)) {
+                $envContent = file_get_contents($envFile);
+
+                // Atualizar valores
+                $configs = [
+                    'RATE_LIMIT_ENABLED' => $_POST['rate_limit_enabled'] ?? 'false',
+                    'RATE_LIMIT_MAX_REQUESTS' => $_POST['rate_limit_max_requests'] ?? '5',
+                    'RATE_LIMIT_TIME_WINDOW' => $_POST['rate_limit_time_window'] ?? '3600',
+                    'ALLOW_MULTIPLE_INSTANCES' => $_POST['allow_multiple_instances'] ?? 'false',
+                    'CLEANUP_INACTIVE_HOURS' => $_POST['cleanup_inactive_hours'] ?? '6',
+                    'LOG_LEVEL' => $_POST['log_level'] ?? 'warning',
+                    'DEBUG_MODE' => $_POST['debug_mode'] ?? 'false'
+                ];
+
+                foreach ($configs as $key => $value) {
+                    $envContent = preg_replace(
+                        "/{$key}=.*/m",
+                        "{$key}='{$value}'",
+                        $envContent
+                    );
+                }
+
+                if (file_put_contents($envFile, $envContent)) {
+                    $mensagem = "Configurações atualizadas com sucesso!";
+                    $tipo_mensagem = "success";
+                } else {
+                    $mensagem = "Erro ao salvar configurações";
+                    $tipo_mensagem = "danger";
+                }
+            } else {
+                $mensagem = "Arquivo .env não encontrado";
+                $tipo_mensagem = "danger";
+            }
+        }
+    }
 }
 
-// Verificar se está acessando página de documentação
-if (isset($_GET['page']) && $_GET['page'] === 'docs') {
-    exibirPaginaDocumentacao();
-    exit;
-}
+// ============================================================================
+// OBTER DADOS PARA EXIBIÇÃO
+// ============================================================================
 
-// Obter todas as instâncias
+// Estatísticas de instâncias
 $instancias = listarTodasInstancias();
-
-// Obter estatísticas
 $totalInstancias = count($instancias);
-$totalUsuarios = 0;
 $instanciasHoje = 0;
-
-if (file_exists(__DIR__ . '/data/selfservice_users.txt')) {
-    $usuarios = file(__DIR__ . '/data/selfservice_users.txt', FILE_IGNORE_NEW_LINES);
-    $totalUsuarios = count($usuarios);
-}
 
 foreach ($instancias as $inst) {
     if (isset($inst['DATA_CRIACAO'])) {
@@ -135,14 +426,33 @@ foreach ($instancias as $inst) {
     }
 }
 
-/**
- * Exibe a página de documentação
- */
-function exibirPaginaDocumentacao() {
+// Estatísticas de usuários
+$userStats = getUserStats();
+$usuarios = listUsers();
+
+// Carregar configurações do .env
+$envFile = __DIR__ . '/../.env';
+$configAtual = [];
+if (file_exists($envFile)) {
+    $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        if (strpos(trim($line), '#') === 0) continue;
+        if (strpos($line, '=') !== false) {
+            list($key, $value) = explode('=', $line, 2);
+            $configAtual[trim($key)] = trim($value, "'\"");
+        }
+    }
+}
+
+// ============================================================================
+// PÁGINA DE DOCUMENTAÇÃO
+// ============================================================================
+
+if ($page === 'docs') {
     $docDir = __DIR__ . '/documentacao/';
     $docSelecionado = $_GET['doc'] ?? '';
 
-    // Listar todos os documentos
+    // Listar documentos
     $documentos = [];
     if (is_dir($docDir)) {
         $arquivos = scandir($docDir);
@@ -154,7 +464,7 @@ function exibirPaginaDocumentacao() {
         sort($documentos);
     }
 
-    // Ler conteúdo do documento selecionado
+    // Ler documento selecionado
     $conteudoDoc = '';
     $nomeDoc = '';
     if ($docSelecionado && in_array($docSelecionado, $documentos)) {
@@ -163,7 +473,6 @@ function exibirPaginaDocumentacao() {
             $conteudoDoc = file_get_contents($caminhoDoc);
             $nomeDoc = $docSelecionado;
 
-            // Processar Markdown simples para HTML
             if (pathinfo($docSelecionado, PATHINFO_EXTENSION) === 'md') {
                 $conteudoDoc = processarMarkdownSimples($conteudoDoc);
             } else {
@@ -172,104 +481,8 @@ function exibirPaginaDocumentacao() {
         }
     }
 
-    // Renderizar página
-    ?>
-    <!DOCTYPE html>
-    <html lang="pt-BR">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Documentação - Self-Service</title>
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css">
-        <style>
-            body { background-color: #f8f9fa; font-family: 'Inter', sans-serif; }
-            .navbar-custom { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-            .sidebar { background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 20px; max-height: calc(100vh - 100px); overflow-y: auto; }
-            .doc-content { background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); padding: 30px; min-height: calc(100vh - 100px); overflow-y: auto; }
-            .doc-item { padding: 10px 15px; margin: 5px 0; border-radius: 5px; cursor: pointer; transition: all 0.2s; }
-            .doc-item:hover { background-color: #f0f0f0; }
-            .doc-item.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
-            .doc-item i { margin-right: 10px; }
-            h1, h2, h3, h4 { margin-top: 1.5rem; margin-bottom: 1rem; }
-            h1 { border-bottom: 2px solid #667eea; padding-bottom: 10px; }
-            h2 { border-bottom: 1px solid #ddd; padding-bottom: 8px; }
-            code { background-color: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; }
-            pre { background-color: #f6f8fa; border: 1px solid #ddd; border-radius: 5px; padding: 15px; overflow-x: auto; }
-            pre code { background: none; padding: 0; }
-            table { width: 100%; margin: 20px 0; border-collapse: collapse; }
-            table th, table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-            table th { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
-            table tr:nth-child(even) { background-color: #f9f9f9; }
-            .alert-box { padding: 15px; border-radius: 5px; margin: 15px 0; }
-            .alert-box.info { background-color: #d1ecf1; border-left: 4px solid #0c5460; }
-            .alert-box.warning { background-color: #fff3cd; border-left: 4px solid #856404; }
-            .alert-box.success { background-color: #d4edda; border-left: 4px solid #155724; }
-            blockquote { border-left: 4px solid #667eea; padding-left: 15px; margin: 20px 0; color: #666; font-style: italic; }
-        </style>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    </head>
-    <body>
-        <!-- Navbar -->
-        <nav class="navbar navbar-dark navbar-custom">
-            <div class="container-fluid">
-                <a class="navbar-brand" href="?">
-                    <i class="fas fa-arrow-left"></i> Voltar ao Painel
-                </a>
-                <span class="navbar-text text-white">
-                    <i class="fas fa-book"></i> Documentação Self-Service
-                </span>
-            </div>
-        </nav>
-
-        <div class="container-fluid mt-4">
-            <div class="row">
-                <!-- Sidebar -->
-                <div class="col-md-3">
-                    <div class="sidebar">
-                        <h5 class="mb-3"><i class="fas fa-list"></i> Documentos</h5>
-                        <?php if (empty($documentos)): ?>
-                            <p class="text-muted">Nenhum documento encontrado.</p>
-                        <?php else: ?>
-                            <?php foreach ($documentos as $doc): ?>
-                                <a href="?page=docs&doc=<?php echo urlencode($doc); ?>" class="doc-item d-block text-decoration-none <?php echo $doc === $nomeDoc ? 'active' : 'text-dark'; ?>">
-                                    <?php
-                                    $ext = pathinfo($doc, PATHINFO_EXTENSION);
-                                    $icon = $ext === 'md' ? 'fa-file-alt' : 'fa-file-code';
-                                    ?>
-                                    <i class="fas <?php echo $icon; ?>"></i>
-                                    <?php echo htmlspecialchars(str_replace(['_', '.md', '.txt'], [' ', '', ''], $doc)); ?>
-                                </a>
-                            <?php endforeach; ?>
-                        <?php endif; ?>
-                    </div>
-                </div>
-
-                <!-- Content -->
-                <div class="col-md-9">
-                    <div class="doc-content">
-                        <?php if ($conteudoDoc): ?>
-                            <?php echo $conteudoDoc; ?>
-                        <?php else: ?>
-                            <div class="text-center text-muted" style="padding: 100px 0;">
-                                <i class="fas fa-book-open" style="font-size: 4rem; margin-bottom: 20px;"></i>
-                                <h3>Selecione um documento</h3>
-                                <p>Escolha um documento da lista ao lado para visualizar seu conteúdo.</p>
-                            </div>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
-        <script>hljs.highlightAll();</script>
-    </body>
-    </html>
-    <?php
+    include __DIR__ . '/inc/admin_docs.php';
+    exit;
 }
 
 /**
@@ -277,6 +490,7 @@ function exibirPaginaDocumentacao() {
  */
 function processarMarkdownSimples($texto) {
     // Headers
+    $texto = preg_replace('/^#### (.*?)$/m', '<h4>$1</h4>', $texto);
     $texto = preg_replace('/^### (.*?)$/m', '<h3>$1</h3>', $texto);
     $texto = preg_replace('/^## (.*?)$/m', '<h2>$1</h2>', $texto);
     $texto = preg_replace('/^# (.*?)$/m', '<h1>$1</h1>', $texto);
@@ -303,22 +517,19 @@ function processarMarkdownSimples($texto) {
     $texto = preg_replace('/^\- (.*)$/m', '<li>$1</li>', $texto);
     $texto = preg_replace('/(<li>.*<\/li>\n?)+/s', '<ul>$0</ul>', $texto);
 
-    // Numbered lists
-    $texto = preg_replace('/^\d+\. (.*)$/m', '<li>$1</li>', $texto);
-
     // Blockquotes
     $texto = preg_replace('/^> (.*)$/m', '<blockquote>$1</blockquote>', $texto);
 
     // Horizontal rule
     $texto = preg_replace('/^---$/m', '<hr>', $texto);
 
-    // Tables (basic)
+    // Tables
     $texto = preg_replace_callback('/(\|[^\n]+\|\n)+/', function($matches) {
         $lines = explode("\n", trim($matches[0]));
         $html = '<table class="table table-bordered">';
 
         foreach ($lines as $i => $line) {
-            if (strpos($line, '|---') !== false) continue; // Skip separator
+            if (strpos($line, '|---') !== false) continue;
 
             $cells = array_map('trim', explode('|', trim($line, '|')));
             $tag = $i === 0 ? 'th' : 'td';
@@ -337,18 +548,16 @@ function processarMarkdownSimples($texto) {
     $texto = preg_replace('/\n\n/', '</p><p>', $texto);
     $texto = '<p>' . $texto . '</p>';
 
-    // Clean up
+    // Cleanup
     $texto = preg_replace('/<p><\/p>/', '', $texto);
-    $texto = preg_replace('/<p>(<h[1-6]>)/','$1', $texto);
-    $texto = preg_replace('/(<\/h[1-6]>)<\/p>/','$1', $texto);
-    $texto = preg_replace('/<p>(<ul>)/','$1', $texto);
-    $texto = preg_replace('/(<\/ul>)<\/p>/','$1', $texto);
-    $texto = preg_replace('/<p>(<table)/','$1', $texto);
-    $texto = preg_replace('/(<\/table>)<\/p>/','$1', $texto);
-    $texto = preg_replace('/<p>(<pre>)/','$1', $texto);
-    $texto = preg_replace('/(<\/pre>)<\/p>/','$1', $texto);
-    $texto = preg_replace('/<p>(<hr>)/','$1', $texto);
-    $texto = preg_replace('/(<hr>)<\/p>/','$1', $texto);
+    $texto = preg_replace('/<p>(<h[1-6]>)/', '$1', $texto);
+    $texto = preg_replace('/(<\/h[1-6]>)<\/p>/', '$1', $texto);
+    $texto = preg_replace('/<p>(<ul>)/', '$1', $texto);
+    $texto = preg_replace('/(<\/ul>)<\/p>/', '$1', $texto);
+    $texto = preg_replace('/<p>(<table)/', '$1', $texto);
+    $texto = preg_replace('/(<\/table>)<\/p>/', '$1', $texto);
+    $texto = preg_replace('/<p>(<pre>)/', '$1', $texto);
+    $texto = preg_replace('/(<\/pre>)<\/p>/', '$1', $texto);
 
     return $texto;
 }
@@ -359,55 +568,113 @@ function processarMarkdownSimples($texto) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Admin - Self-Service</title>
+    <title>Painel Admin - Self-Service v3.0</title>
+
+    <!-- CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+
     <style>
         body {
             background-color: #f8f9fa;
             font-family: 'Inter', sans-serif;
         }
-        
+
         .navbar-custom {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        
+
+        .sidebar {
+            background: white;
+            min-height: calc(100vh - 76px);
+            padding: 0;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
+        }
+
+        .sidebar .nav-link {
+            color: #333;
+            padding: 15px 20px;
+            border-left: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .sidebar .nav-link:hover {
+            background-color: #f8f9fa;
+            border-left-color: #667eea;
+        }
+
+        .sidebar .nav-link.active {
+            background: linear-gradient(90deg, rgba(102, 126, 234, 0.1) 0%, transparent 100%);
+            border-left-color: #667eea;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .sidebar .nav-link i {
+            width: 20px;
+            margin-right: 10px;
+        }
+
         .stats-card {
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             padding: 20px;
             margin-bottom: 20px;
             border: none;
+            transition: transform 0.2s;
         }
-        
+
+        .stats-card:hover {
+            transform: translateY(-5px);
+        }
+
         .stats-card .icon {
             font-size: 2.5rem;
             margin-bottom: 10px;
         }
-        
+
         .stats-card.primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
         .stats-card.success { background: linear-gradient(135deg, #56CCF2 0%, #2F80ED 100%); color: white; }
         .stats-card.warning { background: linear-gradient(135deg, #F2994A 0%, #F2C94C 100%); color: white; }
-        
+        .stats-card.info { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .stats-card.danger { background: linear-gradient(135deg, #EB3349 0%, #F45C43 100%); color: white; }
+
         .table-custom {
             background: white;
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             overflow: hidden;
         }
-        
+
         .table-custom thead {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
-        
+
+        .table-custom thead th {
+            border: none;
+            font-weight: 600;
+        }
+
+        .table-custom tbody tr:hover {
+            background-color: rgba(102, 126, 234, 0.05);
+        }
+
         .btn-action {
             padding: 5px 15px;
             font-size: 0.875rem;
             border-radius: 5px;
             margin: 0 2px;
+            transition: all 0.2s;
         }
-        
+
+        .btn-action:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+
         .search-box {
             background: white;
             padding: 20px;
@@ -415,175 +682,168 @@ function processarMarkdownSimples($texto) {
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             margin-bottom: 20px;
         }
+
+        .content-header {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .content-header h2 {
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .badge-status {
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: 600;
+        }
+
+        .badge-active { background-color: #28a745; color: white; }
+        .badge-blocked { background-color: #dc3545; color: white; }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+
+        .checkbox-lg {
+            transform: scale(1.3);
+            margin-right: 10px;
+        }
+
+        .action-bar {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .action-bar.show {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+
     <!-- Navbar -->
     <nav class="navbar navbar-dark navbar-custom">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">
-                <i class="fas fa-cogs"></i> Painel Administrativo - Self-Service
+            <a class="navbar-brand" href="?">
+                <i class="fas fa-cogs"></i> Painel Administrativo - Self-Service v3.0
             </a>
             <div>
-                <a href="?page=docs" class="btn btn-info btn-sm mr-2">
-                    <i class="fas fa-book"></i> Documentação
-                </a>
+                <span class="navbar-text text-white mr-3">
+                    <i class="fas fa-user"></i> Admin
+                </span>
                 <a href="?logout=1" class="btn btn-light btn-sm">
                     <i class="fas fa-sign-out-alt"></i> Sair
                 </a>
             </div>
         </div>
     </nav>
-    
-    <!-- Conteúdo -->
-    <div class="container-fluid mt-4">
-        
-        <?php if ($mensagem): ?>
-            <div class="alert alert-<?php echo $tipo_mensagem; ?> alert-dismissible fade show">
-                <?php echo htmlspecialchars($mensagem); ?>
-                <button type="button" class="close" data-dismiss="alert">&times;</button>
-            </div>
-        <?php endif; ?>
-        
-        <!-- Cards de Estatísticas -->
+
+    <div class="container-fluid">
         <div class="row">
-            <div class="col-md-4">
-                <div class="card stats-card primary">
-                    <div class="text-center">
-                        <i class="fas fa-server icon"></i>
-                        <h3 class="mb-0"><?php echo $totalInstancias; ?></h3>
-                        <p class="mb-0">Instâncias Criadas</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-4">
-                <div class="card stats-card success">
-                    <div class="text-center">
-                        <i class="fas fa-users icon"></i>
-                        <h3 class="mb-0"><?php echo $totalUsuarios; ?></h3>
-                        <p class="mb-0">Usuários Cadastrados</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-4">
-                <div class="card stats-card warning">
-                    <div class="text-center">
-                        <i class="fas fa-calendar-day icon"></i>
-                        <h3 class="mb-0"><?php echo $instanciasHoje; ?></h3>
-                        <p class="mb-0">Criadas Hoje</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Busca e Filtros -->
-        <div class="search-box">
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="input-group">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text"><i class="fas fa-search"></i></span>
-                        </div>
-                        <input type="text" id="searchInput" class="form-control" placeholder="Buscar por nome, email, cidade ou comum...">
-                    </div>
-                </div>
-                <div class="col-md-6 text-right">
-                    <a href="selfservice.php" class="btn btn-primary" target="_blank">
-                        <i class="fas fa-external-link-alt"></i> Acessar Página de Cadastro
+
+            <!-- Sidebar -->
+            <nav class="col-md-2 sidebar">
+                <div class="nav flex-column nav-pills" role="tablist">
+                    <a class="nav-link <?php echo $page === 'dashboard' ? 'active' : ''; ?>" href="?page=dashboard">
+                        <i class="fas fa-tachometer-alt"></i> Dashboard
+                    </a>
+                    <a class="nav-link <?php echo $page === 'instances' ? 'active' : ''; ?>" href="?page=instances">
+                        <i class="fas fa-server"></i> Instâncias
+                    </a>
+                    <a class="nav-link <?php echo $page === 'users' ? 'active' : ''; ?>" href="?page=users">
+                        <i class="fas fa-users"></i> Usuários
+                    </a>
+                    <a class="nav-link <?php echo $page === 'settings' ? 'active' : ''; ?>" href="?page=settings">
+                        <i class="fas fa-cog"></i> Configurações
+                    </a>
+                    <a class="nav-link <?php echo $page === 'docs' ? 'active' : ''; ?>" href="?page=docs">
+                        <i class="fas fa-book"></i> Documentação
+                    </a>
+                    <hr>
+                    <a class="nav-link" href="selfservice.php" target="_blank">
+                        <i class="fas fa-external-link-alt"></i> Cadastro
                     </a>
                 </div>
-            </div>
-        </div>
-        
-        <!-- Tabela de Instâncias -->
-        <div class="table-custom">
-            <table class="table table-hover mb-0" id="tabelaInstancias">
-                <thead>
-                    <tr>
-                        <th>Nome</th>
-                        <th>Email</th>
-                        <th>Cidade</th>
-                        <th>Comum</th>
-                        <th>Data Criação</th>
-                        <th>User ID</th>
-                        <th class="text-center">Ações</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if (empty($instancias)): ?>
-                        <tr>
-                            <td colspan="7" class="text-center py-5">
-                                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                                <p class="text-muted">Nenhuma instância criada ainda</p>
-                            </td>
-                        </tr>
-                    <?php else: ?>
-                        <?php foreach ($instancias as $inst): ?>
-                            <tr>
-                                <td><?php echo htmlspecialchars($inst['NOME'] ?? 'N/A'); ?></td>
-                                <td><?php echo htmlspecialchars($inst['EMAIL'] ?? 'N/A'); ?></td>
-                                <td><?php echo htmlspecialchars($inst['CIDADE'] ?? 'N/A'); ?></td>
-                                <td><?php echo htmlspecialchars($inst['COMUM'] ?? 'N/A'); ?></td>
-                                <td><?php echo isset($inst['DATA_CRIACAO']) ? date('d/m/Y H:i', strtotime($inst['DATA_CRIACAO'])) : 'N/A'; ?></td>
-                                <td><small><code><?php echo htmlspecialchars($inst['user_id'] ?? 'N/A'); ?></code></small></td>
-                                <td class="text-center">
-                                    <?php
-                                    $link = 'instances/' . ($inst['user_id'] ?? '') . '/public_html/ebi/index.php';
-                                    ?>
-                                    <a href="<?php echo $link; ?>" target="_blank" class="btn btn-sm btn-info btn-action" title="Acessar Sistema">
-                                        <i class="fas fa-external-link-alt"></i>
-                                    </a>
-                                    <button class="btn btn-sm btn-primary btn-action" onclick="copiarLink('<?php echo $link; ?>')" title="Copiar Link">
-                                        <i class="fas fa-copy"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-danger btn-action" onclick="confirmarRemocao('<?php echo htmlspecialchars($inst['user_id'] ?? ''); ?>', '<?php echo htmlspecialchars($inst['NOME'] ?? 'este usuário'); ?>')" title="Remover">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </tbody>
-            </table>
-        </div>
-        
-        <div class="text-center mt-4 mb-4">
-            <p class="text-muted">
-                <i class="fas fa-info-circle"></i> 
-                Total de <?php echo $totalInstancias; ?> instância(s) | 
-                Última atualização: <?php echo date('d/m/Y H:i:s'); ?>
-            </p>
+            </nav>
+
+            <!-- Conteúdo Principal -->
+            <main class="col-md-10 ml-sm-auto px-4 py-4">
+
+                <?php if ($mensagem): ?>
+                    <div class="alert alert-<?php echo $tipo_mensagem; ?> alert-dismissible fade show">
+                        <?php echo htmlspecialchars($mensagem); ?>
+                        <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    </div>
+                <?php endif; ?>
+
+                <?php
+                // Incluir conteúdo da página selecionada
+                switch ($page) {
+                    case 'dashboard':
+                        include __DIR__ . '/inc/admin_dashboard.php';
+                        break;
+                    case 'instances':
+                        include __DIR__ . '/inc/admin_instances.php';
+                        break;
+                    case 'users':
+                        include __DIR__ . '/inc/admin_users.php';
+                        break;
+                    case 'settings':
+                        include __DIR__ . '/inc/admin_settings.php';
+                        break;
+                    default:
+                        echo '<div class="alert alert-warning">Página não encontrada</div>';
+                }
+                ?>
+
+            </main>
+
         </div>
     </div>
-    
-    <!-- Form oculto para remoção -->
-    <form method="post" action="admin.php" id="formRemover" style="display: none;">
-        <?php echo admin_csrf_field(); ?>
-        <input type="hidden" name="user_id" id="userIdRemover">
-        <input type="hidden" name="remover_instancia" value="1">
-    </form>
-    
+
+    <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+
     <script>
         // Busca na tabela
-        $('#searchInput').on('keyup', function() {
-            const value = $(this).val().toLowerCase();
-            $('#tabelaInstancias tbody tr').filter(function() {
-                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+        function setupTableSearch(inputId, tableId) {
+            $('#' + inputId).on('keyup', function() {
+                const value = $(this).val().toLowerCase();
+                $('#' + tableId + ' tbody tr').filter(function() {
+                    $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1);
+                });
             });
-        });
-        
+        }
+
         // Copiar link
         function copiarLink(link) {
             const fullLink = window.location.origin + window.location.pathname.replace('admin.php', '') + link;
-            
+
             if (navigator.clipboard) {
                 navigator.clipboard.writeText(fullLink).then(() => {
-                    alert('Link copiado: ' + fullLink);
+                    alert('✅ Link copiado: ' + fullLink);
                 }).catch(() => {
                     prompt('Copie o link:', fullLink);
                 });
@@ -591,19 +851,65 @@ function processarMarkdownSimples($texto) {
                 prompt('Copie o link:', fullLink);
             }
         }
-        
+
         // Confirmar remoção
         function confirmarRemocao(userId, nome) {
             if (confirm('Tem certeza que deseja remover a instância de "' + nome + '"?\n\nEsta ação não pode ser desfeita!')) {
-                if (confirm('ATENÇÃO: Todos os dados desta instância serão perdidos!\n\nConfirma a remoção?')) {
+                if (confirm('ATENÇÃO: Todos os dados serão perdidos!\n\nConfirma a remoção?')) {
                     $('#userIdRemover').val(userId);
                     $('#formRemover').submit();
                 }
             }
         }
-        
-        // Auto-refresh a cada 30 segundos (opcional)
-        // setTimeout(function(){ location.reload(); }, 30000);
+
+        // Seleção múltipla de checkboxes
+        function setupBulkActions() {
+            $('#selectAll').on('change', function() {
+                $('.instance-checkbox').prop('checked', this.checked);
+                updateActionBar();
+            });
+
+            $('.instance-checkbox').on('change', function() {
+                updateActionBar();
+
+                // Atualizar "Selecionar todos"
+                const total = $('.instance-checkbox').length;
+                const checked = $('.instance-checkbox:checked').length;
+                $('#selectAll').prop('checked', total === checked);
+            });
+        }
+
+        // Atualizar barra de ações
+        function updateActionBar() {
+            const checked = $('.instance-checkbox:checked').length;
+            if (checked > 0) {
+                $('#actionBar').addClass('show');
+                $('#selectedCount').text(checked);
+            } else {
+                $('#actionBar').removeClass('show');
+            }
+        }
+
+        // Remover selecionados
+        function removerSelecionados() {
+            const checked = $('.instance-checkbox:checked').length;
+
+            if (checked === 0) {
+                alert('Nenhuma instância selecionada');
+                return;
+            }
+
+            if (confirm(`Tem certeza que deseja remover ${checked} instância(s)?\n\nEsta ação não pode ser desfeita!`)) {
+                if (confirm('ATENÇÃO: Todos os dados serão perdidos!\n\nConfirma a remoção?')) {
+                    $('#formRemoverLote').submit();
+                }
+            }
+        }
+
+        $(document).ready(function() {
+            setupBulkActions();
+        });
     </script>
+
 </body>
 </html>
