@@ -41,19 +41,13 @@ foreach ($todosOsCadastros as $cadastro) {
     }
 }
 
-// Contador de comum destacado - configurável via config.ini
-$comumDestaque = $config['INTERFACE']['COMUM_DESTAQUE'] ?? '';
+// Contador "Comum" - fixo, usando o comum do usuário da instância
 $palavrasChaveComumDestaque = [];
-if (!empty($comumDestaque)) {
-    $palavrasChaveComumDestaque = array_map('trim', explode(',', strtolower($comumDestaque)));
-} else {
-    // Fallback: usar o comum do próprio usuário da instância
-    $comumUsuario = $config['INFO_USUARIO']['COMUM'] ?? '';
-    if (!empty($comumUsuario)) {
-        $palavrasChaveComumDestaque = [strtolower(trim($comumUsuario))];
-    }
+$comumUsuario = $config['INFO_USUARIO']['COMUM'] ?? '';
+if (!empty($comumUsuario)) {
+    $palavrasChaveComumDestaque = [strtolower(trim($comumUsuario))];
 }
-$nomeComumDestaque = $config['INTERFACE']['NOME_COMUM_DESTAQUE'] ?? ($config['INFO_USUARIO']['COMUM'] ?? 'Comum');
+$nomeComumDestaque = 'Comum'; // Nome fixo
 $totalComumDestaque = 0;
 if (!empty($palavrasChaveComumDestaque)) {
     foreach ($todosOsCadastros as $cadastro) {

@@ -140,8 +140,6 @@ COR_PRIMARIA = \"#007bff\"
 COR_SECUNDARIA = \"#0056b3\"
 MOSTRAR_RODAPE = true
 TEXTO_RODAPE = \"$comum_safe - $cidade_safe\"
-COMUM_DESTAQUE = \"$comum_safe\"
-NOME_COMUM_DESTAQUE = \"Comum\"
 
 [VALIDACAO]
 MIN_TAMANHO_NOME_CRIANCA = 2
