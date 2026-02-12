@@ -174,6 +174,83 @@
 
                     <hr>
 
+                    <h6 class="border-bottom pb-2 mb-3"><i class="fas fa-envelope mr-2"></i>Configurações de Email</h6>
+
+                    <div class="form-group">
+                        <div class="custom-control custom-switch">
+                            <input type="checkbox" class="custom-control-input" id="email_enabled"
+                                   name="email_enabled" value="true"
+                                   <?php echo ($configAtual['EMAIL_ENABLED'] ?? 'false') === 'true' ? 'checked' : ''; ?>>
+                            <label class="custom-control-label" for="email_enabled">
+                                Habilitar Envio de Email
+                            </label>
+                        </div>
+                        <small class="form-text text-muted">Envia email com dados de acesso ao criar conta</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Servidor SMTP</label>
+                        <input type="text" name="smtp_host" class="form-control"
+                               value="<?php echo htmlspecialchars($configAtual['SMTP_HOST'] ?? 'smtp.hostinger.com'); ?>"
+                               placeholder="smtp.exemplo.com">
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Porta SMTP</label>
+                                <input type="number" name="smtp_port" class="form-control"
+                                       value="<?php echo htmlspecialchars($configAtual['SMTP_PORT'] ?? '465'); ?>"
+                                       min="1" max="65535">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Segurança</label>
+                                <select name="smtp_secure" class="form-control">
+                                    <?php $currentSecure = $configAtual['SMTP_SECURE'] ?? 'ssl'; ?>
+                                    <option value="ssl" <?php echo $currentSecure === 'ssl' ? 'selected' : ''; ?>>SSL</option>
+                                    <option value="tls" <?php echo $currentSecure === 'tls' ? 'selected' : ''; ?>>TLS</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Usuário SMTP</label>
+                        <input type="text" name="smtp_user" class="form-control"
+                               value="<?php echo htmlspecialchars($configAtual['SMTP_USER'] ?? 'no-replay@ebi.ccbcampinas.org.br'); ?>"
+                               placeholder="usuario@exemplo.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Senha SMTP</label>
+                        <input type="password" name="smtp_password" class="form-control"
+                               value="<?php echo htmlspecialchars($configAtual['SMTP_PASSWORD'] ?? ''); ?>"
+                               placeholder="Deixe em branco para manter a atual">
+                        <small class="form-text text-muted">Deixe vazio para não alterar</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email Remetente</label>
+                        <input type="email" name="email_from" class="form-control"
+                               value="<?php echo htmlspecialchars($configAtual['EMAIL_FROM'] ?? 'no-replay@ebi.ccbcampinas.org.br'); ?>"
+                               placeholder="noreply@exemplo.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nome do Remetente</label>
+                        <input type="text" name="email_from_name" class="form-control"
+                               value="<?php echo htmlspecialchars($configAtual['EMAIL_FROM_NAME'] ?? 'EBI Self-Service'); ?>"
+                               placeholder="Nome do Sistema">
+                    </div>
+
+                    <button type="button" class="btn btn-outline-info btn-sm mb-3" onclick="testarEmail()">
+                        <i class="fas fa-paper-plane mr-2"></i>Testar Conexão SMTP
+                    </button>
+
+                    <hr>
+
                     <h6 class="border-bottom pb-2 mb-3"><i class="fas fa-bug mr-2"></i>Desenvolvimento e Logs</h6>
 
                     <div class="form-group">
@@ -405,5 +482,25 @@ function reiniciarSessao() {
     if (confirm('Deseja reiniciar sua sessão?\n\nVocê será desconectado.')) {
         window.location.href = '?logout=1';
     }
+}
+
+function testarEmail() {
+    if (!confirm('Deseja testar a conexão SMTP?\n\nIsso verificará se as credenciais estão corretas.')) {
+        return;
+    }
+
+    // Fazer requisição AJAX para testar email
+    fetch('inc/test_email.php')
+        .then(response => response.json())
+        .then(data => {
+            if (data.sucesso) {
+                alert('✅ ' + data.mensagem);
+            } else {
+                alert('❌ Erro: ' + data.mensagem);
+            }
+        })
+        .catch(error => {
+            alert('❌ Erro ao testar conexão: ' + error);
+        });
 }
 </script>

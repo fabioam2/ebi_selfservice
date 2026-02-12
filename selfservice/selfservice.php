@@ -52,6 +52,127 @@ function ss_csrf_validate() {
 $mensagem = '';
 $tipo_mensagem = '';
 
+// ============================================================================
+// PROCESSAR AÇÃO DE APAGAR INSTÂNCIA EXISTENTE
+// ============================================================================
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['apagar_instancia'])) {
+    if (!ss_csrf_validate()) {
+        $tipo_mensagem = 'danger';
+        $mensagem = 'Requisição inválida (token de segurança). Tente novamente.';
+    } else {
+        $user_id_existente = $_SESSION['user_id_existente'] ?? '';
+        $senha_admin_digitada = $_POST['senha_admin'] ?? '';
+
+        if (empty($user_id_existente)) {
+            $tipo_mensagem = 'danger';
+            $mensagem = 'Sessão expirada. Tente novamente.';
+        } else {
+            require_once 'criar_instancia.php';
+
+            // Obter senha admin do config.ini da instância
+            $configFile = INSTANCES_DIR . $user_id_existente . '/config/config.ini';
+
+            if (!file_exists($configFile)) {
+                $tipo_mensagem = 'danger';
+                $mensagem = 'Configuração da instância não encontrada.';
+            } else {
+                $config = parse_ini_file($configFile, true);
+                $senha_admin_real = $config['SEGURANCA']['SENHA_ADMIN_REAL'] ?? '';
+
+                if ($senha_admin_digitada === $senha_admin_real) {
+                    // Senha correta, pode apagar
+                    $resultado = removerInstancia($user_id_existente);
+
+                    if ($resultado['sucesso']) {
+                        $tipo_mensagem = 'success';
+                        $mensagem = 'Instância removida com sucesso! Você pode criar uma nova conta agora.';
+                        unset($_SESSION['user_id_existente']);
+                        unset($_SESSION['instancia_existente']);
+                    } else {
+                        $tipo_mensagem = 'danger';
+                        $mensagem = 'Erro ao remover instância: ' . $resultado['erro'];
+                    }
+                } else {
+                    $tipo_mensagem = 'danger';
+                    $mensagem = 'Senha de administrador incorreta!';
+                }
+            }
+        }
+    }
+}
+
+// ============================================================================
+// PROCESSAR AÇÃO DE CRIAR NOVA INSTÂNCIA (ignorar existente)
+// ============================================================================
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['criar_nova_instancia'])) {
+    if (!ss_csrf_validate()) {
+        $tipo_mensagem = 'danger';
+        $mensagem = 'Requisição inválida (token de segurança). Tente novamente.';
+    } else {
+        // Usar dados da sessão
+        $nome = $_SESSION['dados_cadastro']['nome'] ?? '';
+        $email = $_SESSION['dados_cadastro']['email'] ?? '';
+        $cidade = $_SESSION['dados_cadastro']['cidade'] ?? '';
+        $comum = $_SESSION['dados_cadastro']['comum'] ?? '';
+        $senha = $_SESSION['dados_cadastro']['senha'] ?? '';
+
+        if (empty($nome) || empty($email) || empty($senha)) {
+            $tipo_mensagem = 'danger';
+            $mensagem = 'Dados do cadastro não encontrados. Por favor, preencha o formulário novamente.';
+            unset($_SESSION['instancia_existente']);
+            unset($_SESSION['user_id_existente']);
+        } else {
+            // Gerar novo ID único
+            $user_id = uniqid('user_', true);
+            $hash_senha = password_hash($senha, PASSWORD_DEFAULT);
+            $data_cadastro = date('Y-m-d H:i:s');
+
+            // Salvar usuário
+            $linha = implode('|', [
+                $user_id,
+                $email,
+                $nome,
+                $cidade,
+                $comum,
+                $hash_senha,
+                $data_cadastro
+            ]);
+
+            file_put_contents(DB_SELFSERVICE, $linha . PHP_EOL, FILE_APPEND | LOCK_EX);
+
+            // Criar instância do sistema para o usuário
+            require_once 'criar_instancia.php';
+            $resultado = criarInstanciaUsuario($user_id, $nome, $email, $cidade, $comum, $senha);
+
+            if ($resultado['sucesso']) {
+                // Tentar enviar email com dados de acesso
+                require_once 'inc/email_manager.php';
+                $resultadoEmail = enviarEmailAcesso($email, $nome, $resultado['link'], $cidade, $comum);
+
+                // Guardar resultado do email na sessão (apenas para informação, não bloqueia)
+                if ($resultadoEmail['sucesso']) {
+                    $_SESSION['email_enviado'] = true;
+                } else {
+                    $_SESSION['email_enviado'] = false;
+                    $_SESSION['email_erro'] = $resultadoEmail['erro'] ?? 'Erro desconhecido';
+                }
+
+                $_SESSION['cadastro_sucesso'] = true;
+                $_SESSION['link_sistema'] = $resultado['link'];
+                $_SESSION['user_id'] = $user_id;
+                unset($_SESSION['instancia_existente']);
+                unset($_SESSION['user_id_existente']);
+                unset($_SESSION['dados_cadastro']);
+                header("Location: selfservice.php");
+                exit;
+            } else {
+                $tipo_mensagem = 'danger';
+                $mensagem = "Erro ao criar sua instância: " . $resultado['erro'];
+            }
+        }
+    }
+}
+
 // Processar formulário de cadastro
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['cadastrar'])) {
     if (!ss_csrf_validate()) {
@@ -92,14 +213,54 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['cadastrar'])) {
         $erros[] = "As senhas não coincidem";
     }
     
-    // Permite criar várias instâncias mesmo com o mesmo e-mail (cada cadastro gera nova instância)
-    
+    // Verificar se já existe instância com esse email
+    $instanciaExistente = null;
+    $user_id_existente = null;
+
+    if (empty($erros) && file_exists(DB_SELFSERVICE)) {
+        $linhas = file(DB_SELFSERVICE, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        foreach ($linhas as $linha) {
+            $dados = explode('|', $linha);
+            if (isset($dados[1]) && $dados[1] === $email) {
+                $user_id_existente = $dados[0];
+                // Verificar se a instância ainda existe fisicamente
+                require_once 'criar_instancia.php';
+                if (verificarInstanciaExiste($user_id_existente)) {
+                    $instanciaExistente = obterInfoInstancia($user_id_existente);
+                    break;
+                }
+            }
+        }
+    }
+
+    if (empty($erros) && $instanciaExistente !== null) {
+        // Já existe instância! Guardar dados e mostrar tela de confirmação
+        $_SESSION['instancia_existente'] = $instanciaExistente;
+        $_SESSION['user_id_existente'] = $user_id_existente;
+        $_SESSION['dados_cadastro'] = [
+            'nome' => $nome,
+            'email' => $email,
+            'cidade' => $cidade,
+            'comum' => $comum,
+            'senha' => $senha
+        ];
+
+        // Gerar link da instância existente
+        $baseUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http")
+                   . "://" . $_SERVER['HTTP_HOST'];
+        $currentPath = dirname($_SERVER['PHP_SELF']);
+        $_SESSION['link_instancia_existente'] = $baseUrl . $currentPath . '/instances/' . $user_id_existente . '/public_html/ebi/index.php';
+
+        header("Location: selfservice.php");
+        exit;
+    }
+
     if (empty($erros)) {
         // Gerar ID único para o usuário
         $user_id = uniqid('user_', true);
         $hash_senha = password_hash($senha, PASSWORD_DEFAULT);
         $data_cadastro = date('Y-m-d H:i:s');
-        
+
         // Salvar usuário
         $linha = implode('|', [
             $user_id,
@@ -110,14 +271,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['cadastrar'])) {
             $hash_senha,
             $data_cadastro
         ]);
-        
+
         file_put_contents(DB_SELFSERVICE, $linha . PHP_EOL, FILE_APPEND | LOCK_EX);
-        
+
         // Criar instância do sistema para o usuário
         require_once 'criar_instancia.php';
         $resultado = criarInstanciaUsuario($user_id, $nome, $email, $cidade, $comum, $senha);
-        
+
         if ($resultado['sucesso']) {
+            // Tentar enviar email com dados de acesso
+            require_once 'inc/email_manager.php';
+            $resultadoEmail = enviarEmailAcesso($email, $nome, $resultado['link'], $cidade, $comum);
+
+            // Guardar resultado do email na sessão (apenas para informação, não bloqueia)
+            if ($resultadoEmail['sucesso']) {
+                $_SESSION['email_enviado'] = true;
+            } else {
+                $_SESSION['email_enviado'] = false;
+                $_SESSION['email_erro'] = $resultadoEmail['erro'] ?? 'Erro desconhecido';
+            }
+
             $_SESSION['cadastro_sucesso'] = true;
             $_SESSION['link_sistema'] = $resultado['link'];
             $_SESSION['user_id'] = $user_id;
@@ -137,11 +310,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['cadastrar'])) {
 // Verificar se acabou de cadastrar
 $mostrar_sucesso = false;
 $link_sistema = '';
+$email_enviado = false;
+$email_erro = '';
 if (isset($_SESSION['cadastro_sucesso'])) {
     $mostrar_sucesso = true;
     $link_sistema = $_SESSION['link_sistema'] ?? '';
+    $email_enviado = $_SESSION['email_enviado'] ?? false;
+    $email_erro = $_SESSION['email_erro'] ?? '';
     unset($_SESSION['cadastro_sucesso']);
     unset($_SESSION['link_sistema']);
+    unset($_SESSION['email_enviado']);
+    unset($_SESSION['email_erro']);
+}
+
+// Verificar se encontrou instância existente
+$mostrar_instancia_existente = false;
+$instancia_info = null;
+$link_instancia_existente = '';
+if (isset($_SESSION['instancia_existente'])) {
+    $mostrar_instancia_existente = true;
+    $instancia_info = $_SESSION['instancia_existente'];
+    $link_instancia_existente = $_SESSION['link_instancia_existente'] ?? '';
 }
 
 ?>
@@ -330,29 +519,121 @@ if (isset($_SESSION['cadastro_sucesso'])) {
 </head>
 <body>
     <div class="selfservice-container">
-        <?php if ($mostrar_sucesso): ?>
+        <?php if ($mostrar_instancia_existente): ?>
+            <!-- Tela de Instância Existente -->
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>Atenção!</strong> Já existe uma instância cadastrada com este email.
+            </div>
+
+            <div class="info-box mb-4" style="background-color: #fff3cd; border-left-color: #ffc107;">
+                <i class="fas fa-info-circle" style="color: #ffc107;"></i>
+                <strong>Instância encontrada:</strong><br>
+                <small>
+                    Nome: <?php echo htmlspecialchars($instancia_info['NOME'] ?? 'N/A'); ?><br>
+                    Cidade: <?php echo htmlspecialchars($instancia_info['CIDADE'] ?? 'N/A'); ?><br>
+                    Comum: <?php echo htmlspecialchars($instancia_info['COMUM'] ?? 'N/A'); ?><br>
+                    Criada em: <?php echo htmlspecialchars($instancia_info['DATA_CRIACAO'] ?? 'N/A'); ?>
+                </small>
+            </div>
+
+            <div class="link-sistema mb-3" style="border-color: #ffc107;">
+                <strong>Link da sua instância:</strong><br>
+                <a href="<?php echo htmlspecialchars($link_instancia_existente); ?>" target="_blank" id="linkInstanciaExistente">
+                    <?php echo htmlspecialchars($link_instancia_existente); ?>
+                </a>
+            </div>
+
+            <button class="btn btn-success btn-block mb-2" onclick="window.open('<?php echo htmlspecialchars($link_instancia_existente); ?>', '_blank')">
+                <i class="fas fa-external-link-alt"></i> Acessar Minha Instância
+            </button>
+
+            <button class="btn btn-secondary btn-block mb-3" onclick="copiarLinkExistente()">
+                <i class="fas fa-copy"></i> Copiar Link
+            </button>
+
+            <hr class="my-4">
+
+            <h5 class="text-center mb-3">O que você deseja fazer?</h5>
+
+            <!-- Opção 1: Criar Nova Instância -->
+            <form method="post" action="selfservice.php" class="mb-3">
+                <?php echo ss_csrf_field(); ?>
+                <input type="hidden" name="criar_nova_instancia" value="1">
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="fas fa-plus-circle"></i> Criar Nova Instância (Manter a Existente)
+                </button>
+                <small class="text-muted d-block mt-1">
+                    <i class="fas fa-info-circle"></i> Você terá duas instâncias independentes
+                </small>
+            </form>
+
+            <!-- Opção 2: Apagar Instância Existente -->
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <i class="fas fa-trash-alt"></i> Apagar Instância Existente
+                </div>
+                <div class="card-body">
+                    <p class="text-danger mb-2">
+                        <strong>⚠️ ATENÇÃO:</strong> Esta ação é irreversível! Todos os dados serão perdidos.
+                    </p>
+
+                    <form method="post" action="selfservice.php" id="formApagarInstancia">
+                        <?php echo ss_csrf_field(); ?>
+                        <input type="hidden" name="apagar_instancia" value="1">
+
+                        <div class="form-group">
+                            <label for="senha_admin"><i class="fas fa-key"></i> Senha de Administrador da Instância</label>
+                            <input type="password" class="form-control" id="senha_admin" name="senha_admin"
+                                   placeholder="Digite a senha da instância" required>
+                            <small class="form-text text-muted">
+                                Esta é a senha que você definiu ao criar a instância
+                            </small>
+                        </div>
+
+                        <button type="submit" class="btn btn-danger btn-block"
+                                onclick="return confirm('⚠️ TEM CERTEZA?\n\nTodos os dados da instância serão PERMANENTEMENTE apagados!\n\nEsta ação NÃO pode ser desfeita!');">
+                            <i class="fas fa-trash-alt"></i> Confirmar Exclusão
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        <?php elseif ($mostrar_sucesso): ?>
             <!-- Tela de Sucesso -->
             <div class="sucesso-box">
                 <i class="fas fa-check-circle"></i>
                 <h2>Cadastro Realizado com Sucesso!</h2>
                 <p class="mb-3">Sua instância do sistema foi criada. Use o link abaixo para acessar:</p>
-                
+
+                <?php if ($email_enviado): ?>
+                    <div class="alert alert-success mb-3">
+                        <i class="fas fa-envelope-open-text"></i>
+                        <strong>Email enviado!</strong> Enviamos um email com os dados de acesso para seu endereço de email.
+                    </div>
+                <?php elseif (!empty($email_erro)): ?>
+                    <div class="alert alert-warning mb-3">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Email não enviado:</strong> <?php echo htmlspecialchars($email_erro); ?>
+                    </div>
+                <?php endif; ?>
+
                 <div class="link-sistema">
                     <a href="<?php echo htmlspecialchars($link_sistema); ?>" target="_blank" id="linkSistema">
                         <?php echo htmlspecialchars($link_sistema); ?>
                     </a>
                 </div>
-                
+
                 <button class="btn btn-acessar" onclick="window.open('<?php echo htmlspecialchars($link_sistema); ?>', '_blank')">
                     <i class="fas fa-external-link-alt"></i> Acessar Sistema
                 </button>
-                
+
                 <button class="btn btn-secondary mt-2" onclick="copiarLink()">
                     <i class="fas fa-copy"></i> Copiar Link
                 </button>
-                
+
                 <hr class="my-4">
-                
+
                 <p class="text-muted mb-0">
                     <small><i class="fas fa-info-circle"></i> Guarde este link em um lugar seguro. Você precisará dele para acessar seu sistema.</small>
                 </p>
@@ -456,7 +737,23 @@ if (isset($_SESSION['cadastro_sucesso'])) {
         function copiarLink() {
             const linkElement = document.getElementById('linkSistema');
             const link = linkElement.textContent;
-            
+
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(link).then(() => {
+                    alert('Link copiado para a área de transferência!');
+                }).catch(err => {
+                    console.error('Erro ao copiar:', err);
+                    copiarLinkFallback(link);
+                });
+            } else {
+                copiarLinkFallback(link);
+            }
+        }
+
+        function copiarLinkExistente() {
+            const linkElement = document.getElementById('linkInstanciaExistente');
+            const link = linkElement.textContent;
+
             if (navigator.clipboard && window.isSecureContext) {
                 navigator.clipboard.writeText(link).then(() => {
                     alert('Link copiado para a área de transferência!');
