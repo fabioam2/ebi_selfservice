@@ -478,6 +478,12 @@
                             </div>
 
                             <div class="form-group">
+                                <label for="config_palavra_contador_comum">Palavra-chave para Contador "Comum"</label>
+                                <input type="text" class="form-control" id="config_palavra_contador_comum" name="config_palavra_contador_comum" value="<?php echo PALAVRA_CONTADOR_COMUM; ?>" required>
+                                <small class="form-text text-muted">Palavra base para contagem (ex: "bonfim", "jardim", etc.). O sistema gera automaticamente variações similares para tolerância a erros.</small>
+                            </div>
+
+                            <div class="form-group">
                                 <label for="config_url_impressora">URL da Impressora</label>
                                 <input type="text" class="form-control" id="config_url_impressora" name="config_url_impressora" value="<?php echo URL_IMPRESSORA; ?>" required>
                                 <small class="form-text text-muted">Ex: http://127.0.0.1:9100/write ou http://IP_DA_IMPRESSORA:9100/write</small>

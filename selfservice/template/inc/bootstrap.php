@@ -27,6 +27,7 @@ define('SENHA_ADMIN_REAL', $config['SEGURANCA']['SENHA_ADMIN_REAL']);
 define('SENHA_LOGIN', SENHA_ADMIN_REAL);
 
 define('PRINTER_NAME', $config['IMPRESSORA_ZPL']['PRINTER_NAME'] ?? 'ZDesigner 105SL');
+define('PALAVRA_CONTADOR_COMUM', $config['IMPRESSORA_ZPL']['PALAVRA_CONTADOR_COMUM'] ?? 'bonfim');
 define('TAMPULSEIRA', $config['IMPRESSORA_ZPL']['TAMPULSEIRA']);
 define('DOTS', $config['IMPRESSORA_ZPL']['DOTS']);
 define('FECHO', $config['IMPRESSORA_ZPL']['FECHO']);
