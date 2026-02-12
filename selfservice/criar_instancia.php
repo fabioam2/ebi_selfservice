@@ -1,28 +1,42 @@
 <?php
 
 /**
- * Cria uma instância completa do sistema para um novo usuário
- * 
- * @param string $user_id ID único do usuário
- * @param string $nome Nome do usuário
- * @param string $email Email do usuário
- * @param string $cidade Cidade do usuário
- * @param string $comum Comum do usuário
- * @param string $senha Senha do sistema
- * @return array Array com 'sucesso' (bool), 'link' (string) e 'erro' (string se houver)
- */
-/**
  * Sanitiza valor para uso seguro em arquivos INI.
  * Remove caracteres que poderiam quebrar a estrutura do INI.
+ *
+ * @param mixed $value Valor a ser sanitizado
+ * @return string Valor sanitizado e seguro para uso em INI
  */
-function sanitize_ini_value($value) {
+function sanitize_ini_value($value): string {
     $value = str_replace(["\r", "\n", "\t"], ' ', (string)$value);
     $value = str_replace(['\\', '"'], ['\\\\', '\\"'], $value);
     $value = str_replace([';'], [','], $value);
     return trim($value);
 }
 
-function criarInstanciaUsuario($user_id, $nome, $email, $cidade, $comum, $senha) {
+/**
+ * Cria uma instância completa do sistema para um novo usuário
+ *
+ * Esta função realiza as seguintes operações:
+ * - Cria estrutura de diretórios isolada para o usuário
+ * - Gera arquivo config.ini personalizado
+ * - Copia template do sistema
+ * - Cria arquivos de dados vazios
+ * - Configura permissões e segurança (.htaccess)
+ * - Gera link de acesso único
+ *
+ * @param string $user_id ID único do usuário (deve ser alfanumérico)
+ * @param string $nome Nome completo do usuário
+ * @param string $email Email válido do usuário
+ * @param string $cidade Cidade do usuário
+ * @param string $comum Organização/Comum do usuário
+ * @param string $senha Senha para acesso ao sistema
+ *
+ * @return array{sucesso: bool, link: string, erro: string} Array associativo com resultado da operação
+ *
+ * @throws Exception Se houver erro ao criar diretórios ou copiar arquivos
+ */
+function criarInstanciaUsuario(string $user_id, string $nome, string $email, string $cidade, string $comum, string $senha): array {
     $resultado = [
         'sucesso' => false,
         'link' => '',
@@ -314,54 +328,64 @@ ID da Instância: $user_id
 
 /**
  * Verifica se uma instância existe para um usuário
+ *
+ * @param string $user_id ID único do usuário
+ * @return bool True se a instância existe, false caso contrário
  */
-function verificarInstanciaExiste($user_id) {
+function verificarInstanciaExiste(string $user_id): bool {
     $instancesDir = __DIR__ . '/instances/';
     $userInstanceDir = $instancesDir . $user_id . '/';
-    
+
     return file_exists($userInstanceDir) && is_dir($userInstanceDir);
 }
 
 /**
- * Obtém informações de uma instância
+ * Obtém informações de uma instância a partir do arquivo config.ini
+ *
+ * @param string $user_id ID único do usuário
+ * @return array|null Array com informações do usuário ou null se não encontrado
  */
-function obterInfoInstancia($user_id) {
+function obterInfoInstancia(string $user_id): ?array {
     $instancesDir = __DIR__ . '/instances/';
     $configFile = $instancesDir . $user_id . '/config/config.ini';
-    
+
     if (!file_exists($configFile)) {
         return null;
     }
-    
+
     $config = parse_ini_file($configFile, true);
-    
+
     if (isset($config['INFO_USUARIO'])) {
         return $config['INFO_USUARIO'];
     }
-    
+
     return null;
 }
 
 /**
- * Lista todas as instâncias criadas
+ * Lista todas as instâncias criadas no sistema
+ *
+ * Varre o diretório de instâncias e retorna informações de todas as instâncias válidas.
+ *
+ * @return array<int, array> Array de arrays com informações de cada instância
  */
-function listarTodasInstancias() {
+function listarTodasInstancias(): array {
     $instancesDir = __DIR__ . '/instances/';
     $instancias = [];
-    
+
     if (!is_dir($instancesDir)) {
         return $instancias;
     }
-    
+
     $dirs = scandir($instancesDir);
-    
+
     foreach ($dirs as $dir) {
         if ($dir === '.' || $dir === '..') {
             continue;
         }
-        
+
         $fullPath = $instancesDir . $dir;
-        
+
         if (is_dir($fullPath)) {
             $info = obterInfoInstancia($dir);
             if ($info) {
@@ -370,18 +394,29 @@ function listarTodasInstancias() {
             }
         }
     }
-    
+
     return $instancias;
 }
 
 /**
  * Remove um diretório e todo o seu conteúdo recursivamente.
+ *
+ * ATENÇÃO: Esta operação é irreversível! Use com cuidado.
+ *
+ * @param string $dir Caminho do diretório a ser removido
+ * @return void
  */
-function rrmdir($dir) {
-    if (!is_dir($dir)) return;
+function rrmdir(string $dir): void {
+    if (!is_dir($dir)) {
+        return;
+    }
+
     $objects = scandir($dir);
     foreach ($objects as $object) {
-        if ($object === '.' || $object === '..') continue;
+        if ($object === '.' || $object === '..') {
+            continue;
+        }
+
         $path = $dir . '/' . $object;
         if (is_dir($path)) {
             rrmdir($path);
@@ -395,11 +430,14 @@ function rrmdir($dir) {
 /**
  * Cria um backup ZIP de um diretório.
  *
- * @param string $sourceDir Diretório a ser compactado
+ * Compacta recursivamente todos os arquivos e subdiretórios do diretório fonte
+ * em um arquivo ZIP. Requer a extensão ZipArchive do PHP.
+ *
+ * @param string $sourceDir Diretório a ser compactado (caminho completo)
  * @param string $zipFile Caminho do arquivo ZIP de destino
- * @return bool True se o backup foi criado com sucesso
+ * @return bool True se o backup foi criado com sucesso, false caso contrário
  */
-function criarBackupZip($sourceDir, $zipFile) {
+function criarBackupZip(string $sourceDir, string $zipFile): bool {
     if (!class_exists('ZipArchive')) {
         error_log("ZipArchive não disponível. Backup ZIP ignorado.");
         return false;
@@ -411,7 +449,9 @@ function criarBackupZip($sourceDir, $zipFile) {
     }
 
     $sourceDir = realpath($sourceDir);
-    if ($sourceDir === false) return false;
+    if ($sourceDir === false) {
+        return false;
+    }
 
     $iterator = new RecursiveIteratorIterator(
         new RecursiveDirectoryIterator($sourceDir, RecursiveDirectoryIterator::SKIP_DOTS),
@@ -431,9 +471,21 @@ function criarBackupZip($sourceDir, $zipFile) {
 }
 
 /**
- * Remove uma instância (usar com cuidado!)
+ * Remove uma instância de usuário do sistema
+ *
+ * ATENÇÃO: Esta operação remove permanentemente todos os dados da instância!
+ * Um backup ZIP é criado automaticamente antes da remoção.
+ *
+ * Validações de segurança:
+ * - Previne path traversal attacks
+ * - Verifica se a instância existe
+ * - Cria backup antes de remover
+ * - Registra operação em log
+ *
+ * @param string $user_id ID único do usuário (deve ser alfanumérico, sem caracteres especiais)
+ * @return array{sucesso: bool, erro?: string} Array com resultado da operação
  */
-function removerInstancia($user_id) {
+function removerInstancia(string $user_id): array {
     // Validar user_id para evitar path traversal
     if (empty($user_id) || preg_match('/[\/\\\\\\.]/', $user_id)) {
         return ['sucesso' => false, 'erro' => 'ID de usuário inválido'];
