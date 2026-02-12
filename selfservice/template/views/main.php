@@ -484,6 +484,12 @@
                             </div>
 
                             <div class="form-group">
+                                <label for="config_lista_palavras_contador_comum">Palavras Adicionais para Contador "Comum"</label>
+                                <textarea class="form-control" id="config_lista_palavras_contador_comum" name="config_lista_palavras_contador_comum" rows="3"><?php echo LISTA_PALAVRAS_CONTADOR_COMUM; ?></textarea>
+                                <small class="form-text text-muted">Lista de palavras adicionais separadas por vírgula (ex: "parque, parqui, par que, jardim, capela"). Estas palavras serão verificadas EXATAMENTE como digitadas, sem gerar variações automáticas.</small>
+                            </div>
+
+                            <div class="form-group">
                                 <label for="config_url_impressora">URL da Impressora</label>
                                 <input type="text" class="form-control" id="config_url_impressora" name="config_url_impressora" value="<?php echo URL_IMPRESSORA; ?>" required>
                                 <small class="form-text text-muted">Ex: http://127.0.0.1:9100/write ou http://IP_DA_IMPRESSORA:9100/write</small>

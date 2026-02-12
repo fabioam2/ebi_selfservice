@@ -383,6 +383,7 @@ if (isset($_POST['salvar_config_impressora'])) {
         // Validar inputs
         $printer_name = trim($_POST['config_printer_name'] ?? 'ZDesigner 105SL');
         $palavra_contador_comum = trim($_POST['config_palavra_contador_comum'] ?? 'bonfim');
+        $lista_palavras_contador_comum = trim($_POST['config_lista_palavras_contador_comum'] ?? 'parque, parqui, par que');
         $tampulseira = intval($_POST['config_tampulseira'] ?? 269);
         $dots = intval($_POST['config_dots'] ?? 8);
         $fecho = intval($_POST['config_fecho'] ?? 30);
@@ -397,6 +398,7 @@ if (isset($_POST['salvar_config_impressora'])) {
             // Atualizar valores usando regex
             $config_content = preg_replace('/^PRINTER_NAME\s*=\s*.+$/m', 'PRINTER_NAME = "' . addslashes($printer_name) . '"', $config_content);
             $config_content = preg_replace('/^PALAVRA_CONTADOR_COMUM\s*=\s*.+$/m', 'PALAVRA_CONTADOR_COMUM = "' . addslashes($palavra_contador_comum) . '"', $config_content);
+            $config_content = preg_replace('/^LISTA_PALAVRAS_CONTADOR_COMUM\s*=\s*.+$/m', 'LISTA_PALAVRAS_CONTADOR_COMUM = "' . addslashes($lista_palavras_contador_comum) . '"', $config_content);
             $config_content = preg_replace('/^TAMPULSEIRA\s*=\s*.+$/m', 'TAMPULSEIRA = ' . $tampulseira, $config_content);
             $config_content = preg_replace('/^DOTS\s*=\s*.+$/m', 'DOTS = ' . $dots, $config_content);
             $config_content = preg_replace('/^FECHO\s*=\s*.+$/m', 'FECHO = ' . $fecho, $config_content);
