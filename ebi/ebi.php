@@ -417,9 +417,9 @@ foreach ($todosOsCadastros as $cadastro) {
 
 
 
-// Definição das palavras-chave para a contagem "Bonfim"
-$palavrasChaveBonfim = ["bonfim", "bofim", "bonfin", "bomfim", "bon fim", "bom fin", "bom fim", "bon fin"];
-$totalBonfim = 0;
+// Definição das palavras-chave para a contagem "Comum"
+$palavrasChaveComum = ["bonfim", "bofim", "bonfin", "bomfim", "bon fim", "bom fin", "bom fim", "bon fin"];
+$totalComum = 0;
 
 foreach ($todosOsCadastros as $cadastro) {
     if (isset($cadastro['comum'])) {
@@ -429,9 +429,9 @@ foreach ($todosOsCadastros as $cadastro) {
         }
         $comumLower = strtolower($comumValor);
 
-        foreach ($palavrasChaveBonfim as $palavra) {
+        foreach ($palavrasChaveComum as $palavra) {
             if (stripos($comumLower, $palavra) !== false) {
-                $totalBonfim++;
+                $totalComum++;
                 break; 
             }
         }
@@ -1071,7 +1071,7 @@ if (!empty($mensagemErro) && !isset($_SESSION['focar_apos_acao']) && !isset($_SE
                             <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L8 2.207l6.646 6.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.707 1.5Z"/>
                             <path d="m8 3.293 6 6V13.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5V9.293l6-6Zm0 5.189c1.664-1.673 5.825 1.254 0 5.018-5.825-3.764-1.664-6.691 0-5.018Z"/>
                         </svg>
-                        Bonfim: <?php echo $totalBonfim; ?>
+                        Comum: <?php echo $totalComum; ?>
                     </div>
                 </div>
                 <div class="dropdown">

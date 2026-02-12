@@ -306,7 +306,7 @@
                             <th style="width: 6%;">Impresso</th>
                             <th style="width: 6%;">Portaria</th>
                             <th style="width: 7%;">Código</th>
-                            <th style="width: 7%;">Cód. Lote</th>
+                            <th style="width: 7%;">Cod Resp</th>
                             <th style="width: auto;">Nome da Criança</th>
                             <th style="width: auto;">Nome do Responsável</th>
                             <th style="width: 12%;">Telefone</th>
@@ -469,6 +469,12 @@
                                         <small class="form-text text-muted">Posição inicial (normalmente 1)</small>
                                     </div>
                                 </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="config_printer_name">Nome da Impressora</label>
+                                <input type="text" class="form-control" id="config_printer_name" name="config_printer_name" value="<?php echo PRINTER_NAME; ?>" required>
+                                <small class="form-text text-muted">Nome do dispositivo de impressão (ex: ZDesigner 105SL, ZDesigner GK420d, etc.)</small>
                             </div>
 
                             <div class="form-group">
@@ -892,8 +898,8 @@
 
             const payload = {
                 "device": {
-                    "name": "ZDesigner 105SL",
-                    "uid": "ZDesigner 105SL",
+                    "name": "<?php echo PRINTER_NAME; ?>",
+                    "uid": "<?php echo PRINTER_NAME; ?>",
                     "connection": "driver",
                     "deviceType": "printer",
                     "version": 2,
@@ -941,8 +947,8 @@
 
             const payload = {
                 "device": {
-                    "name": "ZDesigner 105SL",
-                    "uid": "ZDesigner 105SL",
+                    "name": "<?php echo PRINTER_NAME; ?>",
+                    "uid": "<?php echo PRINTER_NAME; ?>",
                     "connection": "driver",
                     "deviceType": "printer",
                     "version": 2,

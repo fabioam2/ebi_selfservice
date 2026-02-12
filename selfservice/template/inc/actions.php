@@ -225,8 +225,8 @@ if (isset($_POST['imprimir'])) {
             if (!response.ok) return response.text().then(text => { throw new Error('Falha (responsável ' + nomeResp + '): ' + response.status + ' ' + text); });
             return response.text();
         })
-        .then(result => { console.log('Etiqueta RESPONSÁVEL Cód. Lote ' + codResp + ' (' + nomeResp + ') enviada. Resposta: ' + result); })
-        .catch(error => { console.error('Erro RESPONSÁVEL Cód. Lote ' + codResp + ' (' + nomeResp + '):', error); });
+        .then(result => { console.log('Etiqueta RESPONSÁVEL Cod Resp ' + codResp + ' (' + nomeResp + ') enviada. Resposta: ' + result); })
+        .catch(error => { console.error('Erro RESPONSÁVEL Cod Resp ' + codResp + ' (' + nomeResp + '):', error); });
     }
 })();
 </script>";
@@ -381,6 +381,7 @@ if (isset($_POST['salvar_config_impressora'])) {
         $config_file = __DIR__ . '/../config.ini';
 
         // Validar inputs
+        $printer_name = trim($_POST['config_printer_name'] ?? 'ZDesigner 105SL');
         $tampulseira = intval($_POST['config_tampulseira'] ?? 269);
         $dots = intval($_POST['config_dots'] ?? 8);
         $fecho = intval($_POST['config_fecho'] ?? 30);
@@ -393,6 +394,7 @@ if (isset($_POST['salvar_config_impressora'])) {
 
         if ($config_content !== false) {
             // Atualizar valores usando regex
+            $config_content = preg_replace('/^PRINTER_NAME\s*=\s*.+$/m', 'PRINTER_NAME = "' . addslashes($printer_name) . '"', $config_content);
             $config_content = preg_replace('/^TAMPULSEIRA\s*=\s*.+$/m', 'TAMPULSEIRA = ' . $tampulseira, $config_content);
             $config_content = preg_replace('/^DOTS\s*=\s*.+$/m', 'DOTS = ' . $dots, $config_content);
             $config_content = preg_replace('/^FECHO\s*=\s*.+$/m', 'FECHO = ' . $fecho, $config_content);

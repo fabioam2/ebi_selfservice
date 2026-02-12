@@ -7,9 +7,12 @@
  * Retorna o payload do dispositivo de impressora padrão para chamadas ZPL.
  */
 function obterPayloadDispositivo() {
+    // Obter nome da impressora do config.ini (fallback para padrão se não configurado)
+    $printerName = defined('PRINTER_NAME') ? PRINTER_NAME : 'ZDesigner 105SL';
+
     return [
-        "name" => "ZDesigner 105SL",
-        "uid" => "ZDesigner 105SL",
+        "name" => $printerName,
+        "uid" => $printerName,
         "connection" => "driver",
         "deviceType" => "printer",
         "version" => 2,

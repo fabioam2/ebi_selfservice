@@ -26,6 +26,7 @@ define('NUM_CAMPOS_POR_LINHA_NO_ARQUIVO', $config['GERAL']['NUM_CAMPOS_POR_LINHA
 define('SENHA_ADMIN_REAL', $config['SEGURANCA']['SENHA_ADMIN_REAL']);
 define('SENHA_LOGIN', SENHA_ADMIN_REAL);
 
+define('PRINTER_NAME', $config['IMPRESSORA_ZPL']['PRINTER_NAME'] ?? 'ZDesigner 105SL');
 define('TAMPULSEIRA', $config['IMPRESSORA_ZPL']['TAMPULSEIRA']);
 define('DOTS', $config['IMPRESSORA_ZPL']['DOTS']);
 define('FECHO', $config['IMPRESSORA_ZPL']['FECHO']);

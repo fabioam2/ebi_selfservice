@@ -14,10 +14,6 @@
 
 session_start();
 
-// Carregar dependências
-require_once __DIR__ . '/criar_instancia.php';
-require_once __DIR__ . '/inc/user_manager.php';
-
 // Carregar .env se existir
 if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
     require __DIR__ . '/../vendor/autoload.php';
@@ -26,6 +22,13 @@ if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
         $dotenv->safeLoad();
     }
 }
+
+// Carregar configuração de caminhos dinâmicos
+require_once __DIR__ . '/inc/paths.php';
+
+// Carregar dependências
+require_once __DIR__ . '/criar_instancia.php';
+require_once __DIR__ . '/inc/user_manager.php';
 
 // Senha de administrador - hash bcrypt (use password_hash('SuaSenha', PASSWORD_DEFAULT) para gerar)
 // Senha padrão: Admin@2024!
@@ -64,6 +67,50 @@ function admin_csrf_validate() {
     }
     $_SESSION['admin_csrf_token'] = bin2hex(random_bytes(32));
     return true;
+}
+
+/**
+ * Atualiza uma variável no arquivo .env de forma segura
+ *
+ * @param string $envFile Caminho do arquivo .env
+ * @param string $key Nome da variável
+ * @param string $value Novo valor (será automaticamente envolvido em aspas simples)
+ * @return bool True se atualizado com sucesso, false caso contrário
+ */
+function updateEnvVariable($envFile, $key, $value) {
+    if (!file_exists($envFile)) {
+        return false;
+    }
+
+    // Ler todas as linhas
+    $lines = file($envFile, FILE_IGNORE_NEW_LINES);
+    $updated = false;
+
+    // Procurar e substituir a linha
+    foreach ($lines as $index => $line) {
+        // Ignorar linhas vazias e comentários
+        $trimmed = trim($line);
+        if (empty($trimmed) || $trimmed[0] === '#') {
+            continue;
+        }
+
+        // Verificar se é a variável que queremos atualizar
+        if (strpos($line, $key . '=') === 0) {
+            // Substituir a linha inteira
+            $lines[$index] = $key . "='" . $value . "'";
+            $updated = true;
+            break;
+        }
+    }
+
+    // Se não encontrou, adicionar no final
+    if (!$updated) {
+        $lines[] = $key . "='" . $value . "'";
+    }
+
+    // Salvar de volta
+    $content = implode("\n", $lines) . "\n";
+    return file_put_contents($envFile, $content) !== false;
 }
 
 /**
@@ -335,25 +382,31 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             } else {
                 $novoHash = password_hash($senhaNova, PASSWORD_BCRYPT);
 
-                // Atualizar no .env
+                // Atualizar no .env de forma segura
                 $envFile = __DIR__ . '/../.env';
                 if (file_exists($envFile)) {
-                    $envContent = file_get_contents($envFile);
-                    $envContent = preg_replace(
-                        '/ADMIN_PASSWORD_HASH=.*/m',
-                        "ADMIN_PASSWORD_HASH='{$novoHash}'",
-                        $envContent
-                    );
+                    // Usar função segura que lida corretamente com caracteres especiais
+                    if (updateEnvVariable($envFile, 'ADMIN_PASSWORD_HASH', $novoHash)) {
+                        // Verificar se foi salvo corretamente
+                        $envContent = file_get_contents($envFile);
+                        if (strpos($envContent, $novoHash) !== false) {
+                            $mensagem = "Senha alterada com sucesso! Faça login novamente.";
+                            $tipo_mensagem = "success";
 
-                    if (file_put_contents($envFile, $envContent)) {
-                        $mensagem = "Senha alterada com sucesso! Faça login novamente.";
-                        $tipo_mensagem = "success";
+                            // Log da alteração
+                            $logFile = DATA_PATH . '/admin_actions.log';
+                            $logEntry = date('Y-m-d H:i:s') . " | SENHA_ALTERADA | Admin alterou a senha\n";
+                            @file_put_contents($logFile, $logEntry, FILE_APPEND | LOCK_EX);
 
-                        // Fazer logout
-                        session_destroy();
-                        header("Refresh: 3; url=admin.php");
+                            // Fazer logout
+                            session_destroy();
+                            header("Refresh: 3; url=admin.php");
+                        } else {
+                            $mensagem = "Erro: Senha não foi salva corretamente no .env. Tente novamente.";
+                            $tipo_mensagem = "danger";
+                        }
                     } else {
-                        $mensagem = "Erro ao salvar senha no arquivo .env";
+                        $mensagem = "Erro ao salvar senha no arquivo .env. Verifique as permissões.";
                         $tipo_mensagem = "danger";
                     }
                 } else {
@@ -372,9 +425,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         } else {
             $envFile = __DIR__ . '/../.env';
             if (file_exists($envFile)) {
-                $envContent = file_get_contents($envFile);
-
-                // Atualizar valores
+                // Atualizar valores usando função segura
                 $configs = [
                     'RATE_LIMIT_ENABLED' => $_POST['rate_limit_enabled'] ?? 'false',
                     'RATE_LIMIT_MAX_REQUESTS' => $_POST['rate_limit_max_requests'] ?? '5',
@@ -385,17 +436,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     'DEBUG_MODE' => $_POST['debug_mode'] ?? 'false'
                 ];
 
+                $success = true;
                 foreach ($configs as $key => $value) {
-                    $envContent = preg_replace(
-                        "/{$key}=.*/m",
-                        "{$key}='{$value}'",
-                        $envContent
-                    );
+                    if (!updateEnvVariable($envFile, $key, $value)) {
+                        $success = false;
+                        break;
+                    }
                 }
 
-                if (file_put_contents($envFile, $envContent)) {
+                if ($success) {
                     $mensagem = "Configurações atualizadas com sucesso!";
                     $tipo_mensagem = "success";
+
+                    // Log da alteração
+                    $logFile = DATA_PATH . '/admin_actions.log';
+                    $logEntry = date('Y-m-d H:i:s') . " | CONFIG_ATUALIZADA | Configurações do sistema atualizadas\n";
+                    @file_put_contents($logFile, $logEntry, FILE_APPEND | LOCK_EX);
                 } else {
                     $mensagem = "Erro ao salvar configurações";
                     $tipo_mensagem = "danger";
