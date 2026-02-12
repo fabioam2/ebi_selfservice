@@ -433,8 +433,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     'ALLOW_MULTIPLE_INSTANCES' => $_POST['allow_multiple_instances'] ?? 'false',
                     'CLEANUP_INACTIVE_HOURS' => $_POST['cleanup_inactive_hours'] ?? '6',
                     'LOG_LEVEL' => $_POST['log_level'] ?? 'warning',
-                    'DEBUG_MODE' => $_POST['debug_mode'] ?? 'false'
+                    'DEBUG_MODE' => $_POST['debug_mode'] ?? 'false',
+                    'EMAIL_ENABLED' => $_POST['email_enabled'] ?? 'false',
+                    'SMTP_HOST' => $_POST['smtp_host'] ?? 'smtp.hostinger.com',
+                    'SMTP_PORT' => $_POST['smtp_port'] ?? '465',
+                    'SMTP_USER' => $_POST['smtp_user'] ?? 'no-replay@ebi.ccbcampinas.org.br',
+                    'SMTP_SECURE' => $_POST['smtp_secure'] ?? 'ssl',
+                    'EMAIL_FROM' => $_POST['email_from'] ?? 'no-replay@ebi.ccbcampinas.org.br',
+                    'EMAIL_FROM_NAME' => $_POST['email_from_name'] ?? 'EBI Self-Service'
                 ];
+
+                // Só atualizar senha SMTP se foi fornecida
+                if (!empty($_POST['smtp_password'])) {
+                    $configs['SMTP_PASSWORD'] = $_POST['smtp_password'];
+                }
 
                 $success = true;
                 foreach ($configs as $key => $value) {
