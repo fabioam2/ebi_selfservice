@@ -3,6 +3,21 @@
  * Funções de negócio: backup, cadastros, ZPL.
  */
 
+/**
+ * Retorna o payload do dispositivo de impressora padrão para chamadas ZPL.
+ */
+function obterPayloadDispositivo() {
+    return [
+        "name" => "ZDesigner 105SL",
+        "uid" => "ZDesigner 105SL",
+        "connection" => "driver",
+        "deviceType" => "printer",
+        "version" => 2,
+        "provider" => "com.zebra.ds.webdriver.desktop.provider.DefaultDeviceProvider",
+        "manufacturer" => "Zebra Technologies"
+    ];
+}
+
 function gerenciarBackups($caminhoArquivoBase) {
     if (!file_exists($caminhoArquivoBase) || filesize($caminhoArquivoBase) === 0) {
         return;
@@ -38,6 +53,8 @@ function lerTodosCadastros($caminhoArquivo) {
         $linhasFile = file($caminhoArquivo, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
         if ($linhasFile === false) return [];
         foreach ($linhasFile as $linha) {
+            // Ignorar linhas de comentário
+            if (isset($linha[0]) && $linha[0] === '#') continue;
             $dados = explode(DELIMITADOR, $linha);
             if (count($dados) >= (NUM_CAMPOS_POR_LINHA_NO_ARQUIVO + 1)) {
                 $id = intval(trim($dados[0]));

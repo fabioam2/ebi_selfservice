@@ -265,13 +265,15 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-cake2" viewBox="0 0 16 16"><path d="M11.05 4.05a2.5 2.5 0 1 0-4.999.058A2.5 2.5 0 0 0 11.05 4.05zm-4.01-.034a1.5 1.5 0 1 1 2.998-.033A1.5 1.5 0 0 1 7.04 4.016z"/><path d="M6.536 6.072L5.85 7.305A.5.5 0 0 0 6.29 8h3.42a.5.5 0 0 0 .44-.695l-.686-1.233L13.617 5.25a.5.5 0 0 0-.39-.867H2.773a.5.5 0 0 0-.39.867l4.153.822z"/><path d="M12.572 6.092L12 6.224v4.248c.782.396 1.595.24 2.222-.457.628-.698.782-1.61.396-2.393-.386-.783-1.2-.937-1.932-.783zm-1.03 4.355V6.35H4.458v4.097c-.782-.396-1.595-.24-2.222.457-.628-.698-.782-1.61-.396-2.393.386.783 1.2.937 1.932.783A2.91 2.91 0 0 0 4.3 12.57a2.91 2.91 0 0 0 3.572 1.818c.782.396 1.595.24 2.222-.457.628-.698.782-1.61.396-2.393-.386-.783-1.2-.937-1.932-.783A2.91 2.91 0 0 0 11.542 10.447zM4.907 11.32c-.185.059-.354.15-.495.271-.14.12-.242.265-.304.423l-.066.165c-.073.188-.098.388-.066.58.03.18.113.348.235.485.122.137.28.238.458.29.178.053.368.057.546.013l.126-.03.11-.042.108-.054.092-.06a1.08 1.08 0 0 1 .23-.167c.05-.04.094-.085.132-.133.09-.114.155-.245.19-.383.036-.137.043-.28.023-.416a.97.97 0 0 0-.133-.437c-.08-.14-.19-.26-.32-.35-.13-.09-.27-.14-.41-.16l-.112-.01z"/></svg>
                         3 Anos: <?php echo $totalCriancas3Anos; ?>
                     </div>
-                    <div class="total-cadastros-info" title="Total de cadastros da comum Bonfim e similares">
+                    <?php if (!empty($palavrasChaveComumDestaque)): ?>
+                    <div class="total-cadastros-info" title="Total de cadastros de <?php echo sanitize_for_html($nomeComumDestaque); ?>">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-house-heart-fill" viewBox="0 0 16 16">
                             <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L8 2.207l6.646 6.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.707 1.5Z"/>
                             <path d="m8 3.293 6 6V13.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5V9.293l6-6Zm0 5.189c1.664-1.673 5.825 1.254 0 5.018-5.825-3.764-1.664-6.691 0-5.018Z"/>
                         </svg>
-                        Bonfim: <?php echo $totalBonfim; ?>
+                        <?php echo sanitize_for_html($nomeComumDestaque); ?>: <?php echo $totalComumDestaque; ?>
                     </div>
+                    <?php endif; ?>
                 </div>
                 <div class="dropdown">
                     <button class="btn btn-info dropdown-toggle" type="button" id="dropdownMenuAdmin" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

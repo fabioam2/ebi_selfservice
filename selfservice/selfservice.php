@@ -13,11 +13,37 @@ if (!file_exists(INSTANCES_DIR)) {
     mkdir(INSTANCES_DIR, 0755, true);
 }
 
+// --- CSRF ---
+function ss_csrf_token() {
+    if (empty($_SESSION['ss_csrf_token'])) {
+        $_SESSION['ss_csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['ss_csrf_token'];
+}
+
+function ss_csrf_field() {
+    return '<input type="hidden" name="csrf_token" value="' . htmlspecialchars(ss_csrf_token(), ENT_QUOTES, 'UTF-8') . '">';
+}
+
+function ss_csrf_validate() {
+    $token = $_POST['csrf_token'] ?? '';
+    if (empty($token) || !hash_equals(ss_csrf_token(), $token)) {
+        $_SESSION['ss_csrf_token'] = bin2hex(random_bytes(32));
+        return false;
+    }
+    $_SESSION['ss_csrf_token'] = bin2hex(random_bytes(32));
+    return true;
+}
+
 $mensagem = '';
 $tipo_mensagem = '';
 
 // Processar formulário de cadastro
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['cadastrar'])) {
+    if (!ss_csrf_validate()) {
+        $tipo_mensagem = 'danger';
+        $mensagem = 'Requisição inválida (token de segurança). Tente novamente.';
+    } else {
     $nome = trim($_POST['nome'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $cidade = trim($_POST['cidade'] ?? '');
@@ -91,6 +117,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['cadastrar'])) {
         $tipo_mensagem = 'danger';
         $mensagem = implode('<br>', $erros);
     }
+    } // end CSRF valid
 }
 
 // Verificar se acabou de cadastrar
@@ -338,7 +365,8 @@ if (isset($_SESSION['cadastro_sucesso'])) {
                 <strong>Grátis e Rápido!</strong> Crie sua conta em menos de 1 minuto e comece a usar imediatamente.
             </div>
             
-            <form method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>" id="formCadastro">
+            <form method="post" action="selfservice.php" id="formCadastro">
+                <?php echo ss_csrf_field(); ?>
                 <div class="form-group">
                     <label for="nome"><i class="fas fa-user"></i> Nome Completo</label>
                     <input type="text" class="form-control" id="nome" name="nome" 

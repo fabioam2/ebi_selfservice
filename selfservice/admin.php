@@ -1,14 +1,37 @@
 <?php
 session_start();
 
-// Senha de administrador (ALTERE ESTA SENHA!)
-define('SENHA_ADMIN', 'Admin@2024!');
+// Senha de administrador - hash bcrypt (use password_hash('SuaSenha', PASSWORD_DEFAULT) para gerar)
+// Senha padrão: Admin@2024!
+define('SENHA_ADMIN_HASH', '$2y$12$I4OStXnHIXviK7nnGZ36n.4xY.4kOX3w8Ce3i7uCVpRS1xmEuHI46');
+
+// --- CSRF ---
+function admin_csrf_token() {
+    if (empty($_SESSION['admin_csrf_token'])) {
+        $_SESSION['admin_csrf_token'] = bin2hex(random_bytes(32));
+    }
+    return $_SESSION['admin_csrf_token'];
+}
+
+function admin_csrf_field() {
+    return '<input type="hidden" name="csrf_token" value="' . htmlspecialchars(admin_csrf_token(), ENT_QUOTES, 'UTF-8') . '">';
+}
+
+function admin_csrf_validate() {
+    $token = $_POST['csrf_token'] ?? '';
+    if (empty($token) || !hash_equals(admin_csrf_token(), $token)) {
+        $_SESSION['admin_csrf_token'] = bin2hex(random_bytes(32));
+        return false;
+    }
+    $_SESSION['admin_csrf_token'] = bin2hex(random_bytes(32));
+    return true;
+}
 
 // Processar login
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
-    if ($_POST['senha_admin'] === SENHA_ADMIN) {
+    if (admin_csrf_validate() && password_verify($_POST['senha_admin'] ?? '', SENHA_ADMIN_HASH)) {
         $_SESSION['admin_logado'] = true;
-        header("Location: " . $_SERVER['PHP_SELF']);
+        header("Location: admin.php");
         exit;
     } else {
         $erro_login = "Senha incorreta!";
@@ -18,7 +41,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
 // Processar logout
 if (isset($_GET['logout'])) {
     $_SESSION['admin_logado'] = false;
-    header("Location: " . $_SERVER['PHP_SELF']);
+    header("Location: admin.php");
     exit;
 }
 
@@ -43,7 +66,8 @@ if (!isset($_SESSION['admin_logado']) || $_SESSION['admin_logado'] !== true) {
             <?php if (isset($erro_login)): ?>
                 <div class="alert alert-danger"><?php echo $erro_login; ?></div>
             <?php endif; ?>
-            <form method="post">
+            <form method="post" action="admin.php">
+                <?php echo admin_csrf_field(); ?>
                 <div class="form-group">
                     <label>Senha de Administrador</label>
                     <input type="password" name="senha_admin" class="form-control" required autofocus>
@@ -65,6 +89,10 @@ $mensagem = '';
 $tipo_mensagem = '';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['remover_instancia'])) {
+    if (!admin_csrf_validate()) {
+        $mensagem = "Requisição inválida (token de segurança). Tente novamente.";
+        $tipo_mensagem = "danger";
+    } else {
     $user_id = $_POST['user_id'] ?? '';
     if ($user_id) {
         $resultado = removerInstancia($user_id);
@@ -76,6 +104,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['remover_instancia'])) 
             $tipo_mensagem = "danger";
         }
     }
+    } // end CSRF valid
 }
 
 // Verificar se está acessando página de documentação
@@ -531,7 +560,8 @@ function processarMarkdownSimples($texto) {
     </div>
     
     <!-- Form oculto para remoção -->
-    <form method="post" id="formRemover" style="display: none;">
+    <form method="post" action="admin.php" id="formRemover" style="display: none;">
+        <?php echo admin_csrf_field(); ?>
         <input type="hidden" name="user_id" id="userIdRemover">
         <input type="hidden" name="remover_instancia" value="1">
     </form>

@@ -11,14 +11,32 @@
  * @param string $senha Senha do sistema
  * @return array Array com 'sucesso' (bool), 'link' (string) e 'erro' (string se houver)
  */
+/**
+ * Sanitiza valor para uso seguro em arquivos INI.
+ * Remove caracteres que poderiam quebrar a estrutura do INI.
+ */
+function sanitize_ini_value($value) {
+    $value = str_replace(["\r", "\n", "\t"], ' ', (string)$value);
+    $value = str_replace(['\\', '"'], ['\\\\', '\\"'], $value);
+    $value = str_replace([';'], [','], $value);
+    return trim($value);
+}
+
 function criarInstanciaUsuario($user_id, $nome, $email, $cidade, $comum, $senha) {
     $resultado = [
         'sucesso' => false,
         'link' => '',
         'erro' => ''
     ];
-    
+
     try {
+        // Sanitizar inputs para uso no config.ini
+        $nome_safe = sanitize_ini_value($nome);
+        $email_safe = sanitize_ini_value($email);
+        $cidade_safe = sanitize_ini_value($cidade);
+        $comum_safe = sanitize_ini_value($comum);
+        $senha_safe = sanitize_ini_value($senha);
+
         // Diretórios base
         $instancesDir = __DIR__ . '/instances/';
         $templateDir = __DIR__ . '/template/';
@@ -46,8 +64,8 @@ function criarInstanciaUsuario($user_id, $nome, $email, $cidade, $comum, $senha)
         $dataCriacao = date('Y-m-d H:i:s');
         $configContent = "; ═══════════════════════════════════════════════════════════════════
 ; ARQUIVO DE CONFIGURAÇÃO - Sistema de Cadastro de Crianças
-; Instância de: $nome ($email)
-; Cidade: $cidade | Comum: $comum
+; Instância de: $nome_safe ($email_safe)
+; Cidade: $cidade_safe | Comum: $comum_safe
 ; Data de Criação: $dataCriacao
 ; ═══════════════════════════════════════════════════════════════════
 
@@ -57,10 +75,10 @@ VERSAO = \"2.0\"
 DATA_INSTALACAO = \"$dataCriacao\"
 
 [INFO_USUARIO]
-NOME = \"$nome\"
-EMAIL = \"$email\"
-CIDADE = \"$cidade\"
-COMUM = \"$comum\"
+NOME = \"$nome_safe\"
+EMAIL = \"$email_safe\"
+CIDADE = \"$cidade_safe\"
+COMUM = \"$comum_safe\"
 USER_ID = \"$user_id\"
 DATA_CRIACAO = \"$dataCriacao\"
 
@@ -75,8 +93,8 @@ NUM_CAMPOS_POR_LINHA_NO_ARQUIVO = 8
 TIMEZONE = \"America/Sao_Paulo\"
 
 [SEGURANCA]
-SENHA_ADMIN_REAL = \"$senha\"
-SENHA_PAINEL = \"$senha\"
+SENHA_ADMIN_REAL = \"$senha_safe\"
+SENHA_PAINEL = \"$senha_safe\"
 TEMPO_SESSAO = 1800
 MAX_TENTATIVAS_LOGIN = 5
 TEMPO_BLOQUEIO = 300
@@ -94,12 +112,12 @@ IMPRIMIR_QRCODE = false
 TAMANHO_QRCODE = 4
 
 [INTERFACE]
-TITULO_LOGIN = \"Acesso ao Sistema - $comum\"
+TITULO_LOGIN = \"Acesso ao Sistema - $comum_safe\"
 LOGO_URL = \"https://placehold.co/40x40/007bff/white?text=Kids\"
 COR_PRIMARIA = \"#007bff\"
 COR_SECUNDARIA = \"#0056b3\"
 MOSTRAR_RODAPE = true
-TEXTO_RODAPE = \"$comum - $cidade\"
+TEXTO_RODAPE = \"$comum_safe - $cidade_safe\"
 
 [VALIDACAO]
 MIN_TAMANHO_NOME_CRIANCA = 2
@@ -127,8 +145,8 @@ HABILITAR_BUSCA_RAPIDA = true
 [EMAIL]
 HABILITAR_EMAIL = false
 EMAIL_FROM = \"noreply@seudominio.com\"
-NOME_FROM = \"Sistema de Cadastro - $comum\"
-EMAIL_ADMIN = \"$email\"
+NOME_FROM = \"Sistema de Cadastro - $comum_safe\"
+EMAIL_ADMIN = \"$email_safe\"
 NOTIFICAR_NOVO_CADASTRO = false
 
 [LOGS]
@@ -165,7 +183,7 @@ VERIFICAR_INTEGRIDADE = true
         file_put_contents($configDir . 'config.ini', $configContent);
         
         // 2. Criar arquivos de dados vazios
-        $headerCadastro = "# Sistema de Cadastro de Crianças - $comum\n";
+        $headerCadastro = "# Sistema de Cadastro de Crianças - $comum_safe\n";
         $headerCadastro .= "# Criado em: " . date('Y-m-d H:i:s') . "\n";
         $headerCadastro .= "# Formato: ID|Nome|Responsável|Telefone|Idade|Comum|StatusImpresso|Portaria|CodResp\n";
         
@@ -234,10 +252,10 @@ Options -Indexes
         // 5. Criar arquivo README com instruções
         $readmeContent = "=== SISTEMA DE CADASTRO DE CRIANÇAS ===
 
-Instância criada para: $nome
-Email: $email
-Cidade: $cidade
-Comum: $comum
+Instância criada para: $nome_safe
+Email: $email_safe
+Cidade: $cidade_safe
+Comum: $comum_safe
 Data de Criação: " . date('Y-m-d H:i:s') . "
 
 INSTRUÇÕES DE ACESSO:
@@ -263,7 +281,7 @@ ID da Instância: $user_id
         file_put_contents($userInstanceDir . 'README.txt', $readmeContent);
         
         // 6. Criar arquivo de log
-        $logContent = date('Y-m-d H:i:s') . " - Instância criada para $nome ($email)\n";
+        $logContent = date('Y-m-d H:i:s') . " - Instância criada para $nome_safe ($email_safe)\n";
         file_put_contents($userInstanceDir . 'system.log', $logContent);
         
         // 7. Gerar link de acesso
@@ -357,53 +375,97 @@ function listarTodasInstancias() {
 }
 
 /**
+ * Remove um diretório e todo o seu conteúdo recursivamente.
+ */
+function rrmdir($dir) {
+    if (!is_dir($dir)) return;
+    $objects = scandir($dir);
+    foreach ($objects as $object) {
+        if ($object === '.' || $object === '..') continue;
+        $path = $dir . '/' . $object;
+        if (is_dir($path)) {
+            rrmdir($path);
+        } else {
+            unlink($path);
+        }
+    }
+    rmdir($dir);
+}
+
+/**
+ * Cria um backup ZIP de um diretório.
+ *
+ * @param string $sourceDir Diretório a ser compactado
+ * @param string $zipFile Caminho do arquivo ZIP de destino
+ * @return bool True se o backup foi criado com sucesso
+ */
+function criarBackupZip($sourceDir, $zipFile) {
+    if (!class_exists('ZipArchive')) {
+        error_log("ZipArchive não disponível. Backup ZIP ignorado.");
+        return false;
+    }
+
+    $zip = new ZipArchive();
+    if ($zip->open($zipFile, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+        return false;
+    }
+
+    $sourceDir = realpath($sourceDir);
+    if ($sourceDir === false) return false;
+
+    $iterator = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator($sourceDir, RecursiveDirectoryIterator::SKIP_DOTS),
+        RecursiveIteratorIterator::SELF_FIRST
+    );
+
+    foreach ($iterator as $item) {
+        $relativePath = substr($item->getPathname(), strlen($sourceDir) + 1);
+        if ($item->isDir()) {
+            $zip->addEmptyDir($relativePath);
+        } else {
+            $zip->addFile($item->getPathname(), $relativePath);
+        }
+    }
+
+    return $zip->close();
+}
+
+/**
  * Remove uma instância (usar com cuidado!)
  */
 function removerInstancia($user_id) {
+    // Validar user_id para evitar path traversal
+    if (empty($user_id) || preg_match('/[\/\\\\\\.]/', $user_id)) {
+        return ['sucesso' => false, 'erro' => 'ID de usuário inválido'];
+    }
+
     $instancesDir = __DIR__ . '/instances/';
     $userInstanceDir = $instancesDir . $user_id . '/';
-    
+
     if (!file_exists($userInstanceDir)) {
         return ['sucesso' => false, 'erro' => 'Instância não encontrada'];
     }
-    
-    // Criar backup antes de remover
+
+    // Criar backup ZIP antes de remover
     $backupDir = __DIR__ . '/backups/';
     if (!file_exists($backupDir)) {
         mkdir($backupDir, 0755, true);
     }
-    
+
     $backupFile = $backupDir . $user_id . '_' . date('YmdHis') . '.zip';
-    
-    // Aqui você poderia adicionar código para criar um ZIP da instância
-    
-    // Remover diretório recursivamente
-    function rrmdir($dir) {
-        if (is_dir($dir)) {
-            $objects = scandir($dir);
-            foreach ($objects as $object) {
-                if ($object != "." && $object != "..") {
-                    if (is_dir($dir . "/" . $object)) {
-                        rrmdir($dir . "/" . $object);
-                    } else {
-                        unlink($dir . "/" . $object);
-                    }
-                }
-            }
-            rmdir($dir);
-        }
-    }
-    
+    criarBackupZip($userInstanceDir, $backupFile);
+
     try {
         rrmdir($userInstanceDir);
-        
+
         // Log de remoção
         $logRemocao = __DIR__ . '/data/instancias_removidas.log';
-        $logEntry = date('Y-m-d H:i:s') . "|$user_id|Removida com sucesso\n";
+        $backupInfo = file_exists($backupFile) ? "backup: $backupFile" : "sem backup ZIP";
+        $logEntry = date('Y-m-d H:i:s') . "|$user_id|Removida com sucesso|$backupInfo\n";
         file_put_contents($logRemocao, $logEntry, FILE_APPEND | LOCK_EX);
-        
+
         return ['sucesso' => true];
-        
+
     } catch (Exception $e) {
         return ['sucesso' => false, 'erro' => $e->getMessage()];
     }

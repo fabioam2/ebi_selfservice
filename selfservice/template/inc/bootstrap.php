@@ -35,8 +35,23 @@ define('PULSEIRAUTIL', (TAMPULSEIRA - FECHO) * DOTS);
 $urlImpressora = $config['IMPRESSORA_ZPL']['URL_IMPRESSORA'] ?? 'http://127.0.0.1:9100/write';
 define('URL_IMPRESSORA', rtrim($urlImpressora, '/'));
 
+// Timeout de sessão configurável
+$tempoSessao = $config['SEGURANCA']['TEMPO_SESSAO'] ?? 1800;
+define('TEMPO_SESSAO', (int)$tempoSessao);
+
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
+}
+
+// Verificar timeout de sessão
+if (isset($_SESSION['logado']) && $_SESSION['logado'] === true) {
+    if (isset($_SESSION['ultimo_acesso']) && (time() - $_SESSION['ultimo_acesso']) > TEMPO_SESSAO) {
+        $_SESSION['logado'] = false;
+        $_SESSION['logout_mensagem_sucesso'] = 'Sua sessão expirou por inatividade. Faça login novamente.';
+        unset($_SESSION['ultimo_acesso']);
+    } else {
+        $_SESSION['ultimo_acesso'] = time();
+    }
 }
 
 // Atualizar timestamp de último acesso da instância
