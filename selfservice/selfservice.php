@@ -1,6 +1,20 @@
 <?php
 session_start();
 
+// Rate Limiting (proteção contra abuso)
+require_once __DIR__ . '/inc/rate_limit.php';
+
+// Verificar rate limit antes de processar qualquer requisição
+$clientIP = getClientIP();
+$maxRequests = 10; // Permitir 10 requisições
+$timeWindow = 3600; // Em 1 hora (3600 segundos)
+
+if (!checkRateLimit($clientIP, $maxRequests, $timeWindow)) {
+    $status = getRateLimitStatus($clientIP, $maxRequests, $timeWindow);
+    showRateLimitError($status['reset_in']);
+    // showRateLimitError() faz exit, código não continua
+}
+
 // Configurações do Self-Service
 define('DB_SELFSERVICE', __DIR__ . '/data/selfservice_users.txt');
 define('INSTANCES_DIR', __DIR__ . '/instances/');

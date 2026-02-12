@@ -1,0 +1,188 @@
+# =========================================
+# EBI Self-Service - Git Ignore
+# =========================================
+
+# -----------------------------------------
+# Configurações Sensíveis
+# -----------------------------------------
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+secrets.json
+
+# -----------------------------------------
+# Composer
+# -----------------------------------------
+/vendor/
+composer.lock
+composer.phar
+
+# -----------------------------------------
+# Dados e Instâncias de Usuários
+# -----------------------------------------
+/selfservice/instances/*
+!/selfservice/instances/.gitkeep
+
+# Dados do sistema
+/selfservice/data/*.txt
+/selfservice/data/*.log
+!/selfservice/data/.gitkeep
+
+# Backups
+/selfservice/backups/*
+!/selfservice/backups/.gitkeep
+
+# -----------------------------------------
+# Logs
+# -----------------------------------------
+*.log
+logs/
+*.log.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# -----------------------------------------
+# Sistema Operacional
+# -----------------------------------------
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# -----------------------------------------
+# IDEs e Editores
+# -----------------------------------------
+# VSCode
+.vscode/
+*.code-workspace
+
+# PhpStorm / JetBrains
+.idea/
+*.iml
+*.ipr
+*.iws
+.idea_modules/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+*.tmlanguage.cache
+*.tmPreferences.cache
+*.stTheme.cache
+*.sublime-project.workspace
+
+# Vim
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
+Session.vim
+.netrwhist
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# -----------------------------------------
+# PHP
+# -----------------------------------------
+# Cache
+.phpunit.result.cache
+.php_cs.cache
+.php-cs-fixer.cache
+
+# PHPUnit
+/phpunit.xml
+.phpunit.cache/
+
+# PHPStan
+phpstan.neon.local
+/phpstan-baseline.neon
+
+# -----------------------------------------
+# Temporários
+# -----------------------------------------
+*.tmp
+*.temp
+*.swp
+*.swo
+*.bak
+*.old
+*.orig
+*~
+
+# Diretórios temporários
+tmp/
+temp/
+cache/
+
+# -----------------------------------------
+# Arquivos de Build
+# -----------------------------------------
+dist/
+build/
+*.zip
+*.tar
+*.tar.gz
+*.rar
+
+# -----------------------------------------
+# Arquivos Específicos do Projeto
+# -----------------------------------------
+# Flag de instalação (manter no repo)
+# !/selfservice/.instalado
+
+# Rate limit data
+/selfservice/data/ratelimit_*.txt
+/selfservice/data/ratelimit_*.json
+
+# Sessões PHP
+/sessions/*
+!/sessions/.gitkeep
+
+# -----------------------------------------
+# Testes
+# -----------------------------------------
+/coverage/
+.phpunit.result.cache
+clover.xml
+coverage.xml
+
+# -----------------------------------------
+# Node (se usar para build de assets)
+# -----------------------------------------
+node_modules/
+package-lock.json
+yarn.lock
+
+# -----------------------------------------
+# Diversos
+# -----------------------------------------
+.htaccess.backup
+.maintenance
+error_log
+php_errors.log
