@@ -3,7 +3,7 @@ session_start();
 
 // Senha de administrador - hash bcrypt (use password_hash('SuaSenha', PASSWORD_DEFAULT) para gerar)
 // Senha padrão: Admin@2024!
-define('SENHA_ADMIN_HASH', '$2y$12$I4OStXnHIXviK7nnGZ36n.4xY.4kOX3w8Ce3i7uCVpRS1xmEuHI46');
+define('SENHA_ADMIN_HASH', '$2y$12$zS/zF79Sc2tVmkIppd72xew8.36YCIxFQm1t/dONXx4.1LiH4i/MO');
 
 // --- CSRF ---
 function admin_csrf_token() {
