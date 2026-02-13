@@ -41,11 +41,23 @@ foreach ($todosOsCadastros as $cadastro) {
     }
 }
 
-// Contador "Comum" - fixo, usando o comum do usuário da instância
+// Contador "Comum" - usa PALAVRA_CONTADOR_COMUM com variações similares + lista adicional
 $palavrasChaveComumDestaque = [];
-$comumUsuario = $config['INFO_USUARIO']['COMUM'] ?? '';
-if (!empty($comumUsuario)) {
-    $palavrasChaveComumDestaque = [strtolower(trim($comumUsuario))];
+$palavraBase = defined('PALAVRA_CONTADOR_COMUM') ? PALAVRA_CONTADOR_COMUM : '';
+if (!empty($palavraBase)) {
+    $palavrasChaveComumDestaque = gerarVariacoesPalavra($palavraBase);
+}
+$listaPalavrasAdicionais = defined('LISTA_PALAVRAS_CONTADOR_COMUM') ? LISTA_PALAVRAS_CONTADOR_COMUM : '';
+if (!empty($listaPalavrasAdicionais)) {
+    $extras = array_map('trim', explode(',', $listaPalavrasAdicionais));
+    foreach ($extras as $extra) {
+        if ($extra !== '') {
+            $extraLower = strtolower($extra);
+            if (!in_array($extraLower, $palavrasChaveComumDestaque)) {
+                $palavrasChaveComumDestaque[] = $extraLower;
+            }
+        }
+    }
 }
 $nomeComumDestaque = 'Comum'; // Nome fixo
 $totalComumDestaque = 0;
