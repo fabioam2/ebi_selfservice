@@ -308,11 +308,16 @@ ID da Instância: $user_id
         // 7. Gerar link de acesso
         $baseUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") 
                    . "://" . $_SERVER['HTTP_HOST'];
-        $currentPath = dirname($_SERVER['PHP_SELF']);
 
-        // Calcular o caminho relativo da instância para URL (absoluto a partir da raiz do projeto)
-        $instancesRelativePath = substr(INSTANCE_BASE_PATH, strlen(PROJECT_ROOT) + 1);
-        $link = $baseUrl . '/' . $instancesRelativePath . '/' . $user_id . '/public_html/ebi/index.php';
+        // Obter o caminho raiz do projeto (suba dois níveis a partir de PHP_SELF)
+        // Exemplo: /dev2/selfservice/selfservice.php -> /dev2
+        $rootPath = dirname(dirname($_SERVER['PHP_SELF']));
+
+        // Evitar duplo slash se o sistema estiver na raiz
+        $pathPrefix = ($rootPath === '/') ? '' : $rootPath;
+
+        // Construir o link usando o caminho raiz dinâmico
+        $link = $baseUrl . $pathPrefix . '/ebi/i/' . $user_id . '/public_html/ebi/index.php';
         
         // 8. Salvar log de criação no arquivo central
         $logCentral = DATA_PATH . '/instancias_criadas.log';
