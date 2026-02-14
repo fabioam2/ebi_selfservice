@@ -21,9 +21,9 @@ function carregarConfigEmail(): array {
         'smtp_host' => $_ENV['SMTP_HOST'] ?? 'smtp.hostinger.com',
         'smtp_port' => intval($_ENV['SMTP_PORT'] ?? 465),
         'smtp_secure' => $_ENV['SMTP_SECURE'] ?? 'ssl',
-        'smtp_user' => $_ENV['SMTP_USER'] ?? 'no-replay@ebi.ccbcampinas.org.br',
+        'smtp_user' => $_ENV['SMTP_USER'] ?? 'no-reply@ebi.ccbcampinas.org.br',
         'smtp_password' => $_ENV['SMTP_PASSWORD'] ?? 'senha123',
-        'from_email' => $_ENV['EMAIL_FROM'] ?? 'no-replay@ebi.ccbcampinas.org.br',
+        'from_email' => $_ENV['EMAIL_FROM'] ?? 'no-reply@ebi.ccbcampinas.org.br',
         'from_name' => $_ENV['EMAIL_FROM_NAME'] ?? 'EBI Self-Service'
     ];
 
