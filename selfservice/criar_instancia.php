@@ -309,8 +309,10 @@ ID da Instância: $user_id
         $baseUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") 
                    . "://" . $_SERVER['HTTP_HOST'];
         $currentPath = dirname($_SERVER['PHP_SELF']);
-        
-        $link = $baseUrl . $currentPath . '/instances/' . $user_id . '/public_html/ebi/index.php';
+
+        // Calcular o caminho relativo da instância para URL
+        $instancesRelativePath = substr(INSTANCE_BASE_PATH, strlen(SELFSERVICE_ROOT) + 1);
+        $link = $baseUrl . $currentPath . '/../' . $instancesRelativePath . '/' . $user_id . '/public_html/ebi/index.php';
         
         // 8. Salvar log de criação no arquivo central
         $logCentral = DATA_PATH . '/instancias_criadas.log';
