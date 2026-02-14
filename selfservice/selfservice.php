@@ -1,13 +1,22 @@
 <?php
 session_start();
 
+// Carregar .env se existir
+if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
+    require __DIR__ . '/../vendor/autoload.php';
+    if (class_exists('Dotenv\Dotenv') && file_exists(__DIR__ . '/../.env')) {
+        $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
+        $dotenv->safeLoad();
+    }
+}
+
 // Rate Limiting (proteção contra abuso)
 require_once __DIR__ . '/inc/rate_limit.php';
 
 // Verificar rate limit antes de processar qualquer requisição
 $clientIP = getClientIP();
-$maxRequests = 10; // Permitir 10 requisições
-$timeWindow = 3600; // Em 1 hora (3600 segundos)
+$maxRequests = (int)($_ENV['RATE_LIMIT_MAX_REQUESTS'] ?? 50); // Ler do .env
+$timeWindow = (int)($_ENV['RATE_LIMIT_TIME_WINDOW'] ?? 3600); // Ler do .env
 
 if (!checkRateLimit($clientIP, $maxRequests, $timeWindow)) {
     $status = getRateLimitStatus($clientIP, $maxRequests, $timeWindow);
