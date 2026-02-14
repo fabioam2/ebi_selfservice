@@ -250,8 +250,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['cadastrar'])) {
         // Gerar link da instância existente
         $baseUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http")
                    . "://" . $_SERVER['HTTP_HOST'];
-        // Calcular o caminho relativo da instância para URL (absoluto a partir da raiz)
-        $instancesRelativePath = substr(INSTANCE_BASE_PATH, strlen(SELFSERVICE_ROOT) + 1);
+        // Calcular o caminho relativo da instância para URL (absoluto a partir da raiz do projeto)
+        $instancesRelativePath = substr(INSTANCE_BASE_PATH, strlen(PROJECT_ROOT) + 1);
         $_SESSION['link_instancia_existente'] = $baseUrl . '/' . $instancesRelativePath . '/' . $user_id_existente . '/public_html/ebi/index.php';
 
         header("Location: selfservice.php");
