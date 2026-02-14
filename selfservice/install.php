@@ -73,28 +73,30 @@ if (!empty($erros)) {
     exit;
 }
 
+// Load paths configuration
+require_once __DIR__ . '/inc/paths.php';
+
 // PASSO 2: Criar Diretórios
 echo "<div class='step'>";
 echo "<h3>📁 Passo 2: Criando Estrutura de Diretórios</h3>";
 
 $diretorios = [
-    'data',
-    'instances',
-    'backups',
-    'template'
+    'data' => __DIR__ . '/data',
+    'ebi/i' => INSTANCE_BASE_PATH,
+    'ebi/template' => TEMPLATE_PATH,
+    'backups' => __DIR__ . '/backups'
 ];
 
-foreach ($diretorios as $dir) {
-    $caminho = __DIR__ . '/' . $dir;
+foreach ($diretorios as $nome => $caminho) {
     if (!file_exists($caminho)) {
         if (mkdir($caminho, 0755, true)) {
-            echo "<p class='success'>✅ Diretório /$dir criado</p>";
+            echo "<p class='success'>✅ Diretório $nome criado</p>";
         } else {
-            echo "<p class='error'>❌ Erro ao criar /$dir</p>";
-            $erros[] = "Não foi possível criar $dir";
+            echo "<p class='error'>❌ Erro ao criar $nome</p>";
+            $erros[] = "Não foi possível criar $nome";
         }
     } else {
-        echo "<p class='warning'>⚠️ Diretório /$dir já existe</p>";
+        echo "<p class='warning'>⚠️ Diretório $nome já existe</p>";
     }
 }
 
@@ -108,9 +110,11 @@ Options -Indexes
 </FilesMatch>
 ";
 
-foreach (['data', 'instances', 'backups'] as $dir) {
-    file_put_contents(__DIR__ . '/' . $dir . '/.htaccess', $htaccessContent);
-    echo "<p class='success'>✅ .htaccess criado em /$dir</p>";
+foreach ([__DIR__ . '/data' => 'data', INSTANCE_BASE_PATH => 'ebi/i', __DIR__ . '/backups' => 'backups'] as $path => $name) {
+    if (file_exists($path)) {
+        file_put_contents($path . '/.htaccess', $htaccessContent);
+        echo "<p class='success'>✅ .htaccess criado em $name</p>";
+    }
 }
 
 echo "</div>";
@@ -149,12 +153,12 @@ echo "</div>";
 echo "<div class='step'>";
 echo "<h3>🔐 Passo 4: Testando Permissões de Escrita</h3>";
 
-$testarDiretorios = ['data', 'instances', 'backups'];
-foreach ($testarDiretorios as $dir) {
-    $testFile = __DIR__ . '/' . $dir . '/.test_write';
+$testarDiretorios = [__DIR__ . '/data' => 'data', INSTANCE_BASE_PATH => 'ebi/i', __DIR__ . '/backups' => 'backups'];
+foreach ($testarDiretorios as $path => $name) {
+    $testFile = $path . '/.test_write';
     if (file_put_contents($testFile, 'test') !== false) {
         unlink($testFile);
-        echo "<p class='success'>✅ Permissão de escrita OK em /$dir</p>";
+        echo "<p class='success'>✅ Permissão de escrita OK em $name</p>";
     } else {
         echo "<p class='error'>❌ Sem permissão de escrita em /$dir</p>";
         $erros[] = "Permissão negada em $dir";

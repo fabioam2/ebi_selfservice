@@ -36,7 +36,7 @@ function resolvePath(string $relativePath): string {
  * @return string Caminho absoluto do diretório de instâncias
  */
 function getInstanceBasePath(): string {
-    $path = $_ENV['INSTANCE_BASE_PATH'] ?? 'selfservice/instances';
+    $path = $_ENV['INSTANCE_BASE_PATH'] ?? 'ebi/i';
     return resolvePath($path);
 }
 
@@ -46,7 +46,7 @@ function getInstanceBasePath(): string {
  * @return string Caminho absoluto do diretório do template
  */
 function getTemplatePath(): string {
-    $path = $_ENV['TEMPLATE_PATH'] ?? 'selfservice/template';
+    $path = $_ENV['TEMPLATE_PATH'] ?? 'ebi/template';
     return resolvePath($path);
 }
 

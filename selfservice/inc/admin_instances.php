@@ -124,7 +124,9 @@
                         <td><small><code><?php echo htmlspecialchars($inst['user_id'] ?? 'N/A'); ?></code></small></td>
                         <td class="text-center">
                             <?php
-                            $link = 'instances/' . ($inst['user_id'] ?? '') . '/public_html/ebi/index.php';
+                            // Calculate relative path from admin.php to instance
+                            $instancesRelativePath = substr(INSTANCE_BASE_PATH, strlen(SELFSERVICE_ROOT) + 1);
+                            $link = '../' . $instancesRelativePath . '/' . ($inst['user_id'] ?? '') . '/public_html/ebi/index.php';
                             ?>
                             <a href="<?php echo $link; ?>" target="_blank" class="btn btn-sm btn-info btn-action" title="Acessar Sistema">
                                 <i class="fas fa-external-link-alt"></i>
@@ -187,6 +189,12 @@
 </div>
 
 <script>
+<?php
+// Calculate relative path for instances
+$instancesRelativePath = substr(INSTANCE_BASE_PATH, strlen(SELFSERVICE_ROOT) + 1);
+?>
+const INSTANCES_RELATIVE_PATH = '<?php echo $instancesRelativePath; ?>';
+
 $(document).ready(function() {
     // Setup busca
     setupTableSearch('searchInput', 'tabelaInstancias');
@@ -227,7 +235,7 @@ function verDetalhes(jsonData) {
         html += '</table>';
 
         // Link da instância
-        const link = 'instances/' + inst.user_id + '/public_html/ebi/index.php';
+        const link = '../' + INSTANCES_RELATIVE_PATH + '/' + inst.user_id + '/public_html/ebi/index.php';
         const fullLink = window.location.origin + window.location.pathname.replace('admin.php', '') + link;
 
         html += `<div class="alert alert-info">
