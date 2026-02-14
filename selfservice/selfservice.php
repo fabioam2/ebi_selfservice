@@ -15,16 +15,18 @@ if (!checkRateLimit($clientIP, $maxRequests, $timeWindow)) {
     // showRateLimitError() faz exit, código não continua
 }
 
+// Load paths configuration
+require_once __DIR__ . '/inc/paths.php';
+
 // Configurações do Self-Service
 define('DB_SELFSERVICE', __DIR__ . '/data/selfservice_users.txt');
-define('INSTANCES_DIR', __DIR__ . '/instances/');
 
 // Cria diretórios necessários
 if (!file_exists(dirname(DB_SELFSERVICE))) {
     mkdir(dirname(DB_SELFSERVICE), 0755, true);
 }
-if (!file_exists(INSTANCES_DIR)) {
-    mkdir(INSTANCES_DIR, 0755, true);
+if (!file_exists(INSTANCE_BASE_PATH)) {
+    mkdir(INSTANCE_BASE_PATH, 0755, true);
 }
 
 // --- CSRF ---
@@ -70,7 +72,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['apagar_instancia'])) {
             require_once 'criar_instancia.php';
 
             // Obter senha admin do config.ini da instância
-            $configFile = INSTANCES_DIR . $user_id_existente . '/config/config.ini';
+            $configFile = INSTANCE_BASE_PATH . '/' . $user_id_existente . '/config/config.ini';
 
             if (!file_exists($configFile)) {
                 $tipo_mensagem = 'danger';
@@ -249,7 +251,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['cadastrar'])) {
         $baseUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http")
                    . "://" . $_SERVER['HTTP_HOST'];
         $currentPath = dirname($_SERVER['PHP_SELF']);
-        $_SESSION['link_instancia_existente'] = $baseUrl . $currentPath . '/instances/' . $user_id_existente . '/public_html/ebi/index.php';
+        // Calcular o caminho relativo da instância para URL (relativo ao diretório selfservice)
+        $instancesRelativePath = substr(INSTANCE_BASE_PATH, strlen(SELFSERVICE_ROOT) + 1);
+        $_SESSION['link_instancia_existente'] = $baseUrl . $currentPath . '/../' . $instancesRelativePath . '/' . $user_id_existente . '/public_html/ebi/index.php';
 
         header("Location: selfservice.php");
         exit;

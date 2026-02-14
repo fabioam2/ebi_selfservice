@@ -180,7 +180,9 @@
                         <td><?php echo isset($inst['DATA_CRIACAO']) ? date('d/m/Y H:i', strtotime($inst['DATA_CRIACAO'])) : 'N/A'; ?></td>
                         <td class="text-center">
                             <?php
-                            $link = 'instances/' . ($inst['user_id'] ?? '') . '/public_html/ebi/index.php';
+                            // Calculate relative path from admin.php to instance
+                            $instancesRelativePath = substr(INSTANCE_BASE_PATH, strlen(SELFSERVICE_ROOT) + 1);
+                            $link = '../' . $instancesRelativePath . '/' . ($inst['user_id'] ?? '') . '/public_html/ebi/index.php';
                             ?>
                             <a href="<?php echo $link; ?>" target="_blank" class="btn btn-sm btn-info btn-action" title="Acessar">
                                 <i class="fas fa-external-link-alt"></i>

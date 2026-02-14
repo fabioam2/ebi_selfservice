@@ -17,6 +17,9 @@
  *   0 * * * * php /caminho/para/cleanup_instances.php --force >> /var/log/cleanup_instances.log 2>&1
  */
 
+// Load paths configuration
+require_once __DIR__ . '/inc/paths.php';
+
 // Configurações
 $dryRun = in_array('--dry-run', $argv ?? []);
 $force = in_array('--force', $argv ?? []);
@@ -24,8 +27,8 @@ $verbose = in_array('--verbose', $argv ?? []);
 
 // Diretórios
 $baseDir = __DIR__;
-$instancesDir = $baseDir . '/instances/';
-$templateConfigFile = $baseDir . '/template/config.ini';
+$instancesDir = INSTANCE_BASE_PATH . '/';
+$templateConfigFile = TEMPLATE_PATH . '/config.ini';
 
 // Log
 function logMessage($message, $isVerbose = false) {
