@@ -216,8 +216,9 @@ function gerarCodigoZPL($nomeCrianca, $nomeResponsavel, $idade, $codigo, $telefo
     $zpl .= "^FO80," . $ini_pos . "^A0R,60,50^FD" . $nomeCriancaLimpo . "^FS" . PHP_EOL;
     $zpl .= "^FO50," . $ini_pos . "^A0R,30,40^FDIdade: " . $idadeLimpa . " anos      Cod.:" . $codigoLimpo . "^FS" . PHP_EOL;
     $zpl .= "^FO10," . $ini_pos . "^A0R,30,35^FDRsp: " . $nomeResponsavelLimpo . "^FS" . PHP_EOL;
-    $zpl .= "^FO140,1^A0R,30,35^FD|^FS" . PHP_EOL;
+    $zpl .= "^FO140," . (FECHOINI*DOTS) . "^A0R,30,35^FD|^FS" . PHP_EOL;
     $zpl .= "^FO140," . (PULSEIRAUTIL - 35) . "^A0R,30,35^FD|^FS" . PHP_EOL;
+
     $zpl .= "^PQ1,0,1,Y" . PHP_EOL;
     $zpl .= "^XZ" . PHP_EOL;
     return $zpl;
@@ -251,8 +252,8 @@ function gerarCodigoZPLResponsavel($nomeResponsavel, $nomesCriancasDoGrupo, $cod
         $nomeParaExibir = $nomesCriancasLimpasEProcessadas[$k] ?? '';
         $zpl .= "^FO" . $posicoesX[$k] . "," . $yPosCriancas . "^A0R,30,35^FD" . $nomeParaExibir . "^FS" . PHP_EOL;
     }
-    $zpl .= "^FO140,1^A0R,30,35^FD|^FS" . PHP_EOL;
-    $zpl .= "^FO140," . (PULSEIRAUTIL - 35) . "^A0R,30,35^FD|^FS" . PHP_EOL;
+    $zpl .= "^FO140," . (FECHOINI*DOTS) . "^A0R,30,35^FD|^FS" . PHP_EOL;
+    $zpl .= "^FO140," . (PULSEIRAUTIL-35) . "^A0R,30,35^FD|^FS" . PHP_EOL;
     $zpl .= "^PQ1,0,1,Y" . PHP_EOL;
     $zpl .= "^XZ" . PHP_EOL;
     return $zpl;
