@@ -1372,8 +1372,15 @@
         /**
          * Função central de impressão.
          * Aguarda o auto-connect terminar (qzReadyPromise) antes de decidir a rota.
-         * Se QZ Tray estiver conectado e impressora salva → imprime via QZ Tray (como calibrar.php).
+         * Se QZ Tray estiver conectado e impressora salva → imprime via QZ Tray.
          * Caso contrário → fallback HTTP para URL_IMPRESSORA.
+         *
+         * ENCODING: O ZPL usa ^CI28 (UTF-8). QZ Tray transmite strings JS como
+         * Latin-1/CP1252 por padrão, corrompendo caracteres multibyte (ó, à...).
+         * O byte 0xF3 (ó em Latin-1) é interpretado pela impressora UTF-8 como
+         * início de sequência de 4 bytes — consumindo os próximos 3 bytes ASCII
+         * (. ; , etc.) junto, fazendo TODOS desaparecerem da etiqueta.
+         * Solução: TextEncoder → UTF-8 bytes → base64 → QZ Tray raw/base64.
          */
         async function _ebiPrint(url, payload) {
             // Aguarda o auto-connect terminar (nunca rejeita — catch interno)
@@ -1383,9 +1390,14 @@
 
             var printerName = localStorage.getItem('qzPrinterSelecionada') || '';
             if (printerName && qzConnected && qz.websocket.isActive()) {
-                // Impressão via QZ Tray — igual ao calibrar.php: sendCmd usa qz.print(cfg, [string])
+                // Converter ZPL para bytes UTF-8 → base64 antes de enviar ao QZ Tray.
+                // Isso garante que os bytes chegam intactos à impressora (^CI28 exige UTF-8).
+                var utf8Bytes = new TextEncoder().encode(payload.data);
+                var binary = '';
+                utf8Bytes.forEach(function(b) { binary += String.fromCharCode(b); });
+
                 var cfg = qz.configs.create(printerName);
-                await qz.print(cfg, [payload.data]);
+                await qz.print(cfg, [{ type: 'raw', format: 'base64', data: btoa(binary) }]);
                 return { ok: true, text: function() { return Promise.resolve('OK via QZ Tray (' + printerName + ')'); } };
             } else {
                 // Fallback: HTTP para URL_IMPRESSORA (comportamento legado)
