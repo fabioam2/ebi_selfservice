@@ -1154,7 +1154,7 @@
             });
         }
 
-        function enviarZPLDebug() {
+        async function enviarZPLDebug() {
             const zpl = $('#debug_zpl_code').val();
             const url = $('#debug_url_impressora').val();
 
@@ -1178,29 +1178,19 @@
 
             $('#modalDebugZPL').modal('hide');
 
-            fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-            })
-            .then(response => {
+            try {
+                const response = await _ebiPrint(url, payload);
                 if (!response.ok) {
-                    return response.text().then(text => {
-                        throw new Error('Falha na impressão: ' + response.status + ' ' + text);
-                    });
+                    const text = await response.text();
+                    throw new Error('Falha na impressão: ' + (response.status || '') + ' ' + text);
                 }
-                return response.text();
-            })
-            .then(result => {
-                console.log('Impressão enviada com sucesso:', result);
-                alert('✓ Comando ZPL enviado para a impressora com sucesso!\n\nResposta: ' + result);
-            })
-            .catch(error => {
-                console.error('Erro ao enviar impressão:', error);
-                alert('✗ Erro ao enviar para impressora:\n\n' + error.message);
-            });
+                const result = await response.text();
+                console.log('Impressão debug enviada com sucesso:', result);
+                alert('✓ ZPL enviado com sucesso!\n\nResposta: ' + result);
+            } catch (error) {
+                console.error('Erro ao enviar impressão debug:', error);
+                alert('✗ Erro ao enviar:\n\n' + error.message);
+            }
         }
 
         function abrirModalZerarArquivo() {
