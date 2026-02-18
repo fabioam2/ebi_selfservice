@@ -289,6 +289,12 @@
                     </div>
                     <?php endif; ?>
                 </div>
+                <!-- Badge status QZ Tray -->
+                <span id="qzStatusBadge" class="badge badge-secondary mr-2" style="font-size:0.75rem; cursor:pointer; padding: 6px 10px; vertical-align: middle;" onclick="abrirModalQZTray()" title="Status do QZ Tray — clique para configurar">
+                    <span id="qzStatusDot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#dc3545;margin-right:4px;vertical-align:middle;"></span>
+                    <span id="qzStatusText">QZ: Desconectado</span>
+                </span>
+
                 <div class="dropdown">
                     <button class="btn btn-info dropdown-toggle" type="button" id="dropdownMenuAdmin" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear-fill mr-2" viewBox="0 0 16 16"><path d="M9.405 1.05c-.413-1.4-2.397-1.4-2.81 0l-.1.34a1.464 1.464 0 0 1-2.105.872l-.31-.17c-1.283-.698-2.686.705-1.987 1.987l.169.311a1.464 1.464 0 0 1-.872 2.105l-.34.1c-1.4.413-1.4 2.397 0 2.81l.34.1a1.464 1.464 0 0 1 .872 2.105l-.17.31c-.698 1.283.705 2.686 1.987 1.987l.311-.169a1.464 1.464 0 0 1 2.105.872l.1.34c.413 1.4 2.397 1.4 2.81 0l.1-.34a1.464 1.464 0 0 1 2.105-.872l.31.17c1.283.698 2.686-.705 1.987-1.987l-.169-.311a1.464 1.464 0 0 1 .872-2.105l.34-.1c1.4-.413-1.4-2.397 0-2.81l.34-.1a1.464 1.464 0 0 1 .872-2.105l.17-.31c.698-1.283-.705-2.686-1.987-1.987l-.311.169a1.464 1.464 0 0 1-2.105-.872zM8 10.93a2.929 2.929 0 1 1 0-5.858 2.929 2.929 0 0 1 0 5.858z"/></svg>
@@ -303,6 +309,15 @@
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bug mr-1" viewBox="0 0 16 16"><path d="M4.355.522a.5.5 0 0 1 .623.333l.291.956A4.979 4.979 0 0 1 8 1c1.007 0 1.946.298 2.731.811l.29-.956a.5.5 0 1 1 .957.29l-.41 1.352A4.985 4.985 0 0 1 13 6h.5a.5.5 0 0 0 0-1h-.538l-.853-2.56a.5.5 0 1 1 .957-.29l.956 2.87A2 2 0 0 1 15.5 7.5v1a2 2 0 0 1-2 2h-.5v.5a5 5 0 0 1-10 0V10h-.5a2 2 0 0 1-2-2v-1a2 2 0 0 1 1.478-1.93l.956-2.87a.5.5 0 1 1 .957.29L2.538 5H2a.5.5 0 0 0 0 1h.5a4.985 4.985 0 0 1 1.432-3.503l-.41-1.352a.5.5 0 0 1 .333-.623zM4 7v4a4 4 0 0 0 8 0V7a4 4 0 0 0-8 0z"/></svg>
                             <span id="labelDebugMode">Modo Debug: OFF</span>
                         </button>
+                        <div class="dropdown-divider"></div>
+                        <button class="dropdown-item" type="button" onclick="abrirModalQZTray()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-usb-plug-fill mr-1" viewBox="0 0 16 16"><path d="M6.5 6a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z"/><path d="M3 10.5a.5.5 0 0 1 .5-.5H4V9H2V7H1.5a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 1 .5-.5H4V3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v1h2.5a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5H14v2h-1v1h.5a.5.5 0 0 1 0 1h-3l-1 1H7l-1-1H3.5a.5.5 0 0 1-.5-.5z"/></svg>
+                            Impressora QZ Tray
+                        </button>
+                        <a class="dropdown-item" href="calibrar.php" target="_blank">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sliders mr-1" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3h9.05zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8h2.05zm9.45 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm-2.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1h9.05z"/></svg>
+                            Calibrar
+                        </a>
                         <div class="dropdown-divider"></div>
                         <button class="dropdown-item" type="button" onclick="abrirModalZerarArquivo()">Zerar Arquivo</button>
                         <button class="dropdown-item" type="submit" name="preparar_recuperacao" form="formListaCriancas">Recuperar Backup <small class="text-muted">(.bkp.1 é o mais recente)</small></button>
@@ -430,6 +445,67 @@
                 </div>
             </div>
         <?php endif; ?>
+
+        <!-- Modal QZ Tray - Seleção de Impressora -->
+        <div class="modal fade" id="modalQZTray" tabindex="-1" role="dialog" aria-labelledby="modalQZTrayLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header bg-dark text-white">
+                        <h5 class="modal-title" id="modalQZTrayLabel">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-usb-plug-fill mr-2" viewBox="0 0 16 16"><path d="M6.5 6a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z"/><path d="M3 10.5a.5.5 0 0 1 .5-.5H4V9H2V7H1.5a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 1 .5-.5H4V3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v1h2.5a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5H14v2h-1v1h.5a.5.5 0 0 1 0 1h-3l-1 1H7l-1-1H3.5a.5.5 0 0 1-.5-.5z"/></svg>
+                            Impressora QZ Tray
+                        </h5>
+                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-info py-2">
+                            <small>O QZ Tray permite imprimir diretamente via USB sem necessidade de servidor HTTP local. Certifique-se de que o <strong>QZ Tray</strong> está instalado e em execução.</small>
+                        </div>
+
+                        <div id="qzModalStatus" class="alert alert-secondary py-2 mb-3">
+                            <span id="qzModalStatusDot" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#dc3545;margin-right:6px;vertical-align:middle;"></span>
+                            <span id="qzModalStatusText">Desconectado</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="qzPrinterSelect"><strong>Impressora:</strong></label>
+                            <div class="input-group">
+                                <select class="form-control" id="qzPrinterSelect" disabled>
+                                    <option value="">— Conecte ao QZ Tray primeiro —</option>
+                                </select>
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary btn-sm" type="button" id="btnRefreshQZPrinters" onclick="qzRefreshPrinters()" disabled title="Atualizar lista de impressoras">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <small class="form-text text-muted" id="qzPrinterSavedInfo"></small>
+                        </div>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-between">
+                        <div>
+                            <button type="button" class="btn btn-success btn-sm" id="btnQZConectar" onclick="qzConectar()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-plug-fill mr-1" viewBox="0 0 16 16"><path d="M6 0a.5.5 0 0 1 .5.5V3h3V.5a.5.5 0 0 1 1 0V3h1a.5.5 0 0 1 .5.5v3A3.5 3.5 0 0 1 8.5 10c-.002.434-.01.845-.04 1.22-.041.514-.126 1.003-.317 1.424a2.083 2.083 0 0 1-.97 1.028C6.725 13.9 6.169 14 5.5 14c-.998 0-1.61.33-1.974.718A1.922 1.922 0 0 0 3 16H2c0-.616.232-1.367.797-1.968C3.374 13.42 4.261 13 5.5 13c.494 0 .989-.27 1.223-.658.17-.28.277-.67.293-1.342H6a3.5 3.5 0 0 1-3.5-3.5v-3A.5.5 0 0 1 3 4h1V.5A.5.5 0 0 1 4.5 0h1A.5.5 0 0 1 6 .5V3h-.5V.5A.5.5 0 0 1 6 0z"/></svg>
+                                Conectar
+                            </button>
+                            <button type="button" class="btn btn-danger btn-sm d-none" id="btnQZDesconectar" onclick="qzDesconectar()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-plug mr-1" viewBox="0 0 16 16"><path d="M6 0a.5.5 0 0 1 .5.5V3h3V.5a.5.5 0 0 1 1 0V3h1a.5.5 0 0 1 .5.5v3A3.5 3.5 0 0 1 8.5 10c-.002.434-.01.845-.04 1.22-.041.514-.126 1.003-.317 1.424a2.083 2.083 0 0 1-.97 1.028C6.725 13.9 6.169 14 5.5 14c-.998 0-1.61.33-1.974.718A1.922 1.922 0 0 0 3 16H2c0-.616.232-1.367.797-1.968C3.374 13.42 4.261 13 5.5 13c.494 0 .989-.27 1.223-.658.17-.28.277-.67.293-1.342H6a3.5 3.5 0 0 1-3.5-3.5v-3A.5.5 0 0 1 3 4h1V.5A.5.5 0 0 1 4.5 0h1A.5.5 0 0 1 6 .5V3h-.5V.5A.5.5 0 0 1 6 0z"/></svg>
+                                Desconectar
+                            </button>
+                        </div>
+                        <div>
+                            <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Fechar</button>
+                            <button type="button" class="btn btn-primary btn-sm" id="btnQZSalvarImpressora" onclick="qzSalvarImpressora()" disabled>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-check2 mr-1" viewBox="0 0 16 16"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>
+                                Usar esta Impressora
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Modal Configuração da Impressora -->
         <div class="modal fade" id="modalConfigImpressora" tabindex="-1" role="dialog" aria-labelledby="modalConfigImpressoraLabel" aria-hidden="true">
@@ -600,6 +676,7 @@
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qz-tray@2/qz-tray.js"></script>
     <script>
         var csrfToken = <?php echo json_encode(csrf_token()); ?>;
         const NUM_LINHAS_FORM_CADASTRO = <?php echo NUM_LINHAS_FORMULARIO_CADASTRO; ?>;
@@ -1129,6 +1206,178 @@
                 document.getElementById('formApagarLinha').submit();
             }
         }
+
+        // ============ QZ TRAY ============
+
+        var qzConnected = false;
+
+        // Segurança: certificado e assinatura (relativos ao diretório do PHP)
+        qz.security.setCertificatePromise(function(resolve, reject) {
+            fetch('assets/signing/digital-certificate.txt', {
+                cache: 'no-store',
+                headers: { 'Content-Type': 'text/plain' }
+            }).then(function(data) {
+                data.ok ? resolve(data.text()) : reject(data.text());
+            }).catch(reject);
+        });
+
+        qz.security.setSignatureAlgorithm('SHA512');
+
+        qz.security.setSignaturePromise(function(toSign) {
+            return function(resolve, reject) {
+                fetch('assets/signing/sign-message.php?request=' + toSign, {
+                    cache: 'no-store',
+                    headers: { 'Content-Type': 'text/plain' }
+                }).then(function(data) {
+                    data.ok ? resolve(data.text()) : reject(data.text());
+                }).catch(reject);
+            };
+        });
+
+        function qzAtualizarBadge() {
+            var dot = document.getElementById('qzStatusDot');
+            var txt = document.getElementById('qzStatusText');
+            var modalDot = document.getElementById('qzModalStatusDot');
+            var modalTxt = document.getElementById('qzModalStatusText');
+            var badge = document.getElementById('qzStatusBadge');
+            var btnConectar = document.getElementById('btnQZConectar');
+            var btnDesconectar = document.getElementById('btnQZDesconectar');
+            var btnRefresh = document.getElementById('btnRefreshQZPrinters');
+            var printerSel = document.getElementById('qzPrinterSelect');
+            var btnSalvar = document.getElementById('btnQZSalvarImpressora');
+
+            if (qzConnected) {
+                dot.style.background = '#28a745';
+                txt.textContent = 'QZ: Conectado';
+                badge.className = 'badge badge-success mr-2';
+                if (modalDot) modalDot.style.background = '#28a745';
+                if (modalTxt) modalTxt.textContent = 'Conectado ao QZ Tray';
+                if (document.getElementById('qzModalStatus')) document.getElementById('qzModalStatus').className = 'alert alert-success py-2 mb-3';
+                if (btnConectar) { btnConectar.classList.add('d-none'); }
+                if (btnDesconectar) { btnDesconectar.classList.remove('d-none'); }
+                if (btnRefresh) btnRefresh.disabled = false;
+                if (printerSel) printerSel.disabled = false;
+                if (btnSalvar) btnSalvar.disabled = false;
+
+                var savedPrinter = localStorage.getItem('qzPrinterSelecionada') || '';
+                var info = document.getElementById('qzPrinterSavedInfo');
+                if (info) {
+                    info.textContent = savedPrinter
+                        ? 'Impressora ativa: ' + savedPrinter
+                        : 'Nenhuma impressora QZ Tray selecionada — impressão usará URL HTTP.';
+                }
+            } else {
+                dot.style.background = '#dc3545';
+                txt.textContent = 'QZ: Desconectado';
+                badge.className = 'badge badge-secondary mr-2';
+                if (modalDot) modalDot.style.background = '#dc3545';
+                if (modalTxt) modalTxt.textContent = 'Desconectado';
+                if (document.getElementById('qzModalStatus')) document.getElementById('qzModalStatus').className = 'alert alert-secondary py-2 mb-3';
+                if (btnConectar) { btnConectar.classList.remove('d-none'); }
+                if (btnDesconectar) { btnDesconectar.classList.add('d-none'); }
+                if (btnRefresh) btnRefresh.disabled = true;
+                if (printerSel) { printerSel.disabled = true; printerSel.innerHTML = '<option value="">— Conecte ao QZ Tray primeiro —</option>'; }
+                if (btnSalvar) btnSalvar.disabled = true;
+            }
+        }
+
+        function abrirModalQZTray() {
+            qzAtualizarBadge();
+            $('#modalQZTray').modal('show');
+        }
+
+        async function qzConectar() {
+            try {
+                var btnConectar = document.getElementById('btnQZConectar');
+                if (btnConectar) { btnConectar.disabled = true; btnConectar.textContent = 'Conectando…'; }
+                await qz.websocket.connect({
+                    host: 'localhost',
+                    port: { secure: [8181], insecure: [8182] },
+                    usingSecure: false,
+                    retries: 3,
+                    delay: 1
+                });
+                qzConnected = true;
+                qzAtualizarBadge();
+                await qzRefreshPrinters();
+            } catch (e) {
+                qzConnected = false;
+                qzAtualizarBadge();
+                alert('Erro ao conectar ao QZ Tray.\nVerifique se o QZ Tray está instalado e em execução.\n\nDetalhes: ' + e.message);
+            } finally {
+                var btnConectar = document.getElementById('btnQZConectar');
+                if (btnConectar) { btnConectar.disabled = false; btnConectar.textContent = 'Conectar'; }
+            }
+        }
+
+        async function qzDesconectar() {
+            try {
+                await qz.websocket.disconnect();
+            } catch (e) { /* ignora */ }
+            qzConnected = false;
+            localStorage.removeItem('qzPrinterSelecionada');
+            qzAtualizarBadge();
+        }
+
+        async function qzRefreshPrinters() {
+            if (!qzConnected) { alert('Conecte ao QZ Tray primeiro.'); return; }
+            try {
+                var list = await qz.printers.find();
+                var sel = document.getElementById('qzPrinterSelect');
+                var savedPrinter = localStorage.getItem('qzPrinterSelecionada') || '';
+                sel.innerHTML = '<option value="">— Selecione a impressora —</option>';
+                list.forEach(function(p) {
+                    var o = document.createElement('option');
+                    o.value = p; o.textContent = p;
+                    if (p === savedPrinter) o.selected = true;
+                    sel.appendChild(o);
+                });
+            } catch (e) {
+                alert('Erro ao listar impressoras: ' + e.message);
+            }
+        }
+
+        function qzSalvarImpressora() {
+            var sel = document.getElementById('qzPrinterSelect');
+            var printerName = sel ? sel.value : '';
+            if (!printerName) {
+                alert('Selecione uma impressora da lista.');
+                return;
+            }
+            localStorage.setItem('qzPrinterSelecionada', printerName);
+            qzAtualizarBadge();
+            $('#modalQZTray').modal('hide');
+            alert('Impressora QZ Tray configurada: ' + printerName + '\n\nAs próximas impressões usarão QZ Tray diretamente.');
+        }
+
+        /**
+         * Função central de impressão.
+         * Se um printer QZ Tray estiver selecionado e conectado, usa QZ Tray.
+         * Caso contrário, usa fetch para URL HTTP (comportamento legado).
+         * Retorna uma Promise compatível com a interface de fetch (objeto com .ok e .text()).
+         */
+        async function _ebiPrint(url, payload) {
+            var printerName = localStorage.getItem('qzPrinterSelecionada') || '';
+            if (printerName && qzConnected && qz.websocket.isActive()) {
+                // Impressão via QZ Tray
+                var cfg = qz.configs.create(printerName);
+                await qz.print(cfg, [payload.data]);
+                return { ok: true, text: function() { return Promise.resolve('OK via QZ Tray (' + printerName + ')'); } };
+            } else {
+                // Fallback: HTTP para URL_IMPRESSORA
+                return fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+            }
+        }
+
+        // Inicializar badge ao carregar
+        $(document).ready(function() {
+            qzAtualizarBadge();
+        });
+
     </script>
 
     <?php if (!empty($scriptsImpressao)): ?>

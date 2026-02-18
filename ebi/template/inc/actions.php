@@ -145,10 +145,10 @@ if (isset($_POST['imprimir'])) {
             currentId: currentId
         });
     } else {
-        // Modo normal: enviar diretamente
-        fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+        // Modo normal: enviar via QZ Tray (se configurado) ou HTTP
+        _ebiPrint(url, payload)
         .then(response => {
-            if (!response.ok) return response.text().then(text => { throw new Error('Falha (criança ' + nomeCrianca + '): ' + response.status + ' ' + text); });
+            if (!response.ok) return response.text().then(text => { throw new Error('Falha (criança ' + nomeCrianca + '): ' + (response.status || '') + ' ' + text); });
             return response.text();
         })
         .then(result => {
@@ -219,10 +219,10 @@ if (isset($_POST['imprimir'])) {
             codResp: codResp
         });
     } else {
-        // Modo normal: enviar diretamente
-        fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) })
+        // Modo normal: enviar via QZ Tray (se configurado) ou HTTP
+        _ebiPrint(url, payload)
         .then(response => {
-            if (!response.ok) return response.text().then(text => { throw new Error('Falha (responsável ' + nomeResp + '): ' + response.status + ' ' + text); });
+            if (!response.ok) return response.text().then(text => { throw new Error('Falha (responsável ' + nomeResp + '): ' + (response.status || '') + ' ' + text); });
             return response.text();
         })
         .then(result => { console.log('Etiqueta RESPONSÁVEL Cod Resp ' + codResp + ' (' + nomeResp + ') enviada. Resposta: ' + result); })
