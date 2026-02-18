@@ -1375,12 +1375,9 @@
          * Se QZ Tray estiver conectado e impressora salva → imprime via QZ Tray.
          * Caso contrário → fallback HTTP para URL_IMPRESSORA.
          *
-         * ENCODING: O ZPL usa ^CI28 (UTF-8). QZ Tray transmite strings JS como
-         * Latin-1/CP1252 por padrão, corrompendo caracteres multibyte (ó, à...).
-         * O byte 0xF3 (ó em Latin-1) é interpretado pela impressora UTF-8 como
-         * início de sequência de 4 bytes — consumindo os próximos 3 bytes ASCII
-         * (. ; , etc.) junto, fazendo TODOS desaparecerem da etiqueta.
-         * Solução: TextEncoder → UTF-8 bytes → base64 → QZ Tray raw/base64.
+         * ENCODING: ZPL usa ^CI28 (UTF-8). Convertemos para hex byte-a-byte via
+         * TextEncoder para que os bytes UTF-8 cheguem intactos à impressora,
+         * igual ao sendRawBytes() do calibrar.php (format:'hex').
          */
         async function _ebiPrint(url, payload) {
             // Aguarda o auto-connect terminar (nunca rejeita — catch interno)
@@ -1389,24 +1386,36 @@
             }
 
             var printerName = localStorage.getItem('qzPrinterSelecionada') || '';
-            if (printerName && qzConnected && qz.websocket.isActive()) {
-                // Converter ZPL para bytes UTF-8 → base64 antes de enviar ao QZ Tray.
-                // Isso garante que os bytes chegam intactos à impressora (^CI28 exige UTF-8).
-                var utf8Bytes = new TextEncoder().encode(payload.data);
-                var binary = '';
-                utf8Bytes.forEach(function(b) { binary += String.fromCharCode(b); });
+            console.log('[_ebiPrint] printerName=' + printerName + ' qzConnected=' + qzConnected);
 
-                var cfg = qz.configs.create(printerName);
-                await qz.print(cfg, [{ type: 'raw', format: 'base64', data: btoa(binary) }]);
-                return { ok: true, text: function() { return Promise.resolve('OK via QZ Tray (' + printerName + ')'); } };
+            if (printerName && qzConnected && qz.websocket.isActive()) {
+                try {
+                    // Converte ZPL para hex UTF-8 (igual a sendRawBytes em calibrar.php)
+                    var utf8Bytes = new TextEncoder().encode(payload.data);
+                    var hex = '';
+                    utf8Bytes.forEach(function(b) { hex += ('0' + b.toString(16)).slice(-2); });
+
+                    var cfg = qz.configs.create(printerName);
+                    await qz.print(cfg, [{ type: 'raw', format: 'hex', data: hex }]);
+                    console.log('[QZ Tray] Etiqueta enviada para: ' + printerName);
+                    return { ok: true, text: function() { return Promise.resolve('OK via QZ Tray (' + printerName + ')'); } };
+                } catch (e) {
+                    console.error('[QZ Tray] Erro ao imprimir:', e);
+                    alert('⚠️ Erro no QZ Tray ao imprimir:\n\n' + (e.message || e) + '\n\nUsando servidor HTTP como fallback...');
+                    qzConnected = false;
+                    try { qzAtualizarBadge(); } catch(_) {}
+                    // Cai no fetch HTTP abaixo
+                }
             } else {
-                // Fallback: HTTP para URL_IMPRESSORA (comportamento legado)
-                return fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+                console.log('[_ebiPrint] Usando HTTP fallback (QZ Tray não disponível)');
             }
+
+            // Fallback: HTTP para URL_IMPRESSORA
+            return fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
         }
 
         // Auto-connect iniciado IMEDIATAMENTE (fora do document.ready) para que
