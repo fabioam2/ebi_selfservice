@@ -1214,6 +1214,7 @@
         // ============ QZ TRAY ============
 
         var qzConnected = false;
+        var qzReadyPromise = null; // Promise que resolve quando auto-connect termina (sucesso ou falha)
 
         // Segurança: certificado e assinatura (relativos ao diretório do PHP)
         qz.security.setCertificatePromise(function(resolve, reject) {
@@ -1370,19 +1371,24 @@
 
         /**
          * Função central de impressão.
-         * Se um printer QZ Tray estiver selecionado e conectado, usa QZ Tray.
-         * Caso contrário, usa fetch para URL HTTP (comportamento legado).
-         * Retorna uma Promise compatível com a interface de fetch (objeto com .ok e .text()).
+         * Aguarda o auto-connect terminar (qzReadyPromise) antes de decidir a rota.
+         * Se QZ Tray estiver conectado e impressora salva → imprime via QZ Tray (como calibrar.php).
+         * Caso contrário → fallback HTTP para URL_IMPRESSORA.
          */
         async function _ebiPrint(url, payload) {
+            // Aguarda o auto-connect terminar (nunca rejeita — catch interno)
+            if (qzReadyPromise) {
+                try { await qzReadyPromise; } catch (e) { /* falha silenciosa */ }
+            }
+
             var printerName = localStorage.getItem('qzPrinterSelecionada') || '';
             if (printerName && qzConnected && qz.websocket.isActive()) {
-                // Impressão via QZ Tray
+                // Impressão via QZ Tray — igual ao calibrar.php: sendCmd usa qz.print(cfg, [string])
                 var cfg = qz.configs.create(printerName);
                 await qz.print(cfg, [payload.data]);
                 return { ok: true, text: function() { return Promise.resolve('OK via QZ Tray (' + printerName + ')'); } };
             } else {
-                // Fallback: HTTP para URL_IMPRESSORA
+                // Fallback: HTTP para URL_IMPRESSORA (comportamento legado)
                 return fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1391,28 +1397,39 @@
             }
         }
 
-        // Inicializar badge e auto-conectar ao carregar se houver impressora salva
+        // Auto-connect iniciado IMEDIATAMENTE (fora do document.ready) para que
+        // qzReadyPromise esteja disponível quando os scripts de impressão rodarem.
+        // Os scripts de impressão ($scriptsImpressao) executam antes do DOMContentLoaded,
+        // por isso a conexão deve ser iniciada aqui e não dentro do $(document).ready().
+        (function() {
+            var savedPrinter = localStorage.getItem('qzPrinterSelecionada') || '';
+            if (!savedPrinter) {
+                qzReadyPromise = Promise.resolve(); // nenhuma impressora — resolve imediatamente
+                return;
+            }
+            console.log('[QZ Tray] Impressora salva: "' + savedPrinter + '". Iniciando auto-conexão...');
+            qzReadyPromise = qz.websocket.connect({
+                host: 'localhost',
+                port: { secure: [8181], insecure: [8182] },
+                usingSecure: false,
+                retries: 2,
+                delay: 1
+            }).then(function() {
+                qzConnected = true;
+                console.log('[QZ Tray] Auto-conectado. Impressões irão para: "' + savedPrinter + '"');
+                try { qzAtualizarBadge(); } catch(e) {}
+            }).catch(function(e) {
+                console.warn('[QZ Tray] Auto-conexão falhou:', e.message || e);
+                try { qzAtualizarBadge(); } catch(e) {}
+            });
+        })();
+
+        // Badge atualizado quando o DOM estiver pronto
         $(document).ready(function() {
             qzAtualizarBadge();
-
-            var savedPrinter = localStorage.getItem('qzPrinterSelecionada') || '';
-            if (savedPrinter) {
-                // Tenta conectar silenciosamente ao QZ Tray sem mostrar alertas de erro
-                console.log('[QZ Tray] Impressora salva: "' + savedPrinter + '". Tentando auto-conectar...');
-                qz.websocket.connect({
-                    host: 'localhost',
-                    port: { secure: [8181], insecure: [8182] },
-                    usingSecure: false,
-                    retries: 2,
-                    delay: 1
-                }).then(function() {
-                    qzConnected = true;
-                    qzAtualizarBadge();
-                    console.log('[QZ Tray] Auto-conectado com sucesso. Impressões irão para: "' + savedPrinter + '"');
-                }).catch(function(e) {
-                    console.warn('[QZ Tray] Auto-conexão falhou (QZ Tray pode estar fechado):', e.message || e);
-                    // Badge já mostra "(offline)" — usuário pode clicar para conectar manualmente
-                });
+            // Aguarda qzReadyPromise para atualizar badge após conexão resolver
+            if (qzReadyPromise) {
+                qzReadyPromise.then(function() { qzAtualizarBadge(); }).catch(function() {});
             }
         });
 
