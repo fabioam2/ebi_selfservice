@@ -647,13 +647,17 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="debug_url_impressora">URL da Impressora:</label>
+                            <label for="debug_url_impressora">URL da Impressora (fallback HTTP):</label>
                             <input type="text" class="form-control" id="debug_url_impressora" value="<?php echo URL_IMPRESSORA; ?>">
                         </div>
 
+                        <div class="alert py-2 mb-2" id="debug_rota_alert" style="font-size:0.85rem;">
+                            <strong>Rota de impressão:</strong> <span id="debug_rota_text">verificando...</span>
+                        </div>
+
                         <div class="form-group">
-                            <label>Comando cURL equivalente:</label>
-                            <textarea class="form-control" id="debug_curl_command" rows="4" readonly style="font-family: 'Courier New', monospace; font-size: 11px; background-color: #f8f9fa;"></textarea>
+                            <label>Comando equivalente:</label>
+                            <textarea class="form-control" id="debug_curl_command" rows="5" readonly style="font-family: 'Courier New', monospace; font-size: 11px; background-color: #f8f9fa;"></textarea>
                             <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="copiarCurl()">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/></svg>
                                 Copiar cURL
@@ -662,9 +666,9 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                        <button type="button" class="btn btn-success" onclick="enviarZPLDebug()">
+                        <button type="button" class="btn btn-success" id="btnEnviarDebug" onclick="enviarZPLDebug()">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send-fill mr-1" viewBox="0 0 16 16"><path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z"/></svg>
-                            Enviar para Impressora
+                            <span id="debug_btn_label">Enviar para Impressora</span>
                         </button>
                     </div>
                 </div>
@@ -1087,6 +1091,8 @@
         function atualizarCurlCommand() {
             const zpl = $('#debug_zpl_code').val();
             const url = $('#debug_url_impressora').val();
+            const printerName = localStorage.getItem('qzPrinterSelecionada') || '';
+            const viaQZ = printerName && qzConnected && qz.websocket.isActive();
 
             const payload = {
                 "device": {
@@ -1101,11 +1107,31 @@
                 "data": zpl
             };
 
-            const curlCmd = `curl -X POST '${url}' \\
-  -H 'Content-Type: application/json' \\
-  -d '${JSON.stringify(payload).replace(/'/g, "'\\''")}'`;
+            let commandText;
+            if (viaQZ) {
+                commandText  = '// Impressão via QZ Tray (impressora: "' + printerName + '")\n';
+                commandText += '// ZPL convertido para hex UTF-8 e enviado direto ao driver.\n';
+                commandText += '// Equivalente JS:\n';
+                commandText += 'var utf8 = new TextEncoder().encode(zpl);\n';
+                commandText += 'var hex = [...utf8].map(b => b.toString(16).padStart(2,"0")).join("");\n';
+                commandText += 'qz.print(\n';
+                commandText += '  qz.configs.create("' + printerName + '"),\n';
+                commandText += '  [{ type: "raw", format: "hex", data: hex }]\n';
+                commandText += ');';
 
-            $('#debug_curl_command').val(curlCmd);
+                $('#debug_rota_alert').removeClass('alert-secondary alert-info').addClass('alert-success');
+                $('#debug_rota_text').html('<strong>QZ Tray</strong> — impressora: <em>' + printerName + '</em>');
+                $('#debug_btn_label').text('Enviar via QZ Tray');
+            } else {
+                const curlCmd = `curl -X POST '${url}' \\\n  -H 'Content-Type: application/json' \\\n  -d '${JSON.stringify(payload).replace(/'/g, "'\\''")}'`;
+                commandText = curlCmd;
+
+                $('#debug_rota_alert').removeClass('alert-success alert-info').addClass('alert-secondary');
+                $('#debug_rota_text').html('<strong>HTTP</strong> — ' + url + (printerName ? ' <em>(QZ Tray desconectado — reconecte para usar QZ Tray)</em>' : ''));
+                $('#debug_btn_label').text('Enviar via HTTP');
+            }
+
+            $('#debug_curl_command').val(commandText);
         }
 
         $('#debug_zpl_code, #debug_url_impressora').on('input', function() {
@@ -1128,7 +1154,7 @@
             });
         }
 
-        function enviarZPLDebug() {
+        async function enviarZPLDebug() {
             const zpl = $('#debug_zpl_code').val();
             const url = $('#debug_url_impressora').val();
 
@@ -1152,29 +1178,19 @@
 
             $('#modalDebugZPL').modal('hide');
 
-            fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-            })
-            .then(response => {
+            try {
+                const response = await _ebiPrint(url, payload);
                 if (!response.ok) {
-                    return response.text().then(text => {
-                        throw new Error('Falha na impressão: ' + response.status + ' ' + text);
-                    });
+                    const text = await response.text();
+                    throw new Error('Falha na impressão: ' + (response.status || '') + ' ' + text);
                 }
-                return response.text();
-            })
-            .then(result => {
-                console.log('Impressão enviada com sucesso:', result);
-                alert('✓ Comando ZPL enviado para a impressora com sucesso!\n\nResposta: ' + result);
-            })
-            .catch(error => {
-                console.error('Erro ao enviar impressão:', error);
-                alert('✗ Erro ao enviar para impressora:\n\n' + error.message);
-            });
+                const result = await response.text();
+                console.log('Impressão debug enviada com sucesso:', result);
+                alert('✓ ZPL enviado com sucesso!\n\nResposta: ' + result);
+            } catch (error) {
+                console.error('Erro ao enviar impressão debug:', error);
+                alert('✗ Erro ao enviar:\n\n' + error.message);
+            }
         }
 
         function abrirModalZerarArquivo() {
