@@ -1,0 +1,20 @@
+# ================================================================
+# .htaccess — Proteção da pasta assets/signing/
+# Bloqueia acesso direto via URL à chave privada e ao certificado
+# ================================================================
+
+# Bloqueia acesso à chave privada
+<Files "private-key.pem">
+    Require all denied
+</Files>
+
+# Bloqueia acesso ao certificado público (opcional, mas recomendado)
+# Se quiser que o certificado seja acessível via fetch(), remova este bloco
+# <Files "digital-certificate.txt">
+#     Require all denied
+# </Files>
+
+# Apenas sign-message.php pode ser chamado externamente
+<FilesMatch "^(?!sign-message\.php$).*\.php$">
+    Require all denied
+</FilesMatch>
