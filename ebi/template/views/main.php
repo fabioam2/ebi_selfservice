@@ -496,6 +496,10 @@
                             </button>
                         </div>
                         <div>
+                            <button type="button" class="btn btn-outline-danger btn-sm" id="btnQZEsquecer" onclick="qzEsquecerImpressora()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
+                                Esquecer Impressora
+                            </button>
                             <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Fechar</button>
                             <button type="button" class="btn btn-primary btn-sm" id="btnQZSalvarImpressora" onclick="qzSalvarImpressora()" disabled>
                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-check2 mr-1" viewBox="0 0 16 16"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>
@@ -1267,17 +1271,24 @@
                         : 'Nenhuma impressora QZ Tray selecionada — impressão usará URL HTTP.';
                 }
             } else {
-                dot.style.background = '#dc3545';
-                txt.textContent = 'QZ: Desconectado';
-                badge.className = 'badge badge-secondary mr-2';
+                var savedPrinterDisc = localStorage.getItem('qzPrinterSelecionada') || '';
+                dot.style.background = savedPrinterDisc ? '#ffc107' : '#dc3545';
+                txt.textContent = savedPrinterDisc ? 'QZ: ' + savedPrinterDisc + ' (offline)' : 'QZ: Desconectado';
+                badge.className = savedPrinterDisc ? 'badge badge-warning mr-2' : 'badge badge-secondary mr-2';
                 if (modalDot) modalDot.style.background = '#dc3545';
-                if (modalTxt) modalTxt.textContent = 'Desconectado';
+                if (modalTxt) modalTxt.textContent = savedPrinterDisc ? 'Desconectado (impressora salva: ' + savedPrinterDisc + ')' : 'Desconectado';
                 if (document.getElementById('qzModalStatus')) document.getElementById('qzModalStatus').className = 'alert alert-secondary py-2 mb-3';
                 if (btnConectar) { btnConectar.classList.remove('d-none'); }
                 if (btnDesconectar) { btnDesconectar.classList.add('d-none'); }
                 if (btnRefresh) btnRefresh.disabled = true;
                 if (printerSel) { printerSel.disabled = true; printerSel.innerHTML = '<option value="">— Conecte ao QZ Tray primeiro —</option>'; }
                 if (btnSalvar) btnSalvar.disabled = true;
+                var info = document.getElementById('qzPrinterSavedInfo');
+                if (info) {
+                    info.textContent = savedPrinterDisc
+                        ? 'Impressora salva: ' + savedPrinterDisc + ' — conecte para usar QZ Tray.'
+                        : 'Nenhuma impressora QZ Tray configurada.';
+                }
             }
         }
 
@@ -1315,8 +1326,15 @@
                 await qz.websocket.disconnect();
             } catch (e) { /* ignora */ }
             qzConnected = false;
-            localStorage.removeItem('qzPrinterSelecionada');
+            // NÃO remove a impressora salva — ela será reutilizada no próximo acesso/refresh
             qzAtualizarBadge();
+        }
+
+        function qzEsquecerImpressora() {
+            if (confirm('Remover a impressora QZ Tray salva?\nAs próximas impressões voltarão a usar HTTP.')) {
+                localStorage.removeItem('qzPrinterSelecionada');
+                qzAtualizarBadge();
+            }
         }
 
         async function qzRefreshPrinters() {
@@ -1373,9 +1391,29 @@
             }
         }
 
-        // Inicializar badge ao carregar
+        // Inicializar badge e auto-conectar ao carregar se houver impressora salva
         $(document).ready(function() {
             qzAtualizarBadge();
+
+            var savedPrinter = localStorage.getItem('qzPrinterSelecionada') || '';
+            if (savedPrinter) {
+                // Tenta conectar silenciosamente ao QZ Tray sem mostrar alertas de erro
+                console.log('[QZ Tray] Impressora salva: "' + savedPrinter + '". Tentando auto-conectar...');
+                qz.websocket.connect({
+                    host: 'localhost',
+                    port: { secure: [8181], insecure: [8182] },
+                    usingSecure: false,
+                    retries: 2,
+                    delay: 1
+                }).then(function() {
+                    qzConnected = true;
+                    qzAtualizarBadge();
+                    console.log('[QZ Tray] Auto-conectado com sucesso. Impressões irão para: "' + savedPrinter + '"');
+                }).catch(function(e) {
+                    console.warn('[QZ Tray] Auto-conexão falhou (QZ Tray pode estar fechado):', e.message || e);
+                    // Badge já mostra "(offline)" — usuário pode clicar para conectar manualmente
+                });
+            }
         });
 
     </script>
