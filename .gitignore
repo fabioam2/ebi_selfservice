@@ -153,6 +153,8 @@ build/
 # -----------------------------------------
 # Arquivos Específicos do Projeto
 # -----------------------------------------
+# Timestamp de último acesso (gerado em runtime pelo bootstrap.php)
+.lastaccess
 # Flag de instalação (manter no repo)
 # !/selfservice/.instalado
 
