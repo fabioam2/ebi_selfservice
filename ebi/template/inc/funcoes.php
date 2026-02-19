@@ -198,30 +198,6 @@ function processarNomeParaZPL($nomeCompleto, $maxLength = 0) {
     return $nomeProcessado;
 }
 
-/**
- * Converte string UTF-8 para sequências hex ZPL ^FH usando Windows-1252 (CP1252).
- * Caracteres não-ASCII (>0x7E) e underscore (_) são codificados como _XX.
- * Caracteres ASCII comuns passam sem alteração.
- * Compatível com ^CI13 + ^FH no ZPL.
- * Exemplo: "Á" → "_C1", "ç" → "_E7", "_" → "_5F"
- */
-function zplHexCP1252(string $utf8Str): string {
-    $cp1252 = @mb_convert_encoding($utf8Str, 'Windows-1252', 'UTF-8');
-    if ($cp1252 === false || $cp1252 === '') {
-        $cp1252 = $utf8Str; // fallback: usa original
-    }
-    $result = '';
-    for ($i = 0; $i < strlen($cp1252); $i++) {
-        $byte = ord($cp1252[$i]);
-        if ($byte > 0x7E || $byte === 0x5F) { // não-ASCII ou underscore
-            $result .= '_' . strtoupper(sprintf('%02x', $byte));
-        } else {
-            $result .= $cp1252[$i];
-        }
-    }
-    return $result;
-}
-
 function gerarCodigoZPL($nomeCrianca, $nomeResponsavel, $idade, $codigo, $telefone) {
     $ini_pos = PULSEIRAUTIL - (70 * DOTS);
 
@@ -234,13 +210,12 @@ function gerarCodigoZPL($nomeCrianca, $nomeResponsavel, $idade, $codigo, $telefo
     $codigoLimpo = str_replace(['^', '~', '\\'], '', $codigo);
 
     $zpl = "^XA" . PHP_EOL;
-    $zpl .= "^CI13" . PHP_EOL; // Windows-1252 — suporte completo a caracteres portugueses
-    $zpl .= "^FH" . PHP_EOL;   // Habilita codificação hex _XX nos campos ^FD
+    $zpl .= "^CI28" . PHP_EOL; // UTF-8 — suporte completo a caracteres portugueses
     $zpl .= "^PW192" . PHP_EOL;
     $zpl .= "^LL" . (TAMPULSEIRA * DOTS) . PHP_EOL;
-    $zpl .= "^FO80," . $ini_pos . "^A0R,60,50^FD" . zplHexCP1252($nomeCriancaLimpo) . "^FS" . PHP_EOL;
+    $zpl .= "^FO80," . $ini_pos . "^A0R,60,50^FD" . $nomeCriancaLimpo . "^FS" . PHP_EOL;
     $zpl .= "^FO50," . $ini_pos . "^A0R,30,40^FDIdade: " . $idadeLimpa . " anos      Cod.:" . $codigoLimpo . "^FS" . PHP_EOL;
-    $zpl .= "^FO10," . $ini_pos . "^A0R,30,35^FDRsp: " . zplHexCP1252($nomeResponsavelLimpo) . "^FS" . PHP_EOL;
+    $zpl .= "^FO10," . $ini_pos . "^A0R,30,35^FDRsp: " . $nomeResponsavelLimpo . "^FS" . PHP_EOL;
     $zpl .= "^FO140," . (FECHOINI*DOTS) . "^A0R,30,35^FD|^FS" . PHP_EOL;
     $zpl .= "^FO140," . (PULSEIRAUTIL - 35) . "^A0R,30,35^FD|^FS" . PHP_EOL;
 
@@ -265,17 +240,16 @@ function gerarCodigoZPLResponsavel($nomeResponsavel, $nomesCriancasDoGrupo, $cod
     }
 
     $zpl = "^XA" . PHP_EOL;
-    $zpl .= "^CI13" . PHP_EOL; // Windows-1252 — suporte completo a caracteres portugueses
-    $zpl .= "^FH" . PHP_EOL;   // Habilita codificação hex _XX nos campos ^FD
+    $zpl .= "^CI28" . PHP_EOL; // UTF-8 — suporte completo a caracteres portugueses
     $zpl .= "^PW192" . PHP_EOL;
     $zpl .= "^LL" . (TAMPULSEIRA * DOTS) . PHP_EOL;
     $zpl .= "^FO70," . $id_pos . "^A0R,40,45^FDID:" . $codigoLimpo . "^FS" . PHP_EOL;
-    $zpl .= "^FO10," . $id_pos . "^A0R,20,25^FDRsp:" . zplHexCP1252($nomeResponsavelLimpo) . "^FS" . PHP_EOL;
+    $zpl .= "^FO10," . $id_pos . "^A0R,20,25^FDRsp:" . $nomeResponsavelLimpo . "^FS" . PHP_EOL;
 
     $posicoesX = [70, 35, 105, 0, 140];
     for ($k = 0; $k < 5; $k++) {
         $nomeParaExibir = $nomesCriancasLimpasEProcessadas[$k] ?? '';
-        $zpl .= "^FO" . $posicoesX[$k] . "," . $yPosCriancas . "^A0R,30,35^FD" . zplHexCP1252($nomeParaExibir) . "^FS" . PHP_EOL;
+        $zpl .= "^FO" . $posicoesX[$k] . "," . $yPosCriancas . "^A0R,30,35^FD" . $nomeParaExibir . "^FS" . PHP_EOL;
     }
     $zpl .= "^FO140," . (FECHOINI*DOTS) . "^A0R,30,35^FD|^FS" . PHP_EOL;
     $zpl .= "^FO140," . (PULSEIRAUTIL-35) . "^A0R,30,35^FD|^FS" . PHP_EOL;
