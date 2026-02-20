@@ -129,6 +129,15 @@ if (isset($_POST['imprimir'])) {
     var nomeCrianca = \"" . addslashes(sanitize_for_html($crianca['nomeCrianca'])) . "\";
     var zplCode = payload.data;
     var modoDebug = localStorage.getItem('modoDebugImpressao') === 'true';
+    var modoTeste = localStorage.getItem('modoTesteImpressao') === 'true';
+
+    if (modoTeste) {
+        var xPos  = parseInt(localStorage.getItem('testeX')        || '140');
+        var yPos  = parseInt(localStorage.getItem('testeY')        || '30');
+        var fSize = parseInt(localStorage.getItem('testeFontSize') || '20');
+        zplCode = "^XA\n^CI28\n^PW192\n^LL2152\n^FO " + xPos + "," + yPos + "^A0R," + fSize + "," + fSize + "^FD" + nomeCrianca + " ^FS\n^PQ1,0,1,Y\n^XZ\n";
+        payload = {device: payload.device, data: zplCode};
+    }
 
     if (modoDebug) {
         // Modo debug: abrir modal com ZPL
@@ -137,9 +146,9 @@ if (isset($_POST['imprimir'])) {
             zpl: zplCode,
             url: url,
             info: {
-                nomeCrianca: nomeCrianca,
+                nomeCrianca: nomeCrianca + (modoTeste ? ' [TESTE]' : ''),
                 codigo: currentId,
-                tipo: 'Pulseira Criança',
+                tipo: modoTeste ? 'Teste Impressão' : 'Pulseira Criança',
                 urlImpressora: url
             },
             currentId: currentId
@@ -203,6 +212,9 @@ if (isset($_POST['imprimir'])) {
     var nomeResp = \"" . addslashes(sanitize_for_html($dataResp['nomeResponsavel'])) . "\";
     var zplCode = payload.data;
     var modoDebug = localStorage.getItem('modoDebugImpressao') === 'true';
+    var modoTeste = localStorage.getItem('modoTesteImpressao') === 'true';
+
+    if (modoTeste) { return; } // No modo teste, imprime apenas criança — sem etiqueta do responsável
 
     if (modoDebug) {
         // Modo debug: abrir modal com ZPL
