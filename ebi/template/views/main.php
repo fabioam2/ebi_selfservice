@@ -252,6 +252,35 @@
             </div>
         </div>
 
+        <!-- Painel Testar Impressão -->
+        <div id="painelTesteImpressao" class="d-none p-3 mb-3 rounded border" style="background:#fff8e1; border-color:#ffe082 !important;">
+            <div class="d-flex align-items-center mb-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#e65100" class="bi bi-tag-fill mr-2" viewBox="0 0 16 16"><path d="M2 1a1 1 0 0 0-1 1v4.586a1 1 0 0 0 .293.707l7 7a1 1 0 0 0 1.414 0l4.586-4.586a1 1 0 0 0 0-1.414l-7-7A1 1 0 0 0 6.586 1H2zm4 3.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/></svg>
+                <strong style="color:#e65100;">Modo Testar Impressão ATIVO</strong>
+                <small class="ml-2 text-muted">— imprime apenas o nome da criança (sem etiqueta do responsável)</small>
+            </div>
+            <div class="form-row align-items-end">
+                <div class="form-group col-auto mb-0">
+                    <label for="testeX" class="col-form-label col-form-label-sm">Posição X</label>
+                    <input type="number" class="form-control form-control-sm" id="testeX" value="140" min="0" max="500" style="width:90px;">
+                </div>
+                <div class="form-group col-auto mb-0">
+                    <label for="testeY" class="col-form-label col-form-label-sm">Posição Y</label>
+                    <input type="number" class="form-control form-control-sm" id="testeY" value="30" min="0" max="3000" style="width:90px;">
+                </div>
+                <div class="form-group col-auto mb-0">
+                    <label for="testeFontSize" class="col-form-label col-form-label-sm">Tamanho da Fonte</label>
+                    <input type="number" class="form-control form-control-sm" id="testeFontSize" value="20" min="5" max="200" style="width:90px;">
+                </div>
+                <div class="col-auto mb-0">
+                    <button type="button" class="btn btn-sm btn-warning" onclick="salvarConfigTeste()">Aplicar</button>
+                </div>
+                <div class="col-auto mb-0">
+                    <small id="testeConfigStatus" class="text-success d-none">✓ Configurações salvas</small>
+                </div>
+            </div>
+        </div>
+
 
         <form method="post" action="<?php echo sanitize_for_html($_SERVER["PHP_SELF"]); ?>" id="formListaCriancas">
             <?php echo csrf_field(); ?>
@@ -311,6 +340,10 @@
                         <button class="dropdown-item" type="button" onclick="toggleModoDebugImpressao()" id="btnToggleDebug">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bug mr-1" viewBox="0 0 16 16"><path d="M4.355.522a.5.5 0 0 1 .623.333l.291.956A4.979 4.979 0 0 1 8 1c1.007 0 1.946.298 2.731.811l.29-.956a.5.5 0 1 1 .957.29l-.41 1.352A4.985 4.985 0 0 1 13 6h.5a.5.5 0 0 0 0-1h-.538l-.853-2.56a.5.5 0 1 1 .957-.29l.956 2.87A2 2 0 0 1 15.5 7.5v1a2 2 0 0 1-2 2h-.5v.5a5 5 0 0 1-10 0V10h-.5a2 2 0 0 1-2-2v-1a2 2 0 0 1 1.478-1.93l.956-2.87a.5.5 0 1 1 .957.29L2.538 5H2a.5.5 0 0 0 0 1h.5a4.985 4.985 0 0 1 1.432-3.503l-.41-1.352a.5.5 0 0 1 .333-.623zM4 7v4a4 4 0 0 0 8 0V7a4 4 0 0 0-8 0z"/></svg>
                             <span id="labelDebugMode">Modo Debug: OFF</span>
+                        </button>
+                        <button class="dropdown-item" type="button" onclick="toggleModoTesteImpressao()" id="btnToggleTeste">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tag mr-1" viewBox="0 0 16 16"><path d="M6 4.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm-1 0a.5.5 0 1 0-1 0 .5.5 0 0 0 1 0z"/><path d="M2 1h4.586a1 1 0 0 1 .707.293l7 7a1 1 0 0 1 0 1.414l-4.586 4.586a1 1 0 0 1-1.414 0l-7-7A1 1 0 0 1 1 6.586V2a1 1 0 0 1 1-1zm0 5.586 7 7L13.586 9l-7-7H2v4.586z"/></svg>
+                            <span id="labelTesteMode">Testar Impressão: OFF</span>
                         </button>
                         <div class="dropdown-divider"></div>
                         <button class="dropdown-item" type="button" onclick="abrirModalQZTray()">
@@ -1039,8 +1072,9 @@
             });
 
 
-            // Inicializar modo debug
+            // Inicializar modos
             atualizarEstadoModoDebug();
+            atualizarEstadoModoTeste();
 
         });
 
@@ -1075,6 +1109,51 @@
                 label.text('Modo Debug: OFF').css('font-weight', 'normal').css('color', '');
                 btn.css('background-color', '');
             }
+        }
+
+        // ============ MODO TESTAR IMPRESSÃO ============
+
+        function toggleModoTesteImpressao() {
+            const modoAtual = localStorage.getItem('modoTesteImpressao') === 'true';
+            const novoEstado = !modoAtual;
+            localStorage.setItem('modoTesteImpressao', novoEstado);
+            atualizarEstadoModoTeste();
+
+            if (novoEstado) {
+                alert('Modo Testar Impressão ATIVADO!\n\nAo imprimir, será enviado apenas o nome da criança com o ZPL simplificado.\nEtiqueta do responsável NÃO será impressa.');
+            } else {
+                alert('Modo Testar Impressão DESATIVADO.\nO sistema voltará a imprimir normalmente.');
+            }
+        }
+
+        function atualizarEstadoModoTeste() {
+            const ativo = localStorage.getItem('modoTesteImpressao') === 'true';
+            const label = $('#labelTesteMode');
+            const btn   = $('#btnToggleTeste');
+            const painel = $('#painelTesteImpressao');
+
+            if (ativo) {
+                label.text('Testar Impressão: ON').css('font-weight', 'bold').css('color', '#e65100');
+                btn.css('background-color', '#ffe0b2');
+                painel.removeClass('d-none');
+                // Restaurar valores salvos nos campos
+                $('#testeX').val(localStorage.getItem('testeX') || '140');
+                $('#testeY').val(localStorage.getItem('testeY') || '30');
+                $('#testeFontSize').val(localStorage.getItem('testeFontSize') || '20');
+            } else {
+                label.text('Testar Impressão: OFF').css('font-weight', 'normal').css('color', '');
+                btn.css('background-color', '');
+                painel.addClass('d-none');
+            }
+        }
+
+        function salvarConfigTeste() {
+            localStorage.setItem('testeX',        $('#testeX').val()        || '140');
+            localStorage.setItem('testeY',        $('#testeY').val()        || '30');
+            localStorage.setItem('testeFontSize', $('#testeFontSize').val() || '20');
+            const status = $('#testeConfigStatus');
+            status.removeClass('d-none');
+            setTimeout(function() { status.addClass('d-none'); }, 2000);
         }
 
         // Variável global para armazenar os dados de debug
