@@ -135,7 +135,7 @@ if (isset($_POST['imprimir'])) {
         var xPos  = parseInt(localStorage.getItem('testeX')        || '140');
         var yPos  = parseInt(localStorage.getItem('testeY')        || '30');
         var fSize = parseInt(localStorage.getItem('testeFontSize') || '20');
-        zplCode = "^XA\n^CI28\n^PW192\n^LL2152\n^FO " + xPos + "," + yPos + "^A0R," + fSize + "," + fSize + "^FD" + nomeCrianca + " ^FS\n^PQ1,0,1,Y\n^XZ\n";
+        zplCode = '^XA^CI28^PW192^LL2152^FO ' + xPos + ',' + yPos + '^A0R,' + fSize + ',' + fSize + '^FD' + nomeCrianca + ' ^FS^PQ1,0,1,Y^XZ';
         payload = {device: payload.device, data: zplCode};
     }
 
