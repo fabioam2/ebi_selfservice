@@ -197,16 +197,10 @@
                     <a class="dropdown-item" href="<?php echo sanitize_for_html($_SERVER['PHP_SELF']); ?>?acao=logout">Sair do Sistema</a>
                 </div>
             </div>
-            <div class="text-center">
-                <h1 class="mb-0">
-                    <img src="https://placehold.co/60x60/007bff/white?text=Kids" alt="Ícone de Criança" style="vertical-align: middle; border-radius: 50%; margin-right: 10px;">
-                    Cadastro de Crianças
-                </h1>
-                <span class="badge badge-danger mt-1" style="font-size: 0.7rem; letter-spacing: 0.04em;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="11" fill="currentColor" class="bi bi-cone-striped" viewBox="0 0 16 16" style="vertical-align: -1px; margin-right: 2px;"><path d="m9.97 4.88.953 3.811C10.159 8.878 9.14 9 8 9c-1.14 0-2.158-.122-2.923-.309L6.03 4.88C6.635 4.957 7.3 5 8 5s1.365-.043 1.97-.12zm-.043-.572C9.268 4.199 8.641 4.25 8 4.25s-1.268-.051-1.927-.142L8 .586zM8 10c-1.105 0-2-.448-2-1v-.077c.68.168 1.488.27 2.352.27.864 0 1.672-.102 2.352-.27V9c0 .552-.895 1-2 1M8 15.5c0 .276-.449.5-1 .5H5.5C5 16 4.5 15.776 4.5 15.5v-.5L6 13.5l1 .5.5.5V15zm0 0v-.5l.5-.5 1-.5 1.5 2v.5c0 .276-.5.5-1 .5H9c-.551 0-1-.224-1-.5M3.5 12l1.5-2H11l1.5 2z"/></svg>
-                    Em desenvolvimento
-                </span>
-            </div>
+            <h1 class="text-center mb-0">
+                <img src="https://placehold.co/60x60/007bff/white?text=Kids" alt="Ícone de Criança" style="vertical-align: middle; border-radius: 50%; margin-right: 10px;">
+                Cadastro de Crianças
+            </h1>
             <div class="d-flex align-items-center" style="min-width: 220px; justify-content: flex-end;">
                 <a href="./saida/index.php" class="btn btn-outline-secondary btn-sm mr-1" target="_blank">Saída</a>
                 <a href="./saida/painel.php" class="btn btn-outline-secondary btn-sm mr-1" target="_blank">Painel Saída</a>
