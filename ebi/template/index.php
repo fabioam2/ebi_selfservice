@@ -10,12 +10,27 @@ require __DIR__ . '/inc/funcoes.php';
 
 // Preview de backup (GET) — apenas logado
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['acao']) && $_GET['acao'] === 'preview_backup' && isset($_GET['arquivo'])) {
-    $nomeArquivoBackup = basename(sanitize_for_file($_GET['arquivo']));
-    $diretorioBase = dirname(ARQUIVO_DADOS);
-    $caminhoCompletoBackup = ($diretorioBase === '.' ? '' : $diretorioBase . DIRECTORY_SEPARATOR) . $nomeArquivoBackup;
+    $nomeArquivoBackup = basename((string)$_GET['arquivo']);
+    $diretorioBase = realpath(dirname(ARQUIVO_DADOS));
+    $nomeBase = basename(ARQUIVO_DADOS);
 
-    if (strpos($nomeArquivoBackup, basename(ARQUIVO_DADOS) . '.bkp.') === 0 && file_exists($caminhoCompletoBackup)) {
-        $linhas = file($caminhoCompletoBackup, FILE_IGNORE_NEW_LINES);
+    // Regex restrito: <nome_base>.bkp.<N>
+    $regexPermitido = '/^' . preg_quote($nomeBase, '/') . '\.bkp\.\d{1,4}$/';
+
+    $caminhoCompletoBackup = ($diretorioBase !== false)
+        ? $diretorioBase . DIRECTORY_SEPARATOR . $nomeArquivoBackup
+        : '';
+
+    $real = $caminhoCompletoBackup !== '' ? realpath($caminhoCompletoBackup) : false;
+
+    $valido = preg_match($regexPermitido, $nomeArquivoBackup)
+        && $real !== false
+        && $diretorioBase !== false
+        && strpos($real, $diretorioBase . DIRECTORY_SEPARATOR) === 0
+        && is_file($real);
+
+    if ($valido) {
+        $linhas = file($real, FILE_IGNORE_NEW_LINES);
         if ($linhas !== false) {
             $ultimasLinhas = array_slice($linhas, -3);
             header('Content-Type: text/plain; charset=utf-8');
@@ -26,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['acao']) && $_GET['acao'
         }
     } else {
         http_response_code(404);
-        echo "Arquivo de backup não encontrado ou inválido: " . sanitize_for_html($nomeArquivoBackup);
+        echo "Arquivo de backup não encontrado ou inválido.";
     }
     exit;
 }

@@ -1,6 +1,14 @@
 <?php
 session_start();
 
+// Headers de segurança
+if (!headers_sent()) {
+    header('X-Content-Type-Options: nosniff');
+    header('X-Frame-Options: SAMEORIGIN');
+    header('Referrer-Policy: strict-origin-when-cross-origin');
+    header('Permissions-Policy: geolocation=(), microphone=(), camera=()');
+}
+
 // Carregar .env se existir
 if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
     require __DIR__ . '/../vendor/autoload.php';
@@ -88,9 +96,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['apagar_instancia'])) {
                 $mensagem = 'Configuração da instância não encontrada.';
             } else {
                 $config = parse_ini_file($configFile, true);
-                $senha_admin_real = $config['SEGURANCA']['SENHA_ADMIN_REAL'] ?? '';
+                $hashAdmin = (string)($config['SEGURANCA']['SENHA_ADMIN_HASH'] ?? '');
+                $plainLegado = (string)($config['SEGURANCA']['SENHA_ADMIN_REAL'] ?? '');
 
-                if ($senha_admin_digitada === $senha_admin_real) {
+                $senhaOk = false;
+                if ($hashAdmin !== '' && preg_match('/^\$2[aby]\$/', $hashAdmin)) {
+                    $senhaOk = password_verify($senha_admin_digitada, $hashAdmin);
+                } elseif ($plainLegado !== '') {
+                    $senhaOk = hash_equals($plainLegado, $senha_admin_digitada);
+                }
+
+                if ($senhaOk) {
                     // Senha correta, pode apagar
                     $resultado = removerInstancia($user_id_existente);
 

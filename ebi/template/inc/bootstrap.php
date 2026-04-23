@@ -23,8 +23,10 @@ define('MAX_BACKUPS', $config['GERAL']['MAX_BACKUPS']);
 define('NUM_LINHAS_FORMULARIO_CADASTRO', $config['GERAL']['NUM_LINHAS_FORMULARIO_CADASTRO']);
 define('NUM_CAMPOS_POR_LINHA_NO_ARQUIVO', $config['GERAL']['NUM_CAMPOS_POR_LINHA_NO_ARQUIVO']);
 
-define('SENHA_ADMIN_REAL', $config['SEGURANCA']['SENHA_ADMIN_REAL']);
-define('SENHA_LOGIN', SENHA_ADMIN_REAL);
+define('SENHA_ADMIN_HASH', (string)($config['SEGURANCA']['SENHA_ADMIN_HASH'] ?? ''));
+define('SENHA_ADMIN_REAL', (string)($config['SEGURANCA']['SENHA_ADMIN_REAL'] ?? '')); // legado (texto plano)
+define('SENHA_LOGIN', SENHA_ADMIN_REAL); // compat legado
+define('CAMINHO_CONFIG_INI', $config_file);
 
 define('PRINTER_NAME', $config['IMPRESSORA_ZPL']['PRINTER_NAME'] ?? 'ZDesigner 105SL');
 define('PALAVRA_CONTADOR_COMUM', $config['IMPRESSORA_ZPL']['PALAVRA_CONTADOR_COMUM'] ?? 'bonfim');
@@ -43,7 +45,36 @@ $tempoSessao = $config['SEGURANCA']['TEMPO_SESSAO'] ?? 1800;
 define('TEMPO_SESSAO', (int)$tempoSessao);
 
 if (session_status() === PHP_SESSION_NONE) {
+    // Hardening de cookie da sessão
+    $cookieParams = [
+        'lifetime' => 0,
+        'path' => '/',
+        'domain' => '',
+        'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ];
+    if (PHP_VERSION_ID >= 70300) {
+        session_set_cookie_params($cookieParams);
+    } else {
+        session_set_cookie_params(
+            $cookieParams['lifetime'], $cookieParams['path'],
+            $cookieParams['domain'], $cookieParams['secure'], $cookieParams['httponly']
+        );
+    }
     session_start();
+}
+
+// Headers de segurança HTTP (best-effort; só envia se ainda não há saída)
+if (!headers_sent()) {
+    header('X-Content-Type-Options: nosniff');
+    header('X-Frame-Options: SAMEORIGIN');
+    header('Referrer-Policy: strict-origin-when-cross-origin');
+    header('X-XSS-Protection: 1; mode=block');
+    header('Permissions-Policy: geolocation=(), microphone=(), camera=()');
+    if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
+        header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
+    }
 }
 
 // Verificar timeout de sessão
@@ -94,6 +125,99 @@ function csrf_validate() {
 /** Regenera o token após login (opcional, evita fixação). */
 function csrf_regenerate() {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+}
+
+/**
+ * Verifica uma senha (texto plano) contra as credenciais configuradas.
+ * Aceita hash bcrypt em SENHA_ADMIN_HASH; como fallback compara com SENHA_ADMIN_REAL
+ * (modo legado). Se o legado for usado, migra automaticamente para hash gravando no config.ini.
+ *
+ * @param string $senhaDigitada
+ * @return bool
+ */
+function verificar_senha_admin($senhaDigitada) {
+    $senhaDigitada = (string)$senhaDigitada;
+    if ($senhaDigitada === '') return false;
+
+    $hash = defined('SENHA_ADMIN_HASH') ? SENHA_ADMIN_HASH : '';
+    if ($hash !== '' && preg_match('/^\$2[aby]\$/', $hash)) {
+        return password_verify($senhaDigitada, $hash);
+    }
+
+    // Legado — texto plano (somente se o admin não migrou ainda).
+    $plain = defined('SENHA_ADMIN_REAL') ? SENHA_ADMIN_REAL : '';
+    if ($plain !== '' && hash_equals($plain, $senhaDigitada)) {
+        // Migra automaticamente para hash.
+        migrar_senha_legada_para_hash('SENHA_ADMIN_HASH', 'SENHA_ADMIN_REAL', $senhaDigitada);
+        return true;
+    }
+    return false;
+}
+
+/**
+ * Verifica uma senha para o painel/saída (similar ao admin, mas usa SENHA_PAINEL_HASH).
+ */
+function verificar_senha_painel($senhaDigitada) {
+    $senhaDigitada = (string)$senhaDigitada;
+    if ($senhaDigitada === '') return false;
+
+    global $config;
+    $hash = (string)($config['SEGURANCA']['SENHA_PAINEL_HASH'] ?? '');
+    if ($hash !== '' && preg_match('/^\$2[aby]\$/', $hash)) {
+        return password_verify($senhaDigitada, $hash);
+    }
+    $plain = (string)($config['SEGURANCA']['SENHA_PAINEL'] ?? '');
+    if ($plain !== '' && hash_equals($plain, $senhaDigitada)) {
+        migrar_senha_legada_para_hash('SENHA_PAINEL_HASH', 'SENHA_PAINEL', $senhaDigitada);
+        return true;
+    }
+    return false;
+}
+
+/**
+ * Grava hash bcrypt no config.ini e limpa a chave legada de texto plano.
+ * Operação best-effort: se não houver permissão de escrita, apenas ignora.
+ */
+function migrar_senha_legada_para_hash($chaveHash, $chaveLegado, $senhaPlana) {
+    if (!defined('CAMINHO_CONFIG_INI')) return;
+    $arq = CAMINHO_CONFIG_INI;
+    if (!is_writable($arq)) return;
+
+    $novoHash = password_hash($senhaPlana, PASSWORD_BCRYPT, ['cost' => 12]);
+    $conteudo = file_get_contents($arq);
+    if ($conteudo === false) return;
+
+    // Atualiza/insere chaves dentro do bloco [SEGURANCA]
+    $linhas = preg_split("/\r?\n/", $conteudo);
+    $dentroSeg = false;
+    $setHash = false;
+    $setLegado = false;
+    foreach ($linhas as $i => $ln) {
+        if (preg_match('/^\s*\[([^\]]+)\]/', $ln, $m)) {
+            if ($dentroSeg && !$setHash) {
+                array_splice($linhas, $i, 0, [$chaveHash . ' = "' . $novoHash . '"']);
+                $setHash = true;
+            }
+            $dentroSeg = strcasecmp(trim($m[1]), 'SEGURANCA') === 0;
+            continue;
+        }
+        if ($dentroSeg) {
+            if (preg_match('/^\s*' . preg_quote($chaveHash, '/') . '\s*=/', $ln)) {
+                $linhas[$i] = $chaveHash . ' = "' . $novoHash . '"';
+                $setHash = true;
+            } elseif (preg_match('/^\s*' . preg_quote($chaveLegado, '/') . '\s*=/', $ln)) {
+                $linhas[$i] = $chaveLegado . ' = ""';
+                $setLegado = true;
+            }
+        }
+    }
+    if (!$setHash) {
+        // Se não havia seção [SEGURANCA], anexa uma.
+        $linhas[] = '[SEGURANCA]';
+        $linhas[] = $chaveHash . ' = "' . $novoHash . '"';
+    }
+    @file_put_contents($arq, implode("\n", $linhas), LOCK_EX);
+    @chmod($arq, 0600);
 }
 
 /** Obtém a versão do sistema baseada no último commit git ou data de modificação. */

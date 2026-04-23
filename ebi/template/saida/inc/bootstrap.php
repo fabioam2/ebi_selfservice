@@ -23,7 +23,9 @@ $data_file_path = $baseDir . $config['GERAL']['ARQUIVO_DADOS'];
 define('ARQUIVO_DADOS', $data_file_path);
 define('DELIMITADOR', $config['GERAL']['DELIMITADOR']);
 define('MAX_BACKUPS', $config['GERAL']['MAX_BACKUPS']);
-define('SENHA_PAINEL', $config['SEGURANCA']['SENHA_PAINEL'] ?? 'MudeEstaSenha@123');
+define('SENHA_PAINEL_HASH', (string)($config['SEGURANCA']['SENHA_PAINEL_HASH'] ?? ''));
+define('SENHA_PAINEL', (string)($config['SEGURANCA']['SENHA_PAINEL'] ?? '')); // legado
+define('CAMINHO_CONFIG_INI', $config_file);
 define('TEMPO_SESSAO', (int)($config['SEGURANCA']['TEMPO_SESSAO'] ?? 1800));
 define('MAX_TENTATIVAS_LOGIN', (int)($config['SEGURANCA']['MAX_TENTATIVAS_LOGIN'] ?? 5));
 define('TEMPO_BLOQUEIO', (int)($config['SEGURANCA']['TEMPO_BLOQUEIO'] ?? 300));
@@ -33,7 +35,32 @@ $saida_dir = dirname($data_file_path);
 define('ARQUIVO_SAIDAS', $saida_dir . DIRECTORY_SEPARATOR . 'saidas.log');
 
 if (session_status() === PHP_SESSION_NONE) {
+    $cookieParams = [
+        'lifetime' => 0, 'path' => '/', 'domain' => '',
+        'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+        'httponly' => true, 'samesite' => 'Lax',
+    ];
+    if (PHP_VERSION_ID >= 70300) {
+        session_set_cookie_params($cookieParams);
+    } else {
+        session_set_cookie_params(
+            $cookieParams['lifetime'], $cookieParams['path'],
+            $cookieParams['domain'], $cookieParams['secure'], $cookieParams['httponly']
+        );
+    }
     session_start();
+}
+
+// Headers de segurança HTTP
+if (!headers_sent()) {
+    header('X-Content-Type-Options: nosniff');
+    header('X-Frame-Options: SAMEORIGIN');
+    header('Referrer-Policy: strict-origin-when-cross-origin');
+    header('X-XSS-Protection: 1; mode=block');
+    header('Permissions-Policy: geolocation=(), microphone=(), camera=()');
+    if (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
+        header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
+    }
 }
 
 // Verificar timeout de sessão
@@ -82,6 +109,58 @@ function csrf_validate() {
 
 function csrf_regenerate() {
     $_SESSION['csrf_token_saida'] = bin2hex(random_bytes(32));
+}
+
+/**
+ * Verifica senha do painel/saída.
+ * Aceita bcrypt em SENHA_PAINEL_HASH ou legado em SENHA_PAINEL (texto plano).
+ */
+function verificar_senha_painel($senhaDigitada) {
+    $senhaDigitada = (string)$senhaDigitada;
+    if ($senhaDigitada === '') return false;
+
+    $hash = defined('SENHA_PAINEL_HASH') ? SENHA_PAINEL_HASH : '';
+    if ($hash !== '' && preg_match('/^\$2[aby]\$/', $hash)) {
+        return password_verify($senhaDigitada, $hash);
+    }
+    $plain = defined('SENHA_PAINEL') ? SENHA_PAINEL : '';
+    if ($plain !== '' && hash_equals($plain, $senhaDigitada)) {
+        migrar_senha_painel_para_hash($senhaDigitada);
+        return true;
+    }
+    return false;
+}
+
+function migrar_senha_painel_para_hash($senhaPlana) {
+    if (!defined('CAMINHO_CONFIG_INI')) return;
+    $arq = CAMINHO_CONFIG_INI;
+    if (!is_writable($arq)) return;
+    $novoHash = password_hash($senhaPlana, PASSWORD_BCRYPT, ['cost' => 12]);
+    $conteudo = file_get_contents($arq);
+    if ($conteudo === false) return;
+    $linhas = preg_split("/\r?\n/", $conteudo);
+    $dentroSeg = false;
+    $setHash = false;
+    foreach ($linhas as $i => $ln) {
+        if (preg_match('/^\s*\[([^\]]+)\]/', $ln, $m)) {
+            if ($dentroSeg && !$setHash) {
+                array_splice($linhas, $i, 0, ['SENHA_PAINEL_HASH = "' . $novoHash . '"']);
+                $setHash = true;
+            }
+            $dentroSeg = strcasecmp(trim($m[1]), 'SEGURANCA') === 0;
+            continue;
+        }
+        if ($dentroSeg) {
+            if (preg_match('/^\s*SENHA_PAINEL_HASH\s*=/', $ln)) {
+                $linhas[$i] = 'SENHA_PAINEL_HASH = "' . $novoHash . '"';
+                $setHash = true;
+            } elseif (preg_match('/^\s*SENHA_PAINEL\s*=/', $ln)) {
+                $linhas[$i] = 'SENHA_PAINEL = ""';
+            }
+        }
+    }
+    @file_put_contents($arq, implode("\n", $linhas), LOCK_EX);
+    @chmod($arq, 0600);
 }
 
 // --- FUNÇÕES DO EBI (reutilizadas) ---
