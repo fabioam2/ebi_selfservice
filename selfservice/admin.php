@@ -14,6 +14,14 @@
 
 session_start();
 
+// Headers de segurança
+if (!headers_sent()) {
+    header('X-Content-Type-Options: nosniff');
+    header('X-Frame-Options: SAMEORIGIN');
+    header('Referrer-Policy: strict-origin-when-cross-origin');
+    header('Permissions-Policy: geolocation=(), microphone=(), camera=()');
+}
+
 // Carregar .env se existir
 if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
     require __DIR__ . '/../vendor/autoload.php';
@@ -30,9 +38,9 @@ require_once __DIR__ . '/inc/paths.php';
 require_once __DIR__ . '/criar_instancia.php';
 require_once __DIR__ . '/inc/user_manager.php';
 
-// Senha de administrador - hash bcrypt (use password_hash('SuaSenha', PASSWORD_DEFAULT) para gerar)
-// Senha padrão: Admin@2024!
-$adminPasswordHash = $_ENV['ADMIN_PASSWORD_HASH'] ?? '$2y$12$zS/zF79Sc2tVmkIppd72xew8.36YCIxFQm1t/dONXx4.1LiH4i/MO';
+// Senha de administrador - hash bcrypt (gere com: php -r "echo password_hash('SuaSenha', PASSWORD_BCRYPT, ['cost'=>12]);")
+// Senha padrão de fábrica: Senha123!  — TROQUE em produção via .env (ADMIN_PASSWORD_HASH).
+$adminPasswordHash = $_ENV['ADMIN_PASSWORD_HASH'] ?? '$2y$12$BPPI8U9mvBmGP/kI0pH/n.PUkkn/cB/9qrOaePiKcVy.vitwF7VsW';
 define('SENHA_ADMIN_HASH', $adminPasswordHash);
 
 // ============================================================================
@@ -82,35 +90,45 @@ function updateEnvVariable($envFile, $key, $value) {
         return false;
     }
 
+    // Valida nome da chave (evita injeção de variáveis arbitrárias)
+    if (!preg_match('/^[A-Z_][A-Z0-9_]*$/', $key)) {
+        return false;
+    }
+
+    // Escapa valor para formato .env entre aspas duplas
+    $valorEscapado = str_replace(
+        ['\\', '"', "\r", "\n"],
+        ['\\\\', '\\"', '',  ' '],
+        (string)$value
+    );
+    $linhaNova = $key . '="' . $valorEscapado . '"';
+
     // Ler todas as linhas
     $lines = file($envFile, FILE_IGNORE_NEW_LINES);
     $updated = false;
 
     // Procurar e substituir a linha
     foreach ($lines as $index => $line) {
-        // Ignorar linhas vazias e comentários
         $trimmed = trim($line);
         if (empty($trimmed) || $trimmed[0] === '#') {
             continue;
         }
 
-        // Verificar se é a variável que queremos atualizar
         if (strpos($line, $key . '=') === 0) {
-            // Substituir a linha inteira
-            $lines[$index] = $key . "='" . $value . "'";
+            $lines[$index] = $linhaNova;
             $updated = true;
             break;
         }
     }
 
-    // Se não encontrou, adicionar no final
     if (!$updated) {
-        $lines[] = $key . "='" . $value . "'";
+        $lines[] = $linhaNova;
     }
 
-    // Salvar de volta
     $content = implode("\n", $lines) . "\n";
-    return file_put_contents($envFile, $content) !== false;
+    $ok = file_put_contents($envFile, $content, LOCK_EX) !== false;
+    if ($ok) { @chmod($envFile, 0600); }
+    return $ok;
 }
 
 /**
@@ -129,6 +147,7 @@ function exibirAlerta($mensagem, $tipo = 'info') {
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
     if (admin_csrf_validate() && password_verify($_POST['senha_admin'] ?? '', SENHA_ADMIN_HASH)) {
+        session_regenerate_id(true);
         $_SESSION['admin_logado'] = true;
         $_SESSION['admin_login_time'] = time();
         header("Location: admin.php");

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>EBI SelfService — Ambiente de Teste</title>
+<style>
+body{font-family:system-ui,-apple-system,sans-serif;max-width:860px;margin:30px auto;padding:0 20px;color:#222;background:#f7f8fa}
+h1{color:#0056b3}
+.card{background:#fff;border-radius:10px;padding:18px 22px;margin:14px 0;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;background:#e7f3ff;color:#0056b3;font-size:.8rem;margin-left:6px}
+.pill.warn{background:#fff3cd;color:#856404}
+a{color:#0056b3;text-decoration:none}
+a:hover{text-decoration:underline}
+code{background:#eef;padding:2px 6px;border-radius:4px;font-size:.9em}
+ul{line-height:1.8}
+.senha{background:#d4edda;color:#155724;padding:8px 14px;border-radius:6px;display:inline-block;font-family:monospace;font-size:1.05em}
+small{color:#666}
+</style>
+</head>
+<body>
+<h1>🧪 EBI SelfService — Ambiente de Teste</h1>
+
+<div class="card">
+<h3>🔑 Credenciais padrão (todas)</h3>
+<p>Senha: <span class="senha">Senha123!</span> <span class="pill">bcrypt cost 12</span></p>
+<p><small>Hash: <code>$2y$12$BPPI8U9mvBmGP/kI0pH/n.PUkkn/cB/9qrOaePiKcVy.vitwF7VsW</code></small></p>
+</div>
+
+<div class="card">
+<h3>🎯 Módulos disponíveis</h3>
+<ul>
+<li><a href="/test-env/instance/public_html/ebi/index.php">EBI — Cadastro de Crianças (instância de teste)</a></li>
+<li><a href="/test-env/instance/public_html/ebi/saida/index.php">EBI — Módulo Saída (QR)</a></li>
+<li><a href="/selfservice/selfservice.php">Self-Service — Criar nova instância</a> <span class="pill warn">rate limit ativo</span></li>
+<li><a href="/selfservice/admin.php">Self-Service — Painel Admin</a></li>
+<li><a href="/selfservice/config_manager.php">config_manager.php</a> <span class="pill warn">deve retornar 410 Gone</span></li>
+</ul>
+</div>
+
+<div class="card">
+<h3>🛡️ Testes rápidos de segurança</h3>
+<ul>
+<li><a href="/test-env/instance/public_html/ebi/config.ini">Tentar ler config.ini</a> → deve retornar <b>403</b></li>
+<li><a href="/test-env/instance/config/cadastro_criancas.txt">Tentar ler cadastro_criancas.txt</a> → <b>403</b></li>
+<li><a href="/test-env/instance/public_html/ebi/index.php?acao=preview_backup&arquivo=../../../../etc/passwd">Path traversal no preview_backup</a> → <b>404</b> sem vazar caminho</li>
+<li><a href="/selfservice/data/admin_users.json">Tentar ler admin_users.json</a> → <b>403</b></li>
+<li><a href="/test-env/instance/.lastaccess">Tentar ler arquivo oculto</a> → <b>403</b></li>
+</ul>
+</div>
+
+<div class="card">
+<h3>📋 Como iniciar</h3>
+<pre>cd /Users/fabiomoreira/Projetos/ebi_selfservice
+./test-env/start.sh
+# abre http://127.0.0.1:8080/</pre>
+</div>
+
+<div class="card">
+<h3>🔧 Regerar instância de teste</h3>
+<pre>php test-env/seed.php</pre>
+<p>O script cria uma instância limpa em <code>test-env/instance/</code> com a senha padrão e alguns cadastros fictícios.</p>
+</div>
+
+</body>
+</html>

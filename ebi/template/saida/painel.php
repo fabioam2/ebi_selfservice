@@ -18,7 +18,7 @@ $erro_zerar = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao']) && $_POST['acao'] === 'zerar_arquivo') {
     csrf_validate();
 
-    if (isset($_POST['admin_senha']) && $_POST['admin_senha'] === SENHA_PAINEL) {
+    if (verificar_senha_painel($_POST['admin_senha'] ?? '')) {
         if (file_exists(ARQUIVO_SAIDAS)) {
             @unlink(ARQUIVO_SAIDAS);
         }

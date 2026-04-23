@@ -197,6 +197,7 @@ echo "<div class='step'>";
 echo "<h3>🔒 Passo 6: Configurações de Segurança</h3>";
 
 $senhaAdmin = bin2hex(random_bytes(8)); // Gerar senha aleatória
+$senhaAdminHash = password_hash($senhaAdmin, PASSWORD_BCRYPT, ['cost' => 12]);
 
 echo "<div class='alert alert-warning'>";
 echo "<h5>⚠️ IMPORTANTE - Senha de Administrador</h5>";
@@ -206,14 +207,27 @@ echo "<p><strong>COPIE ESTA SENHA AGORA!</strong> Ela será necessária para ace
 echo "<p>Você pode alterá-la editando o arquivo <code>admin.php</code></p>";
 echo "</div>";
 
-// Atualizar admin.php com a nova senha
-$adminFile = __DIR__ . '/admin.php';
-if (file_exists($adminFile)) {
-    $adminContent = file_get_contents($adminFile);
-    $adminContent = str_replace("define('SENHA_ADMIN', 'Admin@2024!');", "define('SENHA_ADMIN', '$senhaAdmin');", $adminContent);
-    file_put_contents($adminFile, $adminContent);
-    echo "<p class='success'>✅ Senha de admin configurada</p>";
+// Atualizar .env com o hash da nova senha (admin.php lê $_ENV['ADMIN_PASSWORD_HASH'])
+$envFile = __DIR__ . '/.env';
+if (!file_exists($envFile)) {
+    @touch($envFile);
+    @chmod($envFile, 0600);
 }
+$envLinhas = @file($envFile, FILE_IGNORE_NEW_LINES) ?: [];
+$encontrou = false;
+foreach ($envLinhas as $i => $ln) {
+    if (strpos($ln, 'ADMIN_PASSWORD_HASH=') === 0) {
+        $envLinhas[$i] = 'ADMIN_PASSWORD_HASH="' . $senhaAdminHash . '"';
+        $encontrou = true;
+        break;
+    }
+}
+if (!$encontrou) {
+    $envLinhas[] = 'ADMIN_PASSWORD_HASH="' . $senhaAdminHash . '"';
+}
+file_put_contents($envFile, implode("\n", $envLinhas) . "\n", LOCK_EX);
+@chmod($envFile, 0600);
+echo "<p class='success'>✅ Senha de admin configurada no .env (hash bcrypt)</p>";
 
 echo "</div>";
 
@@ -245,8 +259,10 @@ if ($tudoOk && empty($erros)) {
     // Criar arquivo de marcação de instalação
     $infoInstalacao = "Sistema instalado em: " . date('Y-m-d H:i:s') . "\n";
     $infoInstalacao .= "PHP Version: $phpVersion\n";
-    $infoInstalacao .= "Senha Admin: $senhaAdmin\n";
+    $infoInstalacao .= "Senha Admin (texto): $senhaAdmin\n";
+    $infoInstalacao .= "Senha Admin (hash) : $senhaAdminHash\n";
     file_put_contents(__DIR__ . '/.instalado', $infoInstalacao);
+    @chmod(__DIR__ . '/.instalado', 0600);
     
     echo "<div class='alert alert-success'>";
     echo "<h2>✅ Instalação Concluída com Sucesso!</h2>";

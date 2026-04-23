@@ -49,7 +49,12 @@ function criarInstanciaUsuario(string $user_id, string $nome, string $email, str
         $email_safe = sanitize_ini_value($email);
         $cidade_safe = sanitize_ini_value($cidade);
         $comum_safe = sanitize_ini_value($comum);
-        $senha_safe = sanitize_ini_value($senha);
+
+        // A senha NUNCA entra em texto plano no config.ini — só o hash bcrypt.
+        if (trim((string)$senha) === '') {
+            throw new Exception('Senha não pode ser vazia.');
+        }
+        $senha_hash = password_hash((string)$senha, PASSWORD_BCRYPT, ['cost' => 12]);
 
         // Carregar configuração de caminhos dinâmicos
         if (!defined('INSTANCE_BASE_PATH')) {
@@ -64,7 +69,7 @@ function criarInstanciaUsuario(string $user_id, string $nome, string $email, str
         $userInstanceDir = $instancesDir . $user_id . '/';
         
         if (!file_exists($userInstanceDir)) {
-            mkdir($userInstanceDir, 0755, true);
+            mkdir($userInstanceDir, 0700, true);
         }
         
         // Criar subdiretórios necessários
@@ -72,7 +77,7 @@ function criarInstanciaUsuario(string $user_id, string $nome, string $email, str
         $publicDir = $userInstanceDir . 'public_html/ebi/';
         
         if (!file_exists($configDir)) {
-            mkdir($configDir, 0755, true);
+            mkdir($configDir, 0700, true);
         }
         
         if (!file_exists($publicDir)) {
@@ -112,8 +117,10 @@ NUM_CAMPOS_POR_LINHA_NO_ARQUIVO = 8
 TIMEZONE = \"America/Sao_Paulo\"
 
 [SEGURANCA]
-SENHA_ADMIN_REAL = \"$senha_safe\"
-SENHA_PAINEL = \"$senha_safe\"
+SENHA_ADMIN_HASH = \"$senha_hash\"
+SENHA_PAINEL_HASH = \"$senha_hash\"
+SENHA_ADMIN_REAL = \"\"
+SENHA_PAINEL = \"\"
 TEMPO_SESSAO = 1800
 MAX_TENTATIVAS_LOGIN = 5
 TEMPO_BLOQUEIO = 300
@@ -203,6 +210,7 @@ VERIFICAR_INTEGRIDADE = true
 ";
         
         file_put_contents($configDir . 'config.ini', $configContent);
+        @chmod($configDir . 'config.ini', 0600);
         
         // 2. Criar arquivos de dados vazios
         $headerCadastro = "# Sistema de Cadastro de Crianças - $comum_safe\n";
@@ -238,6 +246,7 @@ VERIFICAR_INTEGRIDADE = true
         }
         // Config.ini na pasta da aplicação (refatorada espera config.ini junto ao index.php)
         file_put_contents($publicDir . 'config.ini', $configContent);
+        @chmod($publicDir . 'config.ini', 0600);
         
         // 4. Criar arquivo .htaccess para segurança
         $htaccessContent = "# Proteção de diretório
@@ -263,6 +272,7 @@ Options -Indexes
         
         file_put_contents($configDir . '.htaccess', $htaccessContent);
         file_put_contents($userInstanceDir . '.htaccess', $htaccessContent);
+        file_put_contents($publicDir . '.htaccess', $htaccessContent);
         
         // Copiar .htaccess do template se existir
         $templateHtaccess = __DIR__ . '/template/.htaccess';

@@ -30,7 +30,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['tentativa_login'])) {
     }
 
     if (empty($mensagemLoginErro)) {
-        if (isset($_POST['senha_login']) && $_POST['senha_login'] === SENHA_PAINEL) {
+        if (verificar_senha_painel($_POST['senha_login'] ?? '')) {
+            session_regenerate_id(true);
             $_SESSION['logado_saida'] = true;
             $_SESSION['ultimo_acesso_saida'] = time();
             $_SESSION['tentativas_login_saida'] = 0;
@@ -46,7 +47,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['tentativa_login'])) {
 }
 
 if (isset($_GET['acao']) && $_GET['acao'] === 'logout') {
-    $_SESSION['logado_saida'] = false;
+    $_SESSION = [];
+    if (ini_get('session.use_cookies')) {
+        $p = session_get_cookie_params();
+        setcookie(session_name(), '', time() - 42000,
+            $p['path'], $p['domain'], $p['secure'], $p['httponly']);
+    }
+    session_destroy();
+    session_start();
     $_SESSION['logout_mensagem'] = 'Você saiu do sistema.';
     header('Location: ' . sanitize_for_html($_SERVER['PHP_SELF']));
     exit;

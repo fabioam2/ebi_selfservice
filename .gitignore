@@ -24,6 +24,13 @@ composer.phar
 # -----------------------------------------
 /selfservice/instances/*
 !/selfservice/instances/.gitkeep
+!/selfservice/instances/.htaccess
+
+# Instâncias geradas na raiz pelo selfservice
+/ebi/i/
+
+# Ambiente de teste local (não vai para o repositório)
+/test-env/instance/
 
 # Dados do sistema
 /selfservice/data/*.txt
