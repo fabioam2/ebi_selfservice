@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EBI SelfService — Índice de Páginas</title>
+<style>
+  :root{
+    --primary:#4a4fd5;
+    --secondary:#764ba2;
+    --ok:#28a745;
+    --warn:#ffc107;
+    --danger:#dc3545;
+    --bg:#f5f6fb;
+    --card:#ffffff;
+    --text:#1f2340;
+    --muted:#6c757d;
+    --border:#e4e4ef;
+  }
+  *{box-sizing:border-box}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    margin:0;padding:0;color:var(--text);
+    background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);
+    min-height:100vh;
+  }
+  .wrap{max-width:1100px;margin:0 auto;padding:32px 20px}
+  header.hero{
+    background:var(--card);border-radius:16px;padding:28px 32px;
+    box-shadow:0 10px 40px rgba(0,0,0,.18);margin-bottom:22px;
+  }
+  header.hero h1{margin:0 0 6px;color:var(--primary);font-size:1.9rem}
+  header.hero p{margin:0;color:var(--muted)}
+  .password-box{
+    margin-top:16px;padding:14px 16px;border-radius:10px;
+    background:#fff7e6;border:1px solid #ffe3a0;
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap
+  }
+  .password-box strong{color:#8a5a00}
+  .password-box code{
+    background:#fff;border:1px solid #ffc107;padding:4px 10px;
+    border-radius:6px;font-size:1rem;font-weight:700;color:#8a5a00
+  }
+  .password-box small{color:#8a5a00}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:18px}
+  .card{
+    background:var(--card);border:1px solid var(--border);
+    border-radius:14px;padding:20px 22px;box-shadow:0 4px 16px rgba(0,0,0,.08)
+  }
+  .card h3{margin:0 0 6px;color:var(--primary);font-size:1.15rem}
+  .card .tag{
+    display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.5px;
+    padding:2px 8px;border-radius:999px;margin-left:6px;vertical-align:middle
+  }
+  .tag.admin{background:#ffe3a0;color:#8a5a00}
+  .tag.user{background:#d4edda;color:#155724}
+  .tag.dev{background:#e2e3ff;color:#3c40a4}
+  .tag.danger{background:#f8d7da;color:#842029}
+  .card p{color:var(--muted);font-size:.92rem;margin:6px 0 12px}
+  .links a{
+    display:inline-block;background:var(--primary);color:#fff;text-decoration:none;
+    padding:7px 12px;border-radius:7px;font-size:.88rem;margin:4px 6px 0 0;
+    transition:transform .15s ease,box-shadow .15s ease
+  }
+  .links a:hover{transform:translateY(-1px);box-shadow:0 4px 10px rgba(74,79,213,.3)}
+  .links a.sec{background:#6c757d}
+  .links a.warn{background:var(--warn);color:#3a2d00}
+  .links a.danger{background:var(--danger)}
+  .links a.ok{background:var(--ok)}
+  .links code{font-size:.8rem;color:var(--muted);margin-left:4px}
+  footer{
+    margin-top:22px;text-align:center;color:#fff;opacity:.85;font-size:.85rem
+  }
+  footer a{color:#fff}
+  .section-title{
+    color:#fff;margin:22px 4px 10px;font-size:1.15rem;font-weight:700;letter-spacing:.3px
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <h1>EBI SelfService — Índice de Páginas</h1>
+    <p>Atalhos para todos os módulos do projeto (EBI, Self-Service, Saída e utilitários).</p>
+    <div class="password-box">
+      <span>🔐</span>
+      <strong>Senha padrão de fábrica:</strong>
+      <code>Senha123!</code>
+      <small>(armazenada apenas em hash bcrypt — troque em produção)</small>
+    </div>
+  </header>
+
+  <div class="section-title">🟣 Self-Service (gerenciamento de instâncias)</div>
+  <div class="grid">
+    <div class="card">
+      <h3>Cadastro de novo usuário <span class="tag user">usuário</span></h3>
+      <p>Formulário público onde o usuário cria sua própria instância isolada do EBI.</p>
+      <div class="links">
+        <a href="selfservice/selfservice.php">Abrir cadastro</a>
+        <a class="sec" href="selfservice/index.html">Landing page</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Painel Administrativo <span class="tag admin">admin</span></h3>
+      <p>Gerencia usuários, instâncias, configurações e e-mails do sistema. Login com senha de administrador.</p>
+      <div class="links">
+        <a href="selfservice/admin.php">Abrir admin</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Instalação <span class="tag dev">setup</span></h3>
+      <p>Executa verificações de requisitos, cria diretórios, gera senha admin hasheada no <code>.env</code>. <strong>Rode uma vez e delete.</strong></p>
+      <div class="links">
+        <a class="warn" href="selfservice/install.php">Executar install.php</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Config Manager (desativado) <span class="tag danger">410</span></h3>
+      <p>Endpoint antigo mantido apenas para retornar 410 Gone — continha vulnerabilidade de injeção de INI.</p>
+      <div class="links">
+        <a class="danger" href="selfservice/config_manager.php">Ver 410</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">🟢 EBI — template base (não use direto em produção)</div>
+  <div class="grid">
+    <div class="card">
+      <h3>Cadastro de Crianças <span class="tag user">usuário</span></h3>
+      <p>Interface principal do EBI: cadastro, listagem, impressão de pulseiras e recuperação de backup.</p>
+      <div class="links">
+        <a href="ebi/template/index.php">Abrir EBI (template)</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Módulo Saída <span class="tag user">usuário</span></h3>
+      <p>Leitor de QR Code para registrar a saída da criança com o responsável. Login com a mesma senha do painel.</p>
+      <div class="links">
+        <a href="ebi/template/saida/index.php">Registrar saída</a>
+        <a class="sec" href="ebi/template/saida/painel.php">Painel de saídas</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Calibrar impressora <span class="tag dev">ferramenta</span></h3>
+      <p>Página de calibração da impressora ZPL/TSPL2 (passo-a-passo interativo).</p>
+      <div class="links">
+        <a href="ebi/template/calibrar.php">Abrir calibragem</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Zerar dados (CLI) <span class="tag danger">destrutivo</span></h3>
+      <p>Script executado apenas via linha de comando, faz backup e limpa o arquivo de cadastros.</p>
+      <div class="links">
+        <a class="sec" href="ebi/template/zerar_dados.php">Ver arquivo</a>
+        <code>php ebi/template/zerar_dados.php</code>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">🔵 Utilitários</div>
+  <div class="grid">
+    <div class="card">
+      <h3>Gerador de QR Code <span class="tag dev">ferramenta</span></h3>
+      <p>Endpoint simples que renderiza um QR Code dado um parâmetro na URL.</p>
+      <div class="links">
+        <a href="qrcode/default.php">Abrir gerador</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Cleanup de instâncias (CLI) <span class="tag danger">destrutivo</span></h3>
+      <p>Remove instâncias inativas há mais de 24 h com base no <code>.lastaccess</code>.</p>
+      <div class="links">
+        <code>php selfservice/cleanup_instances.php</code>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">🧪 Ambiente de teste local</div>
+  <div class="grid">
+    <div class="card">
+      <h3>Instância semeada <span class="tag dev">test-env</span></h3>
+      <p>Instância de teste com 3 cadastros fictícios e 1 saída registrada. Criada por <code>test-env/seed.php</code>.</p>
+      <div class="links">
+        <a href="test-env/">Página do ambiente</a>
+        <a class="ok" href="test-env/instance/public_html/ebi/index.php">EBI de teste</a>
+        <a class="ok" href="test-env/instance/public_html/ebi/saida/index.php">Saída de teste</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Testes de segurança <span class="tag dev">validação</span></h3>
+      <p>Ao clicar, cada link deve retornar o código HTTP indicado — confirmando as proteções.</p>
+      <div class="links">
+        <a class="sec" href="test-env/instance/config/config.ini">config.ini → 403</a>
+        <a class="sec" href="test-env/instance/config/cadastro_criancas.txt">cadastro.txt → 403</a>
+        <a class="sec" href="test-env/instance/public_html/ebi/index.php?acao=preview_backup&arquivo=../../../../etc/passwd">Path traversal → 404</a>
+        <a class="danger" href="selfservice/config_manager.php">config_manager → 410</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">📚 Documentação</div>
+  <div class="grid">
+    <div class="card">
+      <h3>Guia geral</h3>
+      <p>Descrição detalhada de cada página deste projeto.</p>
+      <div class="links">
+        <a href="index.md">Abrir index.md</a>
+        <a class="sec" href="selfservice/documentacao/README.md">README Self-Service</a>
+        <a class="sec" href="ALTERACOES_SAIDA.md">Alterações do módulo saída</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Instruções técnicas</h3>
+      <p>Documentos auxiliares do repositório.</p>
+      <div class="links">
+        <a class="sec" href="ebi/template/CLAUDE.md">CLAUDE.md (EBI)</a>
+        <a class="sec" href="selfservice/documentacao/INSTALACAO.md">Instalação</a>
+        <a class="sec" href="selfservice/documentacao/EXEMPLOS_DE_USO.md">Exemplos de uso</a>
+        <a class="sec" href="selfservice/documentacao/ANALISE_SEGURANCA.md">Análise de segurança</a>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Senha padrão de todos os módulos: <code style="background:rgba(255,255,255,.2);padding:2px 8px;border-radius:4px">Senha123!</code>
+    — troque antes de ir para produção.
+  </footer>
+</div>
+</body>
+</html>
