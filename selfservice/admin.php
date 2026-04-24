@@ -611,9 +611,47 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     }
 
-    // Atualizar configurações
-    if (isset($_POST['atualizar_config'])) {
+    // Desbloquear rate limiting (apagar arquivos ratelimit_*.json)
+    if (isset($_POST['desbloquear_rate_limit'])) {
         if (!admin_csrf_validate()) {
+            $mensagem = "Requisição inválida (token de segurança).";
+            $tipo_mensagem = "danger";
+        } else {
+            $modo = $_POST['desbloquear_modo'] ?? 'todos'; // 'todos' | 'meu_ip'
+            $rateDir = __DIR__ . '/data/';
+            $arquivos = glob($rateDir . 'ratelimit_*.json') ?: [];
+            $removidos = 0;
+
+            if ($modo === 'meu_ip') {
+                require_once __DIR__ . '/inc/rate_limit.php';
+                $meuIp = getClientIP();
+                $ipSafe = preg_replace('/[^a-zA-Z0-9._-]/', '_', $meuIp);
+                $alvo = $rateDir . 'ratelimit_' . $ipSafe . '.json';
+                if (file_exists($alvo) && @unlink($alvo)) {
+                    $removidos = 1;
+                }
+                $descricao = "IP $meuIp";
+            } else {
+                foreach ($arquivos as $f) {
+                    if (@unlink($f)) $removidos++;
+                }
+                $descricao = "todos os IPs";
+            }
+
+            $logFile = DATA_PATH . '/admin_actions.log';
+            @file_put_contents(
+                $logFile,
+                date('Y-m-d H:i:s') . " | RATE_LIMIT_DESBLOQUEADO | $descricao | removidos=$removidos\n",
+                FILE_APPEND | LOCK_EX
+            );
+
+            $mensagem = "Rate limit desbloqueado ($descricao). Arquivos removidos: $removidos.";
+            $tipo_mensagem = $removidos > 0 ? "success" : "info";
+        }
+    }
+
+    // Atualizar configurações
+    if (isset($_POST['atualizar_config'])) {        if (!admin_csrf_validate()) {
             $mensagem = "Requisição inválida (token de segurança).";
             $tipo_mensagem = "danger";
         } else {
@@ -622,8 +660,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 // Atualizar valores usando função segura
                 $configs = [
                     'RATE_LIMIT_ENABLED' => $_POST['rate_limit_enabled'] ?? 'false',
-                    'RATE_LIMIT_MAX_REQUESTS' => $_POST['rate_limit_max_requests'] ?? '5',
-                    'RATE_LIMIT_TIME_WINDOW' => $_POST['rate_limit_time_window'] ?? '3600',
+                    'RATE_LIMIT_MAX_REQUESTS' => $_POST['rate_limit_max_requests'] ?? '60',
+                    'RATE_LIMIT_TIME_WINDOW' => $_POST['rate_limit_time_window'] ?? '60',
                     'ALLOW_MULTIPLE_INSTANCES' => $_POST['allow_multiple_instances'] ?? 'false',
                     'CLEANUP_INACTIVE_HOURS' => $_POST['cleanup_inactive_hours'] ?? '6',
                     'LOG_LEVEL' => $_POST['log_level'] ?? 'warning',

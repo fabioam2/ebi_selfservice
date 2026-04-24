@@ -19,11 +19,11 @@
  * As requisições antigas são automaticamente removidas da contagem.
  *
  * @param string $ip Endereço IP a ser verificado
- * @param int $maxRequests Número máximo de requisições permitidas (padrão: 5)
- * @param int $timeWindow Janela de tempo em segundos (padrão: 3600 = 1 hora)
+ * @param int $maxRequests Número máximo de requisições permitidas (padrão: 60)
+ * @param int $timeWindow Janela de tempo em segundos (padrão: 60 = 1 minuto)
  * @return bool True se a requisição é permitida, false se excedeu o limite
  */
-function checkRateLimit(string $ip, int $maxRequests = 5, int $timeWindow = 3600): bool {
+function checkRateLimit(string $ip, int $maxRequests = 60, int $timeWindow = 60): bool {
     // Sanitizar IP para uso em nome de arquivo
     $ipSafe = preg_replace('/[^a-zA-Z0-9._-]/', '_', $ip);
 
@@ -82,7 +82,7 @@ function checkRateLimit(string $ip, int $maxRequests = 5, int $timeWindow = 3600
  * @param int $timeWindow Janela de tempo em segundos
  * @return array{remaining: int, reset_in: int} Requisições restantes e tempo até reset
  */
-function getRateLimitStatus(string $ip, int $maxRequests = 5, int $timeWindow = 3600): array {
+function getRateLimitStatus(string $ip, int $maxRequests = 60, int $timeWindow = 60): array {
     $ipSafe = preg_replace('/[^a-zA-Z0-9._-]/', '_', $ip);
     $rateLimitFile = __DIR__ . '/../data/ratelimit_' . $ipSafe . '.json';
 

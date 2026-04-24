@@ -23,8 +23,8 @@ require_once __DIR__ . '/inc/rate_limit.php';
 
 // Verificar rate limit antes de processar qualquer requisição
 $clientIP = getClientIP();
-$maxRequests = (int)($_ENV['RATE_LIMIT_MAX_REQUESTS'] ?? 50); // Ler do .env
-$timeWindow = (int)($_ENV['RATE_LIMIT_TIME_WINDOW'] ?? 3600); // Ler do .env
+$maxRequests = (int)($_ENV['RATE_LIMIT_MAX_REQUESTS'] ?? 60); // Ler do .env
+$timeWindow = (int)($_ENV['RATE_LIMIT_TIME_WINDOW'] ?? 60); // Ler do .env
 
 if (!checkRateLimit($clientIP, $maxRequests, $timeWindow)) {
     $status = getRateLimitStatus($clientIP, $maxRequests, $timeWindow);

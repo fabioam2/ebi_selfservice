@@ -303,6 +303,105 @@ EMAIL_FROM_NAME="EBI Self-Service"</code></pre>
     <!-- Coluna Direita -->
     <div class="col-md-6">
 
+        <!-- Rate Limiting: status + desbloqueio rápido -->
+        <?php
+        require_once __DIR__ . '/rate_limit.php';
+        $rlDir = dirname(__DIR__) . '/data/';
+        $rlArquivos = glob($rlDir . 'ratelimit_*.json') ?: [];
+        $rlEnabled = ($configAtual['RATE_LIMIT_ENABLED'] ?? 'false') === 'true';
+        $rlMax = (int)($configAtual['RATE_LIMIT_MAX_REQUESTS'] ?? 60);
+        $rlWin = (int)($configAtual['RATE_LIMIT_TIME_WINDOW'] ?? 60);
+        $rlMeuIp = getClientIP();
+
+        // Coletar lista de IPs com contagem atual
+        $rlLista = [];
+        $agora = time();
+        foreach ($rlArquivos as $f) {
+            $ipArq = preg_replace('/^ratelimit_|\.json$/', '', basename($f));
+            $dados = @json_decode((string)@file_get_contents($f), true);
+            if (!is_array($dados)) $dados = [];
+            $validos = array_filter($dados, fn($t) => ($agora - (int)$t) < $rlWin);
+            $rlLista[] = [
+                'ip' => $ipArq,
+                'reqs' => count($validos),
+                'bloqueado' => count($validos) >= $rlMax,
+            ];
+        }
+        usort($rlLista, fn($a, $b) => $b['reqs'] <=> $a['reqs']);
+        ?>
+        <div class="card mb-4">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="fas fa-traffic-light mr-2"></i>Rate Limiting — status e desbloqueio</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-2">
+                    Estado atual:
+                    <?php if ($rlEnabled): ?>
+                        <span class="badge badge-success">ATIVO</span>
+                    <?php else: ?>
+                        <span class="badge badge-secondary">DESATIVADO</span>
+                    <?php endif; ?>
+                    — máx. <strong><?php echo $rlMax; ?></strong> requisições por <strong><?php echo $rlWin; ?>s</strong>
+                    (configure abaixo).
+                </p>
+                <p class="small text-muted mb-3">
+                    Seu IP atual: <code><?php echo htmlspecialchars($rlMeuIp); ?></code>
+                </p>
+
+                <?php if (empty($rlLista)): ?>
+                    <div class="alert alert-success mb-3">
+                        <i class="fas fa-check-circle mr-1"></i>Nenhum IP registrado no momento.
+                    </div>
+                <?php else: ?>
+                    <div class="table-responsive mb-3" style="max-height:220px;overflow:auto">
+                        <table class="table table-sm mb-0">
+                            <thead class="thead-light">
+                                <tr><th>IP</th><th>Reqs na janela</th><th>Status</th></tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($rlLista as $r): ?>
+                                    <tr>
+                                        <td><code><?php echo htmlspecialchars($r['ip']); ?></code></td>
+                                        <td><?php echo $r['reqs']; ?> / <?php echo $rlMax; ?></td>
+                                        <td>
+                                            <?php if ($r['bloqueado']): ?>
+                                                <span class="badge badge-danger">BLOQUEADO</span>
+                                            <?php else: ?>
+                                                <span class="badge badge-info">monitorado</span>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php endif; ?>
+
+                <form method="post" action="admin.php?page=settings" class="d-inline">
+                    <?php echo admin_csrf_field(); ?>
+                    <input type="hidden" name="desbloquear_modo" value="meu_ip">
+                    <button type="submit" name="desbloquear_rate_limit" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-user-shield mr-1"></i>Desbloquear meu IP
+                    </button>
+                </form>
+                <form method="post" action="admin.php?page=settings" class="d-inline"
+                      onsubmit="return confirm('Remover TODOS os registros de rate limit? Isso libera qualquer IP bloqueado.');">
+                    <?php echo admin_csrf_field(); ?>
+                    <input type="hidden" name="desbloquear_modo" value="todos">
+                    <button type="submit" name="desbloquear_rate_limit" class="btn btn-outline-danger btn-sm">
+                        <i class="fas fa-broom mr-1"></i>Desbloquear todos
+                    </button>
+                </form>
+
+                <hr>
+                <small class="text-muted d-block">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Os contadores ficam em <code>selfservice/data/ratelimit_&lt;ip&gt;.json</code>.
+                    Apagar o arquivo do IP libera imediatamente o acesso. Para ajustar os limites use o formulário abaixo.
+                </small>
+            </div>
+        </div>
+
         <!-- Configurações do Sistema -->
         <div class="card mb-4">
             <div class="card-header bg-success text-white">
@@ -331,7 +430,7 @@ EMAIL_FROM_NAME="EBI Self-Service"</code></pre>
                             <div class="form-group">
                                 <label>Máximo de Requisições</label>
                                 <input type="number" name="rate_limit_max_requests" class="form-control"
-                                       value="<?php echo htmlspecialchars($configAtual['RATE_LIMIT_MAX_REQUESTS'] ?? '5'); ?>"
+                                       value="<?php echo htmlspecialchars($configAtual['RATE_LIMIT_MAX_REQUESTS'] ?? '60'); ?>"
                                        min="1" max="1000">
                             </div>
                         </div>
@@ -339,8 +438,8 @@ EMAIL_FROM_NAME="EBI Self-Service"</code></pre>
                             <div class="form-group">
                                 <label>Janela de Tempo (segundos)</label>
                                 <input type="number" name="rate_limit_time_window" class="form-control"
-                                       value="<?php echo htmlspecialchars($configAtual['RATE_LIMIT_TIME_WINDOW'] ?? '3600'); ?>"
-                                       min="60" max="86400">
+                                       value="<?php echo htmlspecialchars($configAtual['RATE_LIMIT_TIME_WINDOW'] ?? '60'); ?>"
+                                       min="10" max="86400">
                             </div>
                         </div>
                     </div>
