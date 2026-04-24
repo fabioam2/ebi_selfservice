@@ -698,11 +698,6 @@ if (isset($_SESSION['instancia_existente'])) {
                 </div>
             <?php endif; ?>
             
-            <div class="info-box">
-                <i class="fas fa-gift"></i>
-                <strong>Grátis e Rápido!</strong> Crie sua conta em menos de 1 minuto e comece a usar imediatamente.
-            </div>
-            
             <form method="post" action="selfservice.php" id="formCadastro">
                 <?php echo ss_csrf_field(); ?>
                 <div class="form-group">
