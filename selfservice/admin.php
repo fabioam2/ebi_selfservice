@@ -1086,6 +1086,9 @@ function processarMarkdownSimples($texto) {
                     <a class="nav-link" href="instal.html" target="_blank">
                         <i class="fas fa-life-ring"></i> Página de Instalação
                     </a>
+                    <a class="nav-link" href="diag_email.php" target="_blank">
+                        <i class="fas fa-stethoscope"></i> Diagnóstico de Email
+                    </a>
                 </div>
             </nav>
 

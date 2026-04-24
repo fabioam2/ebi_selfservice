@@ -15,7 +15,9 @@ secrets.json
 # -----------------------------------------
 # Composer
 # -----------------------------------------
-/vendor/
+/vendor/*
+!/vendor/autoload.php
+!/vendor/phpmailer/
 composer.lock
 composer.phar
 
