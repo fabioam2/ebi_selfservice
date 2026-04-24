@@ -1,3 +1,63 @@
+<?php
+/**
+ * Pagina inicial protegida por senha.
+ * - Senha armazenada apenas como hash bcrypt (cost 12).
+ * - Padrao de fabrica: Senha123!  (troque trocando a constante abaixo).
+ * - O link para selfservice/selfservice.php fica acessivel sem login.
+ */
+
+// Hash bcrypt de "Senha123!" (cost 12). Para gerar um novo:
+//   php -r "echo password_hash('MinhaSenhaNova', PASSWORD_BCRYPT, ['cost'=>12]);"
+const INDEX_PASSWORD_HASH = '$2y$12$BPPI8U9mvBmGP/kI0pH/n.PUkkn/cB/9qrOaePiKcVy.vitwF7VsW';
+
+session_name('EBI_INDEX');
+session_set_cookie_params([
+    'lifetime' => 0,
+    'path'     => '/',
+    'secure'   => !empty($_SERVER['HTTPS']),
+    'httponly' => true,
+    'samesite' => 'Lax',
+]);
+session_start();
+
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: SAMEORIGIN');
+header('Referrer-Policy: same-origin');
+
+// CSRF
+if (empty($_SESSION['csrf'])) {
+    $_SESSION['csrf'] = bin2hex(random_bytes(16));
+}
+
+// Logout
+if (isset($_GET['logout'])) {
+    $_SESSION = [];
+    session_destroy();
+    header('Location: index.php');
+    exit;
+}
+
+$erro = '';
+
+// Login
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['senha'])) {
+    $csrf = $_POST['csrf'] ?? '';
+    if (!hash_equals($_SESSION['csrf'], $csrf)) {
+        $erro = 'Token invalido. Recarregue a pagina.';
+    } elseif (password_verify($_POST['senha'], INDEX_PASSWORD_HASH)) {
+        session_regenerate_id(true);
+        $_SESSION['auth'] = true;
+        $_SESSION['csrf'] = bin2hex(random_bytes(16));
+        header('Location: index.php');
+        exit;
+    } else {
+        $erro = 'Senha incorreta.';
+        usleep(400000); // atrasa brute force
+    }
+}
+
+$logado = !empty($_SESSION['auth']);
+?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -28,20 +88,10 @@
   header.hero{
     background:var(--card);border-radius:16px;padding:28px 32px;
     box-shadow:0 10px 40px rgba(0,0,0,.18);margin-bottom:22px;
+    display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap
   }
   header.hero h1{margin:0 0 6px;color:var(--primary);font-size:1.9rem}
   header.hero p{margin:0;color:var(--muted)}
-  .password-box{
-    margin-top:16px;padding:14px 16px;border-radius:10px;
-    background:#fff7e6;border:1px solid #ffe3a0;
-    display:flex;align-items:center;gap:10px;flex-wrap:wrap
-  }
-  .password-box strong{color:#8a5a00}
-  .password-box code{
-    background:#fff;border:1px solid #ffc107;padding:4px 10px;
-    border-radius:6px;font-size:1rem;font-weight:700;color:#8a5a00
-  }
-  .password-box small{color:#8a5a00}
   .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:18px}
   .card{
     background:var(--card);border:1px solid var(--border);
@@ -57,12 +107,13 @@
   .tag.dev{background:#e2e3ff;color:#3c40a4}
   .tag.danger{background:#f8d7da;color:#842029}
   .card p{color:var(--muted);font-size:.92rem;margin:6px 0 12px}
-  .links a{
+  .links a,.links button{
     display:inline-block;background:var(--primary);color:#fff;text-decoration:none;
     padding:7px 12px;border-radius:7px;font-size:.88rem;margin:4px 6px 0 0;
+    border:0;cursor:pointer;font-family:inherit;
     transition:transform .15s ease,box-shadow .15s ease
   }
-  .links a:hover{transform:translateY(-1px);box-shadow:0 4px 10px rgba(74,79,213,.3)}
+  .links a:hover,.links button:hover{transform:translateY(-1px);box-shadow:0 4px 10px rgba(74,79,213,.3)}
   .links a.sec{background:#6c757d}
   .links a.warn{background:var(--warn);color:#3a2d00}
   .links a.danger{background:var(--danger)}
@@ -71,17 +122,63 @@
   footer{
     margin-top:22px;text-align:center;color:#fff;opacity:.85;font-size:.85rem
   }
-  footer a{color:#fff}
   .section-title{
     color:#fff;margin:22px 4px 10px;font-size:1.15rem;font-weight:700;letter-spacing:.3px
+  }
+  .login-card{
+    background:var(--card);border-radius:14px;padding:26px 28px;max-width:420px;margin:0 auto;
+    box-shadow:0 10px 40px rgba(0,0,0,.18);
+  }
+  .login-card h2{margin:0 0 12px;color:var(--primary)}
+  .login-card label{display:block;font-size:.9rem;color:var(--muted);margin:10px 0 4px}
+  .login-card input[type=password]{
+    width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:1rem
+  }
+  .login-card button{
+    margin-top:14px;width:100%;background:var(--primary);color:#fff;border:0;padding:11px;
+    border-radius:8px;font-size:1rem;cursor:pointer
+  }
+  .login-card .alt{
+    margin-top:14px;padding-top:14px;border-top:1px solid var(--border);text-align:center;font-size:.9rem
+  }
+  .login-card .alt a{color:var(--primary);text-decoration:none;font-weight:600}
+  .err{
+    background:#f8d7da;color:#842029;padding:8px 12px;border-radius:8px;font-size:.9rem;margin-bottom:8px
+  }
+  .logout{
+    background:transparent;color:var(--muted);border:1px solid var(--border);
+    padding:6px 12px;border-radius:7px;text-decoration:none;font-size:.85rem
   }
 </style>
 </head>
 <body>
 <div class="wrap">
+
+<?php if (!$logado): ?>
+  <div style="padding:60px 0 30px">
+    <div class="login-card">
+      <h2>EBI SelfService</h2>
+      <p style="color:var(--muted);margin:0 0 8px">Informe a senha para acessar o índice.</p>
+      <?php if ($erro): ?><div class="err"><?= htmlspecialchars($erro) ?></div><?php endif ?>
+      <form method="post" autocomplete="off">
+        <input type="hidden" name="csrf" value="<?= htmlspecialchars($_SESSION['csrf']) ?>">
+        <label for="senha">Senha</label>
+        <input id="senha" type="password" name="senha" required autofocus>
+        <button type="submit">Entrar</button>
+      </form>
+      <div class="alt">
+        Ainda não tem acesso? <a href="selfservice/selfservice.php">Criar nova conta / instância</a>
+      </div>
+    </div>
+  </div>
+<?php else: ?>
+
   <header class="hero">
-    <h1>EBI SelfService — Índice de Páginas</h1>
-    <p>Atalhos para todos os módulos do projeto (EBI, Self-Service, Saída e utilitários).</p>
+    <div>
+      <h1>EBI SelfService — Índice de Páginas</h1>
+      <p>Atalhos para todos os módulos do projeto (EBI, Self-Service, Saída e utilitários).</p>
+    </div>
+    <a class="logout" href="?logout=1">Sair</a>
   </header>
 
   <div class="section-title">🟣 Self-Service (gerenciamento de instâncias)</div>
@@ -227,6 +324,9 @@
   <footer>
     Consulte o administrador do sistema para obter as credenciais de acesso.
   </footer>
+
+<?php endif ?>
+
 </div>
 </body>
 </html>
