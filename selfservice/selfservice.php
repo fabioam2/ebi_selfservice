@@ -764,6 +764,9 @@ if (isset($_SESSION['instancia_existente'])) {
         <a href="../index.php" class="btn btn-outline-light btn-sm" style="border-color:rgba(255,255,255,.7);color:#fff">
             <i class="fas fa-sitemap mr-1"></i>Página de Links
         </a>
+        <a href="../qrcode/default.php" class="btn btn-outline-light btn-sm" style="border-color:rgba(255,255,255,.7);color:#fff">
+            <i class="fas fa-qrcode mr-1"></i>QR Code
+        </a>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
