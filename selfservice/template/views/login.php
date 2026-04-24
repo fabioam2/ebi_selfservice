@@ -34,6 +34,11 @@
             </div>
             <button type="submit" name="tentativa_login" class="btn btn-primary btn-block">Entrar</button>
         </form>
+        <div class="text-center mt-3">
+            <a href="../../../selfservice/recuperar_senha.php" style="font-size:.9rem">
+                🔑 Esqueci minha senha
+            </a>
+        </div>
     </div>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
