@@ -25,7 +25,7 @@ Pasta: [`selfservice/`](selfservice/)
 
 | Página | Caminho | Para quem | Descrição |
 |---|---|---|---|
-| Landing | [selfservice/index.html](selfservice/index.html) | visitante | Apresentação e chamada para cadastro. |
+| Página de ajuda | [selfservice/instal.html](selfservice/instal.html) | visitante | Apresentação e chamada para cadastro. |
 | Cadastro | [selfservice/selfservice.php](selfservice/selfservice.php) | usuário final | Formulário público que cria uma instância isolada. Detecta se já existe instância para o e-mail e permite apagar (exige `password_verify` da senha da instância) ou criar uma nova. Valida CSRF e usa `password_hash` ao salvar o usuário em `data/selfservice_users.txt`. |
 | Painel admin | [selfservice/admin.php](selfservice/admin.php) | administrador | Login com `Senha123!` (hash em `ADMIN_PASSWORD_HASH` no `.env`). Permite: gerenciar usuários (CRUD), listar/remover instâncias, editar configurações e acessar a documentação. Usa `session_regenerate_id(true)` e CSRF em todas as ações. |
 | Criação de instância | [selfservice/criar_instancia.php](selfservice/criar_instancia.php) | *biblioteca* | Funções `criarInstanciaUsuario()`, `verificarInstanciaExiste()`, `obterInfoInstancia()`, `listarTodasInstancias()`, `removerInstancia()`. Gera `config.ini` da instância com **apenas hash bcrypt** da senha. `chmod 0600` nos INIs e `mkdir 0700` na pasta `config/`. |

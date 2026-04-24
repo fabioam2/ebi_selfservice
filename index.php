@@ -188,7 +188,7 @@ $logado = !empty($_SESSION['auth']);
       <p>Formulário público onde o usuário cria sua própria instância isolada do EBI.</p>
       <div class="links">
         <a href="selfservice/selfservice.php">Abrir cadastro</a>
-        <a class="sec" href="selfservice/index.html">Landing page</a>
+        <a class="sec" href="selfservice/instal.html">Página de ajuda</a>
       </div>
     </div>
 

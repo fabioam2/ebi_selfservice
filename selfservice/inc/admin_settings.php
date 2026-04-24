@@ -50,6 +50,144 @@
             </div>
         </div>
 
+        <!-- Configurar Envio de Email (diagnóstico + setup) -->
+        <div class="card mb-4">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0"><i class="fas fa-envelope-open-text mr-2"></i>Configurar Envio de Email</h5>
+            </div>
+            <div class="card-body">
+                <?php
+                $projectRoot = realpath(__DIR__ . '/../..');
+                $vendorAutoload = $projectRoot . '/vendor/autoload.php';
+                $composerJson = $projectRoot . '/composer.json';
+                $phpMailerInstalado = file_exists($projectRoot . '/vendor/phpmailer/phpmailer/src/PHPMailer.php');
+
+                $envFile = $projectRoot . '/.env';
+                $envOk = file_exists($envFile);
+
+                $cfg = function_exists('carregarConfigEmail') ? carregarConfigEmail() : [];
+                $emailHabilitado = !empty($cfg['habilitado']);
+                $smtpHost = $cfg['smtp_host'] ?? '';
+                $smtpPort = $cfg['smtp_port'] ?? 0;
+                $smtpUser = $cfg['smtp_user'] ?? '';
+
+                // Diagnóstico
+                $checks = [
+                    ['label' => 'PHP &ge; 7.4',                   'ok' => version_compare(PHP_VERSION, '7.4', '>=')],
+                    ['label' => 'Extensão <code>openssl</code>',  'ok' => extension_loaded('openssl')],
+                    ['label' => 'Extensão <code>mbstring</code>', 'ok' => extension_loaded('mbstring')],
+                    ['label' => 'Extensão <code>curl</code>',     'ok' => extension_loaded('curl')],
+                    ['label' => 'composer.json presente',         'ok' => file_exists($composerJson)],
+                    ['label' => 'vendor/autoload.php presente',   'ok' => file_exists($vendorAutoload)],
+                    ['label' => 'PHPMailer instalado',            'ok' => $phpMailerInstalado],
+                    ['label' => '.env presente',                  'ok' => $envOk],
+                    ['label' => 'EMAIL_ENABLED=true no .env',     'ok' => $emailHabilitado],
+                    ['label' => 'SMTP_HOST configurado',          'ok' => !empty($smtpHost)],
+                    ['label' => 'SMTP_USER configurado',          'ok' => !empty($smtpUser)],
+                    ['label' => 'proc_open disponível (para instalar pela UI)', 'ok' => function_exists('proc_open')],
+                ];
+                ?>
+
+                <h6 class="border-bottom pb-2 mb-3"><i class="fas fa-stethoscope mr-2"></i>Diagnóstico</h6>
+                <table class="table table-sm mb-3">
+                    <?php foreach ($checks as $c): ?>
+                        <tr>
+                            <td style="width:70%"><?php echo $c['label']; ?></td>
+                            <td class="text-right">
+                                <?php if ($c['ok']): ?>
+                                    <span class="badge badge-success"><i class="fas fa-check"></i> OK</span>
+                                <?php else: ?>
+                                    <span class="badge badge-danger"><i class="fas fa-times"></i> pendente</span>
+                                <?php endif; ?>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                </table>
+
+                <?php if (!$phpMailerInstalado): ?>
+                    <div class="alert alert-warning">
+                        <strong>PHPMailer não está instalado.</strong> É necessário para enviar emails (cadastro, reset de senha).
+                    </div>
+
+                    <h6 class="mb-2"><i class="fas fa-rocket mr-2"></i>Instalar pela página</h6>
+                    <form method="post" action="admin.php?page=settings" class="mb-3">
+                        <?php echo admin_csrf_field(); ?>
+                        <button type="submit" name="instalar_dependencias" value="1" class="btn btn-primary"
+                                onclick="return confirm('Executar `composer install` no servidor? Pode levar alguns minutos.');"
+                                <?php echo function_exists('proc_open') ? '' : 'disabled'; ?>>
+                            <i class="fas fa-download mr-2"></i>Instalar dependências (composer install)
+                        </button>
+                        <small class="form-text text-muted">
+                            Requer que <code>composer</code> (ou <code>composer.phar</code> na raiz) esteja disponível no servidor
+                            e que a função <code>proc_open</code> não esteja bloqueada.
+                        </small>
+                    </form>
+                <?php else: ?>
+                    <div class="alert alert-success mb-3">
+                        <i class="fas fa-check-circle mr-2"></i> <strong>PHPMailer instalado.</strong>
+                        Envio de email operacional (basta habilitar em <em>Configurações do Sistema</em> e preencher SMTP).
+                    </div>
+                <?php endif; ?>
+
+                <?php if (!empty($_SESSION['composer_output'])): ?>
+                    <h6 class="mb-2"><i class="fas fa-terminal mr-2"></i>Saída do último <code>composer install</code></h6>
+                    <pre class="bg-dark text-white p-3 rounded" style="max-height:280px;overflow:auto;font-size:.78rem"><code><?php
+                        echo htmlspecialchars($_SESSION['composer_output']);
+                        unset($_SESSION['composer_output']);
+                    ?></code></pre>
+                <?php endif; ?>
+
+                <h6 class="mb-2 mt-3"><i class="fas fa-list-ol mr-2"></i>Passos para habilitar envio de email</h6>
+                <ol class="mb-3" style="font-size:.92rem">
+                    <li>
+                        Garantir que o <code>.env</code> existe (criar no card abaixo se faltar).
+                    </li>
+                    <li>
+                        Instalar dependências (botão acima <em>ou</em> via SSH no diretório do projeto):
+                        <pre class="bg-light p-2 mb-2"><code>cd <?php echo htmlspecialchars($projectRoot); ?>
+composer install --no-dev --optimize-autoloader</code></pre>
+                        Se o servidor não tiver <code>composer</code> no PATH:
+                        <pre class="bg-light p-2 mb-0"><code>curl -sS https://getcomposer.org/installer | php
+php composer.phar install --no-dev --optimize-autoloader</code></pre>
+                    </li>
+                    <li>
+                        Editar <code>.env</code> e preencher as variáveis SMTP:
+                        <pre class="bg-light p-2 mb-0"><code>EMAIL_ENABLED=true
+SMTP_HOST=smtp.seuprovedor.com
+SMTP_PORT=465
+SMTP_SECURE=ssl          # use "tls" para porta 587
+SMTP_USER=no-reply@seudominio.com
+SMTP_PASSWORD=*****
+EMAIL_FROM=no-reply@seudominio.com
+EMAIL_FROM_NAME="EBI Self-Service"</code></pre>
+                    </li>
+                    <li>
+                        Salvar as mesmas configurações no card <em>Configurações do Sistema</em> (elas editam o <code>.env</code>).
+                    </li>
+                    <li>
+                        Clicar em <strong>Testar Conexão SMTP</strong> (botão no card ao lado).
+                    </li>
+                    <li>
+                        <strong>Hostinger / cPanel:</strong> se a porta 465/587 estiver bloqueada pelo firewall,
+                        abrir chamado pedindo liberação do SMTP externo <em>ou</em> usar o SMTP interno do provedor
+                        (<code>localhost:25</code> ou endereço fornecido no painel).
+                    </li>
+                    <li>
+                        <strong>Apache/openbase_dir:</strong> se o <code>vendor/</code> ficar fora do <code>open_basedir</code>,
+                        adicionar o caminho do projeto no painel do provedor.
+                    </li>
+                </ol>
+
+                <div class="alert alert-info mb-0">
+                    <small>
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Logs de envio ficam em <code>selfservice/data/admin_actions.log</code>
+                        (ações de reset) e erros de PHPMailer aparecem no log do servidor.
+                    </small>
+                </div>
+            </div>
+        </div>
+
         <!-- Informações do Arquivo .env -->
         <div class="card mb-4">
             <div class="card-header bg-info text-white">

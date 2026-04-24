@@ -552,6 +552,65 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     }
 
+    // Instalar dependências do composer (PHPMailer, Dotenv, Monolog)
+    if (isset($_POST['instalar_dependencias'])) {
+        if (!admin_csrf_validate()) {
+            $mensagem = "Requisição inválida (token de segurança).";
+            $tipo_mensagem = "danger";
+        } else {
+            $projectRoot = realpath(__DIR__ . '/..');
+            if (!$projectRoot || !is_dir($projectRoot) || !file_exists($projectRoot . '/composer.json')) {
+                $mensagem = "composer.json não encontrado na raiz do projeto.";
+                $tipo_mensagem = "danger";
+            } elseif (!function_exists('proc_open')) {
+                $mensagem = "A função proc_open está desabilitada no PHP (verifique disable_functions). Execute composer manualmente pelo SSH.";
+                $tipo_mensagem = "danger";
+            } else {
+                // Descobrir binário disponível
+                $comandos = [
+                    'composer install --no-dev --optimize-autoloader --no-interaction 2>&1',
+                    'php composer.phar install --no-dev --optimize-autoloader --no-interaction 2>&1',
+                ];
+                $saida = '';
+                $status = -1;
+                foreach ($comandos as $cmd) {
+                    $descriptors = [
+                        0 => ['pipe', 'r'],
+                        1 => ['pipe', 'w'],
+                        2 => ['pipe', 'w'],
+                    ];
+                    $env = array_merge($_ENV, ['COMPOSER_ALLOW_SUPERUSER' => '1', 'HOME' => $projectRoot]);
+                    $proc = @proc_open($cmd, $descriptors, $pipes, $projectRoot, $env);
+                    if (!is_resource($proc)) continue;
+                    fclose($pipes[0]);
+                    $stdout = stream_get_contents($pipes[1]); fclose($pipes[1]);
+                    $stderr = stream_get_contents($pipes[2]); fclose($pipes[2]);
+                    $status = proc_close($proc);
+                    $saida = trim($stdout . "\n" . $stderr);
+                    if ($status === 0) break;
+                    // Se erro foi "command not found" tenta o próximo
+                    if (stripos($saida, 'not found') === false && stripos($saida, 'command not found') === false) break;
+                }
+
+                $logFile = DATA_PATH . '/admin_actions.log';
+                @file_put_contents(
+                    $logFile,
+                    date('Y-m-d H:i:s') . " | COMPOSER_INSTALL | status=$status\n",
+                    FILE_APPEND | LOCK_EX
+                );
+
+                $_SESSION['composer_output'] = $saida;
+                if ($status === 0) {
+                    $mensagem = "Dependências instaladas com sucesso. PHPMailer disponível em vendor/.";
+                    $tipo_mensagem = "success";
+                } else {
+                    $mensagem = "Falha ao executar composer (status $status). Veja a saída abaixo ou execute manualmente via SSH.";
+                    $tipo_mensagem = "danger";
+                }
+            }
+        }
+    }
+
     // Atualizar configurações
     if (isset($_POST['atualizar_config'])) {
         if (!admin_csrf_validate()) {
@@ -985,6 +1044,9 @@ function processarMarkdownSimples($texto) {
                     <hr>
                     <a class="nav-link" href="selfservice.php" target="_blank">
                         <i class="fas fa-external-link-alt"></i> Cadastro
+                    </a>
+                    <a class="nav-link" href="instal.html" target="_blank">
+                        <i class="fas fa-life-ring"></i> Página de ajuda
                     </a>
                 </div>
             </nav>

@@ -560,6 +560,14 @@ if (isset($_SESSION['instancia_existente'])) {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <div style="max-width:720px;margin:14px auto 0;padding:0 16px;display:flex;justify-content:flex-end;gap:8px">
+        <a href="instal.html" class="btn btn-outline-light btn-sm" style="border-color:rgba(255,255,255,.6);color:#fff">
+            <i class="fas fa-book mr-1"></i>Página de ajuda
+        </a>
+        <a href="admin.php" class="btn btn-outline-light btn-sm" style="border-color:rgba(255,255,255,.6);color:#fff">
+            <i class="fas fa-user-shield mr-1"></i>Administração
+        </a>
+    </div>
     <div class="selfservice-container">
         <?php if ($mostrar_instancia_existente): ?>
             <!-- Tela de Instância Existente -->
