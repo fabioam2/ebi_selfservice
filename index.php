@@ -184,19 +184,19 @@ $logado = !empty($_SESSION['auth']);
   <div class="section-title">🟣 Self-Service (gerenciamento de instâncias)</div>
   <div class="grid">
     <div class="card">
-      <h3>Cadastro de novo usuário <span class="tag user">usuário</span></h3>
-      <p>Formulário público onde o usuário cria sua própria instância isolada do EBI.</p>
-      <div class="links">
-        <a href="selfservice/selfservice.php">Abrir cadastro</a>
-        <a class="sec" href="selfservice/instal.html">Página de ajuda</a>
-      </div>
-    </div>
-
-    <div class="card">
       <h3>Painel Administrativo <span class="tag admin">admin</span></h3>
       <p>Gerencia usuários, instâncias, configurações e e-mails do sistema. Login com senha de administrador.</p>
       <div class="links">
         <a href="selfservice/admin.php">Abrir admin</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Cadastro de novo usuário <span class="tag user">usuário</span></h3>
+      <p>Formulário público onde o usuário cria sua própria instância isolada do EBI.</p>
+      <div class="links">
+        <a href="selfservice/selfservice.php">Abrir cadastro</a>
+        <a class="sec" href="selfservice/instal.html">Página de Instalação</a>
       </div>
     </div>
 

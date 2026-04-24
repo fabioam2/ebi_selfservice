@@ -562,7 +562,7 @@ if (isset($_SESSION['instancia_existente'])) {
 <body>
     <div style="max-width:720px;margin:14px auto 0;padding:0 16px;display:flex;justify-content:flex-end;gap:8px">
         <a href="instal.html" class="btn btn-outline-light btn-sm" style="border-color:rgba(255,255,255,.6);color:#fff">
-            <i class="fas fa-book mr-1"></i>Página de ajuda
+            <i class="fas fa-book mr-1"></i>Página de Instalação
         </a>
         <a href="admin.php" class="btn btn-outline-light btn-sm" style="border-color:rgba(255,255,255,.6);color:#fff">
             <i class="fas fa-user-shield mr-1"></i>Administração

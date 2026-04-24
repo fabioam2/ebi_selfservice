@@ -1046,7 +1046,7 @@ function processarMarkdownSimples($texto) {
                         <i class="fas fa-external-link-alt"></i> Cadastro
                     </a>
                     <a class="nav-link" href="instal.html" target="_blank">
-                        <i class="fas fa-life-ring"></i> Página de ajuda
+                        <i class="fas fa-life-ring"></i> Página de Instalação
                     </a>
                 </div>
             </nav>
