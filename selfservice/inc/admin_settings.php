@@ -58,19 +58,43 @@
             <div class="card-body">
                 <?php
                 $envFile = __DIR__ . '/../../.env';
+                $envExample = __DIR__ . '/../../.env.example';
                 $envExists = file_exists($envFile);
+                $mostrarEnv = isset($_GET['show_env']) && $_GET['show_env'] === '1';
+
+                /**
+                 * Mascara valores sensíveis (senhas, hashes, tokens) para exibição.
+                 */
+                $mascararEnv = function (string $conteudo): string {
+                    $padroes = '/(PASSWORD|PASSWD|SECRET|TOKEN|HASH|KEY)/i';
+                    $linhas = explode("\n", $conteudo);
+                    foreach ($linhas as $i => $linha) {
+                        $trim = ltrim($linha);
+                        if ($trim === '' || $trim[0] === '#') continue;
+                        if (!preg_match('/^\s*([A-Z_][A-Z0-9_]*)\s*=\s*(.*)$/', $linha, $m)) continue;
+                        $chave = $m[1];
+                        $valor = $m[2];
+                        if (preg_match($padroes, $chave) && trim($valor, "'\" ") !== '') {
+                            // Mostra só primeiros 4 chars
+                            $vLimpo = trim($valor, "'\" ");
+                            $mascarado = substr($vLimpo, 0, 4) . str_repeat('•', max(3, strlen($vLimpo) - 4));
+                            $linhas[$i] = $chave . '="' . $mascarado . '"';
+                        }
+                    }
+                    return implode("\n", $linhas);
+                };
                 ?>
 
                 <?php if ($envExists): ?>
-                    <div class="alert alert-success">
+                    <div class="alert alert-success mb-3">
                         <i class="fas fa-check-circle mr-2"></i>
                         Arquivo <code>.env</code> encontrado
                     </div>
 
-                    <table class="table table-sm">
+                    <table class="table table-sm mb-3">
                         <tr>
                             <td><strong>Localização:</strong></td>
-                            <td><code><?php echo $envFile; ?></code></td>
+                            <td><code><?php echo htmlspecialchars($envFile); ?></code></td>
                         </tr>
                         <tr>
                             <td><strong>Tamanho:</strong></td>
@@ -86,18 +110,52 @@
                         </tr>
                     </table>
 
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle mr-2"></i>
-                        <small>Para editar configurações avançadas, edite manualmente o arquivo <code>.env</code> ou use os campos abaixo.</small>
+                    <div class="d-flex mb-3" style="gap:8px">
+                        <?php if (!$mostrarEnv): ?>
+                            <a href="admin.php?page=settings&amp;show_env=1" class="btn btn-info btn-sm">
+                                <i class="fas fa-eye mr-1"></i>Ver conteúdo (.env)
+                            </a>
+                        <?php else: ?>
+                            <a href="admin.php?page=settings" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-eye-slash mr-1"></i>Ocultar
+                            </a>
+                        <?php endif; ?>
                     </div>
+
+                    <?php if ($mostrarEnv): ?>
+                        <div class="alert alert-warning">
+                            <i class="fas fa-shield-alt mr-2"></i>
+                            <small>Valores de <code>PASSWORD</code>, <code>SECRET</code>, <code>TOKEN</code>, <code>HASH</code> e <code>KEY</code> são exibidos parcialmente mascarados.</small>
+                        </div>
+                        <pre class="bg-dark text-white p-3 rounded" style="max-height:420px;overflow:auto;font-size:.82rem"><code><?php
+                            echo htmlspecialchars($mascararEnv(file_get_contents($envFile)));
+                        ?></code></pre>
+                    <?php else: ?>
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            <small>Para editar configurações avançadas, use os campos ao lado ou edite o arquivo <code>.env</code> manualmente.</small>
+                        </div>
+                    <?php endif; ?>
+
                 <?php else: ?>
                     <div class="alert alert-danger">
                         <i class="fas fa-exclamation-triangle mr-2"></i>
-                        <strong>Arquivo .env não encontrado!</strong><br>
-                        Copie o arquivo <code>.env.example</code> para <code>.env</code>
+                        <strong>Arquivo .env não encontrado!</strong>
                     </div>
 
-                    <pre class="bg-dark text-white p-3 rounded"><code>cp .env.example .env</code></pre>
+                    <?php if (file_exists($envExample)): ?>
+                        <p class="text-muted">Podemos criar automaticamente a partir de <code>.env.example</code>.</p>
+                        <form method="post" action="admin.php?page=settings">
+                            <?php echo admin_csrf_field(); ?>
+                            <button type="submit" name="criar_env_do_example" value="1" class="btn btn-success btn-block">
+                                <i class="fas fa-copy mr-2"></i>Criar .env a partir do .env.example
+                            </button>
+                        </form>
+                    <?php else: ?>
+                        <div class="alert alert-warning mb-0">
+                            Arquivo <code>.env.example</code> também não encontrado.
+                        </div>
+                    <?php endif; ?>
                 <?php endif; ?>
             </div>
         </div>

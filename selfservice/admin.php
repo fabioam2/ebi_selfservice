@@ -22,10 +22,18 @@ if (!headers_sent()) {
     header('Permissions-Policy: geolocation=(), microphone=(), camera=()');
 }
 
-// Carregar .env se existir
+// Carregar .env se existir (cria automaticamente a partir de .env.example se faltar)
+$envFileBoot = __DIR__ . '/../.env';
+$envExampleBoot = __DIR__ . '/../.env.example';
+if (!file_exists($envFileBoot) && file_exists($envExampleBoot)) {
+    if (@copy($envExampleBoot, $envFileBoot)) {
+        @chmod($envFileBoot, 0600);
+    }
+}
+
 if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
     require __DIR__ . '/../vendor/autoload.php';
-    if (class_exists('Dotenv\Dotenv') && file_exists(__DIR__ . '/../.env')) {
+    if (class_exists('Dotenv\Dotenv') && file_exists($envFileBoot)) {
         $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
         $dotenv->safeLoad();
     }
@@ -513,6 +521,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     $mensagem = "Arquivo .env não encontrado. Crie-o a partir do .env.example";
                     $tipo_mensagem = "danger";
                 }
+            }
+        }
+    }
+
+    // Criar .env a partir do .env.example
+    if (isset($_POST['criar_env_do_example'])) {
+        if (!admin_csrf_validate()) {
+            $mensagem = "Requisição inválida (token de segurança).";
+            $tipo_mensagem = "danger";
+        } else {
+            $envFile = __DIR__ . '/../.env';
+            $exampleFile = __DIR__ . '/../.env.example';
+            if (file_exists($envFile)) {
+                $mensagem = "O arquivo .env já existe. Operação cancelada para não sobrescrever.";
+                $tipo_mensagem = "warning";
+            } elseif (!file_exists($exampleFile)) {
+                $mensagem = "Arquivo .env.example não encontrado.";
+                $tipo_mensagem = "danger";
+            } elseif (@copy($exampleFile, $envFile)) {
+                @chmod($envFile, 0600);
+                $logFile = DATA_PATH . '/admin_actions.log';
+                @file_put_contents($logFile, date('Y-m-d H:i:s') . " | ENV_CRIADO | copiado de .env.example\n", FILE_APPEND | LOCK_EX);
+                $mensagem = "Arquivo .env criado com sucesso (cópia do .env.example, permissões 0600).";
+                $tipo_mensagem = "success";
+            } else {
+                $mensagem = "Falha ao copiar .env.example para .env. Verifique permissões de escrita.";
+                $tipo_mensagem = "danger";
             }
         }
     }
