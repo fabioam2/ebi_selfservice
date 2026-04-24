@@ -650,10 +650,10 @@ if (isset($_SESSION['instancia_existente'])) {
                 <p class="mb-3">Sua instância do sistema foi criada. Use o link abaixo para acessar:</p>
 
                 <?php if ($email_enviado): ?>
-                    <div class="alert alert-success mb-3">
-                        <i class="fas fa-envelope-open-text"></i>
-                        <strong>Email enviado!</strong> Enviamos um email com os dados de acesso para seu endereço de email.
-                    </div>
+                    <p class="text-muted small mb-3" style="opacity:.8">
+                        <i class="fas fa-envelope text-success mr-1"></i>
+                        Também enviamos os dados de acesso para o seu e-mail.
+                    </p>
                 <?php elseif (!empty($email_erro)): ?>
                     <div class="alert alert-warning mb-3">
                         <i class="fas fa-exclamation-triangle"></i>
