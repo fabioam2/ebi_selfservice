@@ -2,14 +2,11 @@
 /**
  * seed.php — cria (ou recria) uma instância de teste pronta para uso.
  *
- * Estrutura gerada em test-env/instance/:
- *   config/
- *     config.ini              (com senhas em hash bcrypt)
+ * Estrutura gerada em test-env/instance/ (flat, URL curta):
+ *   index.php, inc/, views/, saida/, assets/, config.ini, .htaccess
+ *   data/
  *     cadastro_criancas.txt   (3 registros fictícios)
  *     painel_criancas.txt     (1 saída de exemplo)
- *   public_html/ebi/
- *     index.php + inc/ + views/ + saida/   (cópias do template refatorado)
- *     config.ini (mesmo hash)
  */
 
 if (PHP_SAPI !== 'cli') {
@@ -23,7 +20,6 @@ $instDir = __DIR__ . '/instance';
 
 echo "🔧 Semeando ambiente de teste em $instDir\n";
 
-// Senha e hash
 $senhaPadrao = 'Senha123!';
 $hash = password_hash($senhaPadrao, PASSWORD_BCRYPT, ['cost' => 12]);
 
@@ -39,10 +35,8 @@ if (is_dir($instDir)) {
     @rmdir($instDir);
 }
 
-$configDir = $instDir . '/config';
-$publicDir = $instDir . '/public_html/ebi';
-mkdir($configDir, 0700, true);
-mkdir($publicDir, 0755, true);
+$dataDir = $instDir . '/data';
+mkdir($dataDir, 0755, true);
 
 // --- config.ini ---
 $d = date('Y-m-d H:i:s');
@@ -61,8 +55,8 @@ USER_ID = "teste"
 DATA_CRIACAO = "$d"
 
 [GERAL]
-ARQUIVO_DADOS = "/../../config/cadastro_criancas.txt"
-ARQUIVO_DADOS_PAINEL = "/../../config/painel_criancas.txt"
+ARQUIVO_DADOS = "/data/cadastro_criancas.txt"
+ARQUIVO_DADOS_PAINEL = "/data/painel_criancas.txt"
 DELIMITADOR = "|"
 MAX_BACKUPS = 10
 BACKUP_AUTOMATICO = true
@@ -124,10 +118,8 @@ ORDENACAO_PADRAO = "id"
 DIRECAO_ORDENACAO = "ASC"
 INI;
 
-file_put_contents($configDir . '/config.ini', $configIni);
-chmod($configDir . '/config.ini', 0600);
-file_put_contents($publicDir . '/config.ini', $configIni);
-chmod($publicDir . '/config.ini', 0600);
+file_put_contents($instDir . '/config.ini', $configIni);
+chmod($instDir . '/config.ini', 0600);
 
 // --- Dados fictícios ---
 $cadastros = "# Sistema de Cadastro de Crianças - Ambiente de Teste\n";
@@ -136,13 +128,13 @@ $cadastros .= "# Formato: ID|Nome|Responsável|Telefone|Idade|Comum|StatusImpres
 $cadastros .= "1|João Silva|Maria Silva|11991234567|3|Bonfim|N|A|1\n";
 $cadastros .= "2|Ana Costa|Pedro Costa|11987654321|4|Parque|N|B|2\n";
 $cadastros .= "3|Lucas Souza|Carla Souza|11912345678|5|Central|N|A|3\n";
-file_put_contents($configDir . '/cadastro_criancas.txt', $cadastros);
+file_put_contents($dataDir . '/cadastro_criancas.txt', $cadastros);
 
 $painel = "# Registros de saída\n# timestamp|CodResp|NomeResponsavel|NomeCrianca|Portaria\n";
 $painel .= time() . "|1|Maria Silva|João Silva|A\n";
-file_put_contents($configDir . '/painel_criancas.txt', $painel);
+file_put_contents($dataDir . '/painel_criancas.txt', $painel);
 
-// --- Copiar template (index.php, inc/, views/, saida/) ---
+// --- Copiar template (index.php, inc/, views/, saida/, assets/, .htaccess) ---
 $copiar = function($origem, $destino) use (&$copiar) {
     if (is_dir($origem)) {
         if (!is_dir($destino)) mkdir($destino, 0755, true);
@@ -151,19 +143,26 @@ $copiar = function($origem, $destino) use (&$copiar) {
             $copiar("$origem/$f", "$destino/$f");
         }
     } elseif (is_file($origem)) {
-        // não sobrescreve o config.ini já gerado
         if (basename($destino) === 'config.ini') return;
         copy($origem, $destino);
     }
 };
-foreach (['index.php','inc','views','saida'] as $item) {
+foreach (['index.php', 'calibrar.php', 'inc', 'views', 'saida', 'assets'] as $item) {
     if (file_exists("$template/$item")) {
-        $copiar("$template/$item", "$publicDir/$item");
+        $copiar("$template/$item", "$instDir/$item");
     }
 }
+if (file_exists("$template/.htaccess")) {
+    copy("$template/.htaccess", "$instDir/.htaccess");
+}
+
+// .htaccess extra em data/
+file_put_contents($dataDir . '/.htaccess',
+    "Require all denied\n<IfModule !mod_authz_core.c>\n    Order allow,deny\n    Deny from all\n</IfModule>\n"
+);
 
 echo "✔ Instância criada.\n";
-echo "  config.ini  : $configDir/config.ini\n";
-echo "  index.php   : $publicDir/index.php\n";
+echo "  config.ini  : $instDir/config.ini\n";
+echo "  index.php   : $instDir/index.php\n";
 echo "  senha       : $senhaPadrao (hash bcrypt gravado)\n";
-echo "\nAcesse: http://127.0.0.1:8080/test-env/instance/public_html/ebi/index.php\n";
+echo "\nAcesse: http://127.0.0.1:8080/test-env/instance/index.php\n";

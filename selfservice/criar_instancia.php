@@ -66,9 +66,14 @@ function criarInstanciaUsuario(string $user_id, string $nome, string $email, str
         $templateDir = TEMPLATE_PATH . '/';
         
         // Criar diretório da instância do usuário
-        // Obs.: a pasta raiz da instância precisa ser 0755 para o Apache/Nginx
-        // conseguir atravessar o caminho até public_html/ebi/index.php.
-        // Apenas config/ (dados sensíveis lidos só pelo PHP) fica 0700.
+        // Estrutura simplificada (URL enxuta):
+        //   ebi/i/user_XXX/
+        //     index.php, inc/, views/, saida/, assets/, config.ini, .htaccess
+        //     data/               <- cadastro_criancas.txt, painel_criancas.txt, sistema.log
+        //
+        // Permissões: a raiz precisa ser 0755 para o Apache atravessar o caminho.
+        // Arquivos sensíveis (.ini, .txt, .log) ficam protegidos via .htaccess
+        // copiado do template (bloqueia extensões, arquivos ocultos e .bkp.N).
         $userInstanceDir = $instancesDir . $user_id . '/';
 
         if (!file_exists($userInstanceDir)) {
@@ -77,16 +82,10 @@ function criarInstanciaUsuario(string $user_id, string $nome, string $email, str
             @chmod($userInstanceDir, 0755);
         }
 
-        // Criar subdiretórios necessários
-        $configDir = $userInstanceDir . 'config/';
-        $publicDir = $userInstanceDir . 'public_html/ebi/';
-
-        if (!file_exists($configDir)) {
-            mkdir($configDir, 0700, true);
-        }
-
-        if (!file_exists($publicDir)) {
-            mkdir($publicDir, 0755, true);
+        // Subdiretório para dados persistentes (cadastros, painel, logs)
+        $dataDir = $userInstanceDir . 'data/';
+        if (!file_exists($dataDir)) {
+            mkdir($dataDir, 0755, true);
         }
         
         // 1. Criar arquivo config.ini personalizado (versão expandida com segurança)
@@ -112,8 +111,8 @@ USER_ID = \"$user_id\"
 DATA_CRIACAO = \"$dataCriacao\"
 
 [GERAL]
-ARQUIVO_DADOS = \"/../../config/cadastro_criancas.txt\"
-ARQUIVO_DADOS_PAINEL = \"/../../config/painel_criancas.txt\"
+ARQUIVO_DADOS = \"/data/cadastro_criancas.txt\"
+ARQUIVO_DADOS_PAINEL = \"/data/painel_criancas.txt\"
 DELIMITADOR = \"|\"
 MAX_BACKUPS = 10
 BACKUP_AUTOMATICO = true
@@ -185,7 +184,7 @@ NOTIFICAR_NOVO_CADASTRO = false
 
 [LOGS]
 HABILITAR_LOGS = true
-ARQUIVO_LOG = \"/../../config/sistema.log\"
+ARQUIVO_LOG = \"/data/sistema.log\"
 NIVEL_LOG = \"INFO\"
 MAX_TAMANHO_LOG_MB = 10
 LOG_ACOES_CADASTRO = true
@@ -214,80 +213,54 @@ VERIFICAR_INTEGRIDADE = true
 ; ═══════════════════════════════════════════════════════════════════
 ";
         
-        file_put_contents($configDir . 'config.ini', $configContent);
-        @chmod($configDir . 'config.ini', 0600);
-        
-        // 2. Criar arquivos de dados vazios
+        // 1. Gravar config.ini na raiz da instância (onde fica o index.php)
+        file_put_contents($userInstanceDir . 'config.ini', $configContent);
+        @chmod($userInstanceDir . 'config.ini', 0600);
+
+        // 2. Criar arquivos de dados vazios dentro de data/
         $headerCadastro = "# Sistema de Cadastro de Crianças - $comum_safe\n";
         $headerCadastro .= "# Criado em: " . date('Y-m-d H:i:s') . "\n";
         $headerCadastro .= "# Formato: ID|Nome|Responsável|Telefone|Idade|Comum|StatusImpresso|Portaria|CodResp\n";
-        
-        file_put_contents($configDir . 'cadastro_criancas.txt', $headerCadastro);
-        file_put_contents($configDir . 'painel_criancas.txt', $headerCadastro);
-        
-        // 3. Copiar estrutura refatorada do sistema (index.php + inc/ + views/)
-        $arquivosRefatorados = [
-            'index.php' => 'index.php',
-            'inc/bootstrap.php' => 'inc/bootstrap.php',
-            'inc/auth.php' => 'inc/auth.php',
-            'inc/funcoes.php' => 'inc/funcoes.php',
-            'inc/actions.php' => 'inc/actions.php',
-            'views/login.php' => 'views/login.php',
-            'views/main.php' => 'views/main.php',
-        ];
-        foreach ($arquivosRefatorados as $origem => $destino) {
-            $caminhoOrigem = $templateDir . $origem;
-            if (!file_exists($caminhoOrigem)) {
-                throw new Exception("Arquivo do template não encontrado: $origem");
+        file_put_contents($dataDir . 'cadastro_criancas.txt', $headerCadastro);
+        file_put_contents($dataDir . 'painel_criancas.txt', $headerCadastro);
+
+        // 3. Copiar estrutura do template diretamente para a raiz da instância
+        //    (index.php + inc/ + views/ + saida/ + assets/ + calibrar.php)
+        $itensTemplate = ['index.php', 'calibrar.php', 'inc', 'views', 'saida', 'assets'];
+        $copyRecursive = function ($origem, $destino) use (&$copyRecursive) {
+            if (is_dir($origem)) {
+                if (!is_dir($destino)) {
+                    mkdir($destino, 0755, true);
+                }
+                foreach (scandir($origem) as $f) {
+                    if ($f === '.' || $f === '..') continue;
+                    $copyRecursive($origem . '/' . $f, $destino . '/' . $f);
+                }
+            } elseif (is_file($origem)) {
+                // Não sobrescreve o config.ini já gerado com as credenciais do usuário
+                if (basename($destino) === 'config.ini') return;
+                copy($origem, $destino);
             }
-            $caminhoDestino = $publicDir . $destino;
-            $dirDestino = dirname($caminhoDestino);
-            if (!file_exists($dirDestino)) {
-                mkdir($dirDestino, 0755, true);
-            }
-            if (copy($caminhoOrigem, $caminhoDestino) === false) {
-                throw new Exception("Erro ao copiar: $origem");
+        };
+        foreach ($itensTemplate as $item) {
+            $origemItem = rtrim($templateDir, '/') . '/' . $item;
+            if (file_exists($origemItem)) {
+                $copyRecursive($origemItem, $userInstanceDir . $item);
             }
         }
-        // Config.ini na pasta da aplicação (refatorada espera config.ini junto ao index.php)
-        file_put_contents($publicDir . 'config.ini', $configContent);
-        @chmod($publicDir . 'config.ini', 0600);
-        
-        // 4. Criar arquivo .htaccess para segurança
-        $htaccessContent = "# Proteção de diretório
-<Files \"config.ini\">
-    Order allow,deny
-    Deny from all
-</Files>
 
-<Files \"*.txt\">
-    Order allow,deny
-    Deny from all
-</Files>
-
-# Desabilitar listagem de diretório
-Options -Indexes
-
-# Proteção adicional
-<FilesMatch \"\\.(ini|txt|log|bak)$\">
-    Order allow,deny
-    Deny from all
-</FilesMatch>
-";
-        
-        file_put_contents($configDir . '.htaccess', $htaccessContent);
-        file_put_contents($userInstanceDir . '.htaccess', $htaccessContent);
-        file_put_contents($publicDir . '.htaccess', $htaccessContent);
-        
-        // Copiar .htaccess do template se existir
-        $templateHtaccess = __DIR__ . '/template/.htaccess';
+        // 4. Copiar .htaccess do template (bloqueia .ini/.txt/.log/.env/.md, ocultos e .bkp.N)
+        $templateHtaccess = rtrim($templateDir, '/') . '/.htaccess';
         if (file_exists($templateHtaccess)) {
-            copy($templateHtaccess, $configDir . '.htaccess');
+            copy($templateHtaccess, $userInstanceDir . '.htaccess');
         }
-        
-        // 5. Criar arquivo README com instruções
-        $readmeContent = "=== SISTEMA DE CADASTRO DE CRIANÇAS ===
 
+        // 5. .htaccess adicional dentro de data/ (defesa em profundidade)
+        $htaccessData = "Require all denied\n<IfModule !mod_authz_core.c>\n    Order allow,deny\n    Deny from all\n</IfModule>\n";
+        file_put_contents($dataDir . '.htaccess', $htaccessData);
+
+        // 6. Criar README com instruções
+        $readmeContent = "=== SISTEMA DE CADASTRO DE CRIANÇAS ===
 Instância criada para: $nome_safe
 Email: $email_safe
 Cidade: $cidade_safe
@@ -308,8 +281,10 @@ INFORMAÇÕES IMPORTANTES:
 
 ESTRUTURA DE ARQUIVOS:
 ----------------------
-config/          -> Arquivos de configuração e dados
-public_html/ebi/ -> Interface do sistema
+index.php        -> Interface principal do sistema
+config.ini       -> Configuração da instância (protegido)
+data/            -> Dados persistentes (protegido)
+saida/           -> Módulo de saída (QR Code)
 
 ID da Instância: $user_id
 ";
@@ -332,7 +307,7 @@ ID da Instância: $user_id
         $pathPrefix = ($rootPath === '/') ? '' : $rootPath;
 
         // Construir o link usando o caminho raiz dinâmico
-        $link = $baseUrl . $pathPrefix . '/ebi/i/' . $user_id . '/public_html/ebi/index.php';
+        $link = $baseUrl . $pathPrefix . '/ebi/i/' . $user_id . '/index.php';
         
         // 8. Salvar log de criação no arquivo central
         $logCentral = DATA_PATH . '/instancias_criadas.log';
@@ -384,7 +359,15 @@ function obterInfoInstancia(string $user_id): ?array {
     }
 
     $instancesDir = INSTANCE_BASE_PATH . '/';
-    $configFile = $instancesDir . $user_id . '/config/config.ini';
+    $configFile = $instancesDir . $user_id . '/config.ini';
+
+    // Compat: instâncias antigas tinham config em config/config.ini
+    if (!file_exists($configFile)) {
+        $legado = $instancesDir . $user_id . '/config/config.ini';
+        if (file_exists($legado)) {
+            $configFile = $legado;
+        }
+    }
 
     if (!file_exists($configFile)) {
         return null;

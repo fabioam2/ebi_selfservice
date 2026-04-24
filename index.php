@@ -280,8 +280,8 @@ $logado = !empty($_SESSION['auth']);
       <p>Instância de teste com 3 cadastros fictícios e 1 saída registrada. Criada por <code>test-env/seed.php</code>.</p>
       <div class="links">
         <a href="test-env/">Página do ambiente</a>
-        <a class="ok" href="test-env/instance/public_html/ebi/index.php">EBI de teste</a>
-        <a class="ok" href="test-env/instance/public_html/ebi/saida/index.php">Saída de teste</a>
+        <a class="ok" href="test-env/instance/index.php">EBI de teste</a>
+        <a class="ok" href="test-env/instance/saida/index.php">Saída de teste</a>
       </div>
     </div>
 
@@ -289,9 +289,9 @@ $logado = !empty($_SESSION['auth']);
       <h3>Testes de segurança <span class="tag dev">validação</span></h3>
       <p>Ao clicar, cada link deve retornar o código HTTP indicado — confirmando as proteções.</p>
       <div class="links">
-        <a class="sec" href="test-env/instance/config/config.ini">config.ini → 403</a>
-        <a class="sec" href="test-env/instance/config/cadastro_criancas.txt">cadastro.txt → 403</a>
-        <a class="sec" href="test-env/instance/public_html/ebi/index.php?acao=preview_backup&arquivo=../../../../etc/passwd">Path traversal → 404</a>
+        <a class="sec" href="test-env/instance/config.ini">config.ini → 403</a>
+        <a class="sec" href="test-env/instance/data/cadastro_criancas.txt">cadastro.txt → 403</a>
+        <a class="sec" href="test-env/instance/index.php?acao=preview_backup&arquivo=../../../../etc/passwd">Path traversal → 404</a>
         <a class="danger" href="selfservice/config_manager.php">config_manager → 410</a>
       </div>
     </div>

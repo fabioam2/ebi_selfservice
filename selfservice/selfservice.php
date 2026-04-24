@@ -89,7 +89,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['apagar_instancia'])) {
             require_once 'criar_instancia.php';
 
             // Obter senha admin do config.ini da instância
-            $configFile = INSTANCE_BASE_PATH . '/' . $user_id_existente . '/config/config.ini';
+            $configFile = INSTANCE_BASE_PATH . '/' . $user_id_existente . '/config.ini';
+            // Compat com instâncias antigas
+            if (!file_exists($configFile)) {
+                $legado = INSTANCE_BASE_PATH . '/' . $user_id_existente . '/config/config.ini';
+                if (file_exists($legado)) {
+                    $configFile = $legado;
+                }
+            }
 
             if (!file_exists($configFile)) {
                 $tipo_mensagem = 'danger';
@@ -284,7 +291,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['cadastrar'])) {
         $pathPrefix = ($rootPath === '/') ? '' : $rootPath;
 
         // Construir o link usando o caminho raiz dinâmico
-        $_SESSION['link_instancia_existente'] = $baseUrl . $pathPrefix . '/ebi/i/' . $user_id_existente . '/public_html/ebi/index.php';
+        $_SESSION['link_instancia_existente'] = $baseUrl . $pathPrefix . '/ebi/i/' . $user_id_existente . '/index.php';
 
         header("Location: selfservice.php");
         exit;
