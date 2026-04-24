@@ -66,20 +66,25 @@ function criarInstanciaUsuario(string $user_id, string $nome, string $email, str
         $templateDir = TEMPLATE_PATH . '/';
         
         // Criar diretório da instância do usuário
+        // Obs.: a pasta raiz da instância precisa ser 0755 para o Apache/Nginx
+        // conseguir atravessar o caminho até public_html/ebi/index.php.
+        // Apenas config/ (dados sensíveis lidos só pelo PHP) fica 0700.
         $userInstanceDir = $instancesDir . $user_id . '/';
-        
+
         if (!file_exists($userInstanceDir)) {
-            mkdir($userInstanceDir, 0700, true);
+            mkdir($userInstanceDir, 0755, true);
+        } else {
+            @chmod($userInstanceDir, 0755);
         }
-        
+
         // Criar subdiretórios necessários
         $configDir = $userInstanceDir . 'config/';
         $publicDir = $userInstanceDir . 'public_html/ebi/';
-        
+
         if (!file_exists($configDir)) {
             mkdir($configDir, 0700, true);
         }
-        
+
         if (!file_exists($publicDir)) {
             mkdir($publicDir, 0755, true);
         }
