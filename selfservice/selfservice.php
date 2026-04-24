@@ -661,7 +661,7 @@ if (isset($_SESSION['instancia_existente'])) {
                     </div>
                 <?php endif; ?>
 
-                <div class="link-sistema">
+                <div class="link-sistema" style="display:none">
                     <a href="<?php echo htmlspecialchars($link_sistema); ?>" target="_blank" id="linkSistema">
                         <?php echo htmlspecialchars($link_sistema); ?>
                     </a>
