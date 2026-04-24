@@ -137,6 +137,13 @@
                             <button class="btn btn-sm btn-warning btn-action" onclick="verDetalhes('<?php echo htmlspecialchars(json_encode($inst), ENT_QUOTES); ?>')" title="Ver Detalhes">
                                 <i class="fas fa-info-circle"></i>
                             </button>
+                            <button class="btn btn-sm btn-secondary btn-action" onclick="abrirResetSenha('<?php echo htmlspecialchars($inst['user_id'] ?? ''); ?>', '<?php echo htmlspecialchars($inst['NOME'] ?? ''); ?>')" title="Redefinir senha">
+                                <i class="fas fa-key"></i>
+                            </button>
+                            <?php $emailInst = htmlspecialchars($inst['EMAIL'] ?? '', ENT_QUOTES); ?>
+                            <button class="btn btn-sm btn-success btn-action" onclick="resetSenhaEmail('<?php echo htmlspecialchars($inst['user_id'] ?? ''); ?>', '<?php echo htmlspecialchars($inst['NOME'] ?? ''); ?>', '<?php echo $emailInst; ?>')" title="Enviar nova senha por email">
+                                <i class="fas fa-envelope"></i>
+                            </button>
                             <button class="btn btn-sm btn-danger btn-action" onclick="confirmarRemocao('<?php echo htmlspecialchars($inst['user_id'] ?? ''); ?>', '<?php echo htmlspecialchars($inst['NOME'] ?? 'este usuário'); ?>')" title="Remover">
                                 <i class="fas fa-trash"></i>
                             </button>
@@ -170,6 +177,48 @@
     <input type="hidden" name="remover_instancias_lote" value="1">
 </form>
 
+<!-- Form oculto: envio de senha por email -->
+<form method="post" action="admin.php?page=instances" id="formResetEmail" style="display: none;">
+    <?php echo admin_csrf_field(); ?>
+    <input type="hidden" name="user_id" id="resetEmailUserId">
+    <input type="hidden" name="reset_senha_email" value="1">
+</form>
+
+<!-- Modal: redefinir senha manualmente -->
+<div class="modal fade" id="modalResetSenha" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="post" action="admin.php?page=instances">
+        <?php echo admin_csrf_field(); ?>
+        <input type="hidden" name="redefinir_senha_instancia" value="1">
+        <input type="hidden" name="user_id" id="resetUserId">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fas fa-key mr-2"></i>Redefinir senha</h5>
+          <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>Usuário: <strong id="resetNome"></strong></p>
+          <div class="form-group">
+            <label>Nova senha <small class="text-muted">(mínimo 8 caracteres)</small></label>
+            <input type="password" name="nova_senha" class="form-control" minlength="8" required autocomplete="new-password">
+          </div>
+          <div class="form-group">
+            <label>Confirmar senha</label>
+            <input type="password" name="confirma_senha" class="form-control" minlength="8" required autocomplete="new-password">
+          </div>
+          <div class="alert alert-warning mb-0">
+            <small>A senha será gravada apenas como hash bcrypt no <code>config.ini</code> da instância.</small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary"><i class="fas fa-save mr-1"></i>Salvar nova senha</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <!-- Modal de Detalhes -->
 <div class="modal fade" id="modalDetalhes" tabindex="-1">
     <div class="modal-dialog modal-lg">
@@ -199,6 +248,27 @@ $(document).ready(function() {
     // Setup busca
     setupTableSearch('searchInput', 'tabelaInstancias');
 });
+
+// Abrir modal de redefinir senha
+function abrirResetSenha(userId, nome) {
+    $('#resetUserId').val(userId);
+    $('#resetNome').text(nome || userId);
+    $('#modalResetSenha .form-control').val('');
+    $('#modalResetSenha').modal('show');
+}
+
+// Enviar nova senha por email
+function resetSenhaEmail(userId, nome, email) {
+    if (!email) {
+        alert('Esta instância não tem email cadastrado.');
+        return;
+    }
+    if (!confirm('Gerar nova senha temporária e enviá-la por email para ' + email + ' (' + nome + ')?\n\nA senha atual será substituída imediatamente.')) {
+        return;
+    }
+    $('#resetEmailUserId').val(userId);
+    $('#formResetEmail').submit();
+}
 
 // Ver detalhes da instância
 function verDetalhes(jsonData) {

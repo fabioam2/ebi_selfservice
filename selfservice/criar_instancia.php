@@ -515,8 +515,14 @@ function removerInstancia(string $user_id): array {
         require_once __DIR__ . '/inc/paths.php';
     }
 
-    // Validar user_id para evitar path traversal
-    if (empty($user_id) || preg_match('/[\/\\\\\\.]/', $user_id)) {
+    // Validar user_id para evitar path traversal.
+    // user_id gerado por uniqid('user_', true) pode conter ponto (ex: user_abc123.45678).
+    // Aceitamos apenas alfanuméricos, underscore e ponto — nunca sequências ".." nem barras.
+    if (
+        empty($user_id)
+        || !preg_match('/^[A-Za-z0-9_.]+$/', $user_id)
+        || strpos($user_id, '..') !== false
+    ) {
         return ['sucesso' => false, 'erro' => 'ID de usuário inválido'];
     }
 
@@ -550,4 +556,117 @@ function removerInstancia(string $user_id): array {
     } catch (Exception $e) {
         return ['sucesso' => false, 'erro' => $e->getMessage()];
     }
+}
+
+/**
+ * Valida user_id (alfanumérico + underscore + ponto, sem "..").
+ */
+function validarUserId(string $user_id): bool {
+    return !empty($user_id)
+        && preg_match('/^[A-Za-z0-9_.]+$/', $user_id)
+        && strpos($user_id, '..') === false;
+}
+
+/**
+ * Retorna o caminho do config.ini de uma instância (considera layout novo e antigo).
+ */
+function caminhoConfigInstancia(string $user_id): ?string {
+    if (!defined('INSTANCE_BASE_PATH')) {
+        require_once __DIR__ . '/inc/paths.php';
+    }
+    $base = INSTANCE_BASE_PATH . '/' . $user_id;
+    $novo = $base . '/config.ini';
+    if (file_exists($novo)) return $novo;
+    $legado = $base . '/config/config.ini';
+    if (file_exists($legado)) return $legado;
+    return null;
+}
+
+/**
+ * Redefine a senha de uma instância (ADMIN e PAINEL usam o mesmo hash).
+ *
+ * @param string $user_id      Id da instância
+ * @param string $novaSenha    Nova senha em texto plano (será gravada apenas como hash bcrypt)
+ * @return array{sucesso:bool, erro?:string}
+ */
+function redefinirSenhaInstancia(string $user_id, string $novaSenha): array {
+    if (!validarUserId($user_id)) {
+        return ['sucesso' => false, 'erro' => 'ID de usuário inválido'];
+    }
+    if (strlen($novaSenha) < 8) {
+        return ['sucesso' => false, 'erro' => 'Senha deve ter ao menos 8 caracteres'];
+    }
+
+    $configFile = caminhoConfigInstancia($user_id);
+    if ($configFile === null) {
+        return ['sucesso' => false, 'erro' => 'config.ini da instância não encontrado'];
+    }
+
+    $hash = password_hash($novaSenha, PASSWORD_BCRYPT, ['cost' => 12]);
+
+    $conteudo = file_get_contents($configFile);
+    if ($conteudo === false) {
+        return ['sucesso' => false, 'erro' => 'Falha ao ler config.ini'];
+    }
+
+    // Substitui hashes e zera qualquer senha legada em texto plano
+    $substituicoes = [
+        '/^\s*SENHA_ADMIN_HASH\s*=.*$/mi'  => 'SENHA_ADMIN_HASH = "' . $hash . '"',
+        '/^\s*SENHA_PAINEL_HASH\s*=.*$/mi' => 'SENHA_PAINEL_HASH = "' . $hash . '"',
+        '/^\s*SENHA_ADMIN_REAL\s*=.*$/mi'  => 'SENHA_ADMIN_REAL = ""',
+        '/^\s*SENHA_PAINEL\s*=.*$/mi'      => 'SENHA_PAINEL = ""',
+    ];
+    foreach ($substituicoes as $pattern => $replacement) {
+        $conteudo = preg_replace($pattern, $replacement, $conteudo);
+    }
+
+    // Se alguma chave não existia, adiciona na seção [SEGURANCA]
+    foreach (['SENHA_ADMIN_HASH', 'SENHA_PAINEL_HASH'] as $chave) {
+        if (!preg_match('/^\s*' . $chave . '\s*=/mi', $conteudo)) {
+            $conteudo = preg_replace(
+                '/^\[SEGURANCA\].*$/mi',
+                "[SEGURANCA]\n$chave = \"$hash\"",
+                $conteudo,
+                1
+            );
+        }
+    }
+
+    if (file_put_contents($configFile, $conteudo, LOCK_EX) === false) {
+        return ['sucesso' => false, 'erro' => 'Falha ao gravar config.ini'];
+    }
+    @chmod($configFile, 0600);
+
+    // Log
+    if (defined('DATA_PATH')) {
+        $log = DATA_PATH . '/resets_senha.log';
+        $entry = date('Y-m-d H:i:s') . "|$user_id|senha redefinida pelo admin\n";
+        @file_put_contents($log, $entry, FILE_APPEND | LOCK_EX);
+    }
+
+    return ['sucesso' => true];
+}
+
+/**
+ * Gera uma senha temporária aleatória forte (letras+dígitos+especial).
+ */
+function gerarSenhaTemporaria(int $tamanho = 12): string {
+    $letras = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+    $digitos = '23456789';
+    $especiais = '!@#$%&*?';
+
+    $base = $letras . $digitos;
+    $senha = $letras[random_int(0, strlen($letras) - 1)]
+           . $digitos[random_int(0, strlen($digitos) - 1)]
+           . $especiais[random_int(0, strlen($especiais) - 1)];
+    for ($i = strlen($senha); $i < $tamanho; $i++) {
+        $senha .= $base[random_int(0, strlen($base) - 1)];
+    }
+    // embaralha
+    $chars = str_split($senha);
+    for ($i = count($chars) - 1; $i > 0; $i--) {
+        $j = random_int(0, $i);
+        [$chars[$i], $chars[$j]] = [$chars[$j], $chars[$i]];
+    }
+    return implode('', $chars);
 }

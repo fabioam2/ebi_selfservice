@@ -306,6 +306,87 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     }
 
+    // Redefinir senha de uma instância (senha informada pelo admin)
+    if (isset($_POST['redefinir_senha_instancia'])) {
+        if (!admin_csrf_validate()) {
+            $mensagem = "Requisição inválida (token de segurança).";
+            $tipo_mensagem = "danger";
+        } else {
+            $user_id = $_POST['user_id'] ?? '';
+            $novaSenha = $_POST['nova_senha'] ?? '';
+            $confirma = $_POST['confirma_senha'] ?? '';
+
+            if ($novaSenha !== $confirma) {
+                $mensagem = "As senhas não coincidem.";
+                $tipo_mensagem = "danger";
+            } else {
+                $resultado = redefinirSenhaInstancia($user_id, $novaSenha);
+                if ($resultado['sucesso']) {
+                    $mensagem = "Senha da instância redefinida com sucesso.";
+                    $tipo_mensagem = "success";
+                } else {
+                    $mensagem = "Erro ao redefinir senha: " . $resultado['erro'];
+                    $tipo_mensagem = "danger";
+                }
+            }
+        }
+    }
+
+    // Enviar nova senha por email (reset + email com senha temporária)
+    if (isset($_POST['reset_senha_email'])) {
+        if (!admin_csrf_validate()) {
+            $mensagem = "Requisição inválida (token de segurança).";
+            $tipo_mensagem = "danger";
+        } else {
+            $user_id = $_POST['user_id'] ?? '';
+            if (!validarUserId($user_id)) {
+                $mensagem = "ID de usuário inválido.";
+                $tipo_mensagem = "danger";
+            } else {
+                $info = obterInfoInstancia($user_id);
+                $emailDestino = $info['EMAIL'] ?? '';
+                $nomeDestino = $info['NOME'] ?? 'Usuário';
+
+                if (!$emailDestino || !filter_var($emailDestino, FILTER_VALIDATE_EMAIL)) {
+                    $mensagem = "Instância sem e-mail válido cadastrado.";
+                    $tipo_mensagem = "danger";
+                } else {
+                    require_once __DIR__ . '/inc/email_manager.php';
+
+                    $senhaTemp = gerarSenhaTemporaria(12);
+                    $resetRes = redefinirSenhaInstancia($user_id, $senhaTemp);
+
+                    if (!$resetRes['sucesso']) {
+                        $mensagem = "Erro ao redefinir: " . $resetRes['erro'];
+                        $tipo_mensagem = "danger";
+                    } else {
+                        // Monta link da instância
+                        $baseUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http')
+                                 . '://' . $_SERVER['HTTP_HOST'];
+                        $rootPath = dirname(dirname($_SERVER['PHP_SELF']));
+                        $pathPrefix = ($rootPath === '/') ? '' : $rootPath;
+                        $linkInstancia = $baseUrl . $pathPrefix . '/ebi/i/' . $user_id . '/index.php';
+
+                        $mail = enviarEmailResetSenha($emailDestino, $nomeDestino, $linkInstancia, $senhaTemp);
+
+                        // Log
+                        $logFile = DATA_PATH . '/admin_actions.log';
+                        $linha = date('Y-m-d H:i:s') . " | RESET_SENHA_EMAIL | $user_id | $emailDestino | " . ($mail['sucesso'] ? 'enviado' : 'falha: ' . ($mail['erro'] ?? '?')) . "\n";
+                        @file_put_contents($logFile, $linha, FILE_APPEND | LOCK_EX);
+
+                        if ($mail['sucesso']) {
+                            $mensagem = "Nova senha enviada por email para $emailDestino.";
+                            $tipo_mensagem = "success";
+                        } else {
+                            $mensagem = "Senha redefinida, mas falha ao enviar email (" . ($mail['erro'] ?? 'desconhecido') . "). Nova senha temporária: " . $senhaTemp;
+                            $tipo_mensagem = "warning";
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     // --- AÇÕES DE USUÁRIOS ---
 
     // Criar usuário
