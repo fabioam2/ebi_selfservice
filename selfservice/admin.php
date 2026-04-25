@@ -103,13 +103,18 @@ function updateEnvVariable($envFile, $key, $value) {
         return false;
     }
 
-    // Escapa valor para formato .env entre aspas duplas
-    $valorEscapado = str_replace(
-        ['\\', '"', "\r", "\n"],
-        ['\\\\', '\\"', '',  ' '],
-        (string)$value
-    );
-    $linhaNova = $key . '="' . $valorEscapado . '"';
+    // Formato .env: preferir aspas SIMPLES (não interpretam $, \, etc — valor literal).
+    // Em aspas simples não há mecanismo de escape para a propria aspa simples,
+    // então se o valor contiver ' fazemos fallback para aspas duplas com escape padrão.
+    $valorBruto = str_replace(["\r\n", "\r", "\n"], ' ', (string)$value);
+    if (strpos($valorBruto, "'") === false) {
+        // Caminho normal: aspas simples, valor literal sem nenhum escape.
+        $linhaNova = $key . "='" . $valorBruto . "'";
+    } else {
+        // Fallback: aspas duplas com escape de \ e "
+        $valorEscapado = str_replace(['\\', '"'], ['\\\\', '\\"'], $valorBruto);
+        $linhaNova = $key . '="' . $valorEscapado . '"';
+    }
 
     // Ler todas as linhas
     $lines = file($envFile, FILE_IGNORE_NEW_LINES);
