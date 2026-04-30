@@ -197,3 +197,4 @@ yarn.lock
 .maintenance
 error_log
 php_errors.log
+.claude/
