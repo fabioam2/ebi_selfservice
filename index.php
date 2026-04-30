@@ -207,14 +207,6 @@ $logado = !empty($_SESSION['auth']);
         <a class="warn" href="selfservice/install.php">Executar install.php</a>
       </div>
     </div>
-
-    <div class="card">
-      <h3>Config Manager (desativado) <span class="tag danger">410</span></h3>
-      <p>Endpoint antigo mantido apenas para retornar 410 Gone — continha vulnerabilidade de injeção de INI.</p>
-      <div class="links">
-        <a class="danger" href="selfservice/config_manager.php">Ver 410</a>
-      </div>
-    </div>
   </div>
 
   <div class="section-title">🟢 EBI — template base (não use direto em produção)</div>
@@ -292,7 +284,6 @@ $logado = !empty($_SESSION['auth']);
         <a class="sec" href="test-env/instance/config.ini">config.ini → 403</a>
         <a class="sec" href="test-env/instance/data/cadastro_criancas.txt">cadastro.txt → 403</a>
         <a class="sec" href="test-env/instance/index.php?acao=preview_backup&arquivo=../../../../etc/passwd">Path traversal → 404</a>
-        <a class="danger" href="selfservice/config_manager.php">config_manager → 410</a>
       </div>
     </div>
   </div>
