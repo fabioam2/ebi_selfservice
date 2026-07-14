@@ -49,7 +49,8 @@ require_once __DIR__ . '/inc/db_manager.php';
 
 // Senha de administrador - hash bcrypt (gere com: php -r "echo password_hash('SuaSenha', PASSWORD_BCRYPT, ['cost'=>12]);")
 // Senha padrão de fábrica: Senha123!  — TROQUE em produção via .env (ADMIN_PASSWORD_HASH).
-$adminPasswordHash = $_ENV['ADMIN_PASSWORD_HASH'] ?? '$2y$12$BPPI8U9mvBmGP/kI0pH/n.PUkkn/cB/9qrOaePiKcVy.vitwF7VsW';
+$adminPasswordHash = (string)($_ENV['ADMIN_PASSWORD_HASH'] ?? '');
+$adminHashValido = (bool)preg_match('/^\$2[aby]\$\d{2}\$[\.\/A-Za-z0-9]{53}$/', $adminPasswordHash);
 define('SENHA_ADMIN_HASH', $adminPasswordHash);
 
 // ============================================================================
@@ -160,7 +161,9 @@ function exibirAlerta($mensagem, $tipo = 'info') {
 // ============================================================================
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
-    if (admin_csrf_validate() && password_verify($_POST['senha_admin'] ?? '', SENHA_ADMIN_HASH)) {
+    if (!$adminHashValido) {
+        $erro_login = "Configuração inválida: defina ADMIN_PASSWORD_HASH no arquivo .env.";
+    } elseif (admin_csrf_validate() && password_verify($_POST['senha_admin'] ?? '', SENHA_ADMIN_HASH)) {
         session_regenerate_id(true);
         $_SESSION['admin_logado'] = true;
         $_SESSION['admin_login_time'] = time();
