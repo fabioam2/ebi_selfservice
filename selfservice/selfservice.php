@@ -352,36 +352,99 @@ if (isset($_SESSION['instancia_existente'])) {
     <title>Self-Service - Sistema de Cadastro de Crianças</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-1: #0f766e;
+            --bg-2: #0b4f8a;
+            --bg-3: #f59e0b;
+            --surface: #ffffff;
+            --surface-border: rgba(15, 23, 42, 0.08);
+            --text-main: #10273b;
+            --text-soft: #4b647c;
+            --brand: #0e7490;
+            --brand-strong: #0b5f76;
+            --brand-soft: rgba(14, 116, 144, 0.14);
+            --success-bg: #dff8ea;
+            --success-border: #1f9d61;
+            --warning-bg: #fff4dc;
+            --warning-border: #e8a100;
+            --danger: #b91c1c;
+        }
+
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: radial-gradient(circle at 8% 8%, rgba(245, 158, 11, 0.32) 0%, rgba(245, 158, 11, 0) 35%),
+                        radial-gradient(circle at 94% 16%, rgba(20, 184, 166, 0.38) 0%, rgba(20, 184, 166, 0) 40%),
+                        linear-gradient(130deg, var(--bg-1) 0%, var(--bg-2) 58%, #083358 100%);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Manrope', sans-serif;
             padding: 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before,
+        body::after {
+            content: '';
+            position: fixed;
+            border-radius: 999px;
+            z-index: 0;
+            filter: blur(0.5px);
+            animation: floatGlow 11s ease-in-out infinite alternate;
+            pointer-events: none;
+        }
+
+        body::before {
+            width: 220px;
+            height: 220px;
+            background: radial-gradient(circle, rgba(245, 158, 11, 0.42), rgba(245, 158, 11, 0));
+            left: -40px;
+            top: 28%;
+        }
+
+        body::after {
+            width: 270px;
+            height: 270px;
+            background: radial-gradient(circle, rgba(45, 212, 191, 0.35), rgba(45, 212, 191, 0));
+            right: -70px;
+            bottom: 6%;
+            animation-delay: 1.4s;
         }
         
         .selfservice-container {
-            background-color: #ffffff;
+            position: relative;
+            z-index: 1;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.97));
             padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            border-radius: 22px;
+            border: 1px solid var(--surface-border);
+            box-shadow: 0 18px 48px rgba(1, 27, 49, 0.33);
             width: 100%;
             max-width: 600px;
-            animation: slideIn 0.5s ease-out;
+            animation: slideIn 0.55s ease-out;
         }
         
         @keyframes slideIn {
             from {
                 opacity: 0;
-                transform: translateY(-30px);
+                transform: translateY(-18px) scale(0.985);
             }
             to {
                 opacity: 1;
-                transform: translateY(0);
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        @keyframes floatGlow {
+            from {
+                transform: translateY(0px);
+            }
+            to {
+                transform: translateY(-14px);
             }
         }
         
@@ -391,61 +454,66 @@ if (isset($_SESSION['instancia_existente'])) {
         }
         
         .selfservice-header h1 {
-            color: #667eea;
-            font-weight: 700;
-            margin-bottom: 10px;
+            color: var(--text-main);
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 8px;
         }
         
         .selfservice-header p {
-            color: #6c757d;
+            color: var(--text-soft);
             font-size: 0.95rem;
         }
         
         .icon-header {
-            font-size: 3rem;
-            color: #667eea;
-            margin-bottom: 15px;
+            font-size: 3.15rem;
+            color: var(--brand);
+            margin-bottom: 14px;
         }
         
         .form-group label {
             font-weight: 600;
-            color: #495057;
+            color: #173146;
             margin-bottom: 8px;
         }
         
         .form-control {
-            border-radius: 8px;
-            border: 2px solid #e9ecef;
-            padding: 12px 15px;
-            transition: all 0.3s ease;
+            border-radius: 11px;
+            border: 1px solid #ced9e4;
+            padding: 12px 14px;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+            background: #fbfdff;
         }
         
         .form-control:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            border-color: var(--brand);
+            box-shadow: 0 0 0 0.19rem var(--brand-soft);
+            transform: translateY(-1px);
+            background: #fff;
         }
         
         .btn-cadastrar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, var(--brand) 0%, var(--brand-strong) 100%);
             border: none;
-            border-radius: 8px;
+            border-radius: 11px;
             padding: 12px 30px;
-            font-weight: 600;
+            font-weight: 700;
             color: white;
             width: 100%;
             margin-top: 20px;
-            transition: transform 0.2s ease;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
         }
         
         .btn-cadastrar:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 8px 18px rgba(14, 116, 144, 0.4);
+            filter: brightness(1.03);
         }
         
         .sucesso-box {
-            background-color: #d4edda;
-            border: 2px solid #28a745;
-            border-radius: 10px;
+            background: linear-gradient(180deg, #f3fff8 0%, var(--success-bg) 100%);
+            border: 1px solid var(--success-border);
+            border-radius: 14px;
             padding: 30px;
             text-align: center;
             animation: pulse 0.5s ease-out;
@@ -459,58 +527,127 @@ if (isset($_SESSION['instancia_existente'])) {
         
         .sucesso-box i {
             font-size: 4rem;
-            color: #28a745;
+            color: var(--success-border);
             margin-bottom: 20px;
         }
         
         .sucesso-box h2 {
-            color: #155724;
+            color: #14532d;
             margin-bottom: 15px;
         }
         
         .link-sistema {
             background-color: #fff;
-            border: 2px solid #28a745;
-            border-radius: 8px;
+            border: 1px solid var(--success-border);
+            border-radius: 12px;
             padding: 15px;
             margin: 20px 0;
             word-break: break-all;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.8);
         }
         
         .link-sistema a {
-            color: #667eea;
+            color: var(--brand-strong);
             font-weight: 600;
             font-size: 1.1rem;
         }
+
+        .link-warning {
+            border-color: var(--warning-border);
+            background: linear-gradient(180deg, #fffdf7, #fff8e7);
+        }
         
         .btn-acessar {
-            background-color: #28a745;
+            background: linear-gradient(135deg, #1f9d61 0%, #17784a 100%);
             color: white;
             border: none;
             padding: 12px 30px;
-            border-radius: 8px;
-            font-weight: 600;
+            border-radius: 11px;
+            font-weight: 700;
             margin-top: 10px;
             transition: all 0.3s ease;
         }
         
         .btn-acessar:hover {
-            background-color: #218838;
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+            color: #fff;
+            box-shadow: 0 7px 16px rgba(31, 157, 97, 0.35);
         }
         
         .info-box {
-            background-color: #e7f3ff;
-            border-left: 4px solid #667eea;
+            background: #eff9ff;
+            border-left: 4px solid var(--brand);
             padding: 15px;
             margin-bottom: 25px;
-            border-radius: 5px;
+            border-radius: 9px;
+            color: #20455f;
         }
         
         .info-box i {
-            color: #667eea;
+            color: var(--brand);
             margin-right: 10px;
+        }
+
+        .instance-found-box {
+            background: var(--warning-bg);
+            border-left-color: var(--warning-border);
+        }
+
+        .instance-found-box i {
+            color: #d28d00;
+        }
+
+        .card.border-danger {
+            border-width: 1px !important;
+            border-color: rgba(185, 28, 28, 0.35) !important;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(185, 28, 28, 0.08);
+        }
+
+        .card.border-danger .card-header {
+            border-radius: 11px 11px 0 0;
+            background: linear-gradient(135deg, #ef4444, #b91c1c);
+        }
+
+        .btn-copy,
+        .btn-open-instance,
+        .btn-create-instance {
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+        }
+
+        .btn-open-instance {
+            background: linear-gradient(135deg, #1f9d61 0%, #17784a 100%);
+        }
+
+        .btn-open-instance:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 16px rgba(23, 120, 74, 0.35);
+            color: #fff;
+        }
+
+        .btn-copy {
+            background: linear-gradient(135deg, #64748b 0%, #475569 100%);
+            color: #fff;
+        }
+
+        .btn-copy:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 14px rgba(71, 85, 105, 0.35);
+            color: #fff;
+        }
+
+        .btn-create-instance {
+            background: linear-gradient(135deg, var(--brand) 0%, var(--brand-strong) 100%);
+            color: #fff;
+        }
+
+        .btn-create-instance:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 16px rgba(14, 116, 144, 0.35);
+            color: #fff;
         }
         
         .password-toggle {
@@ -523,10 +660,60 @@ if (isset($_SESSION['instancia_existente'])) {
             top: 50%;
             transform: translateY(-50%);
             cursor: pointer;
-            color: #6c757d;
+            color: #5f7387;
+        }
+
+        .quick-links {
+            position: relative;
+            z-index: 1;
+            max-width: 720px;
+            margin: 18px auto 28px;
+            padding: 0 16px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .quick-link-btn {
+            border: 1px solid rgba(255, 255, 255, 0.58);
+            color: #fff;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(5px);
+            font-weight: 700;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        .quick-link-btn:hover {
+            color: #fff;
+            transform: translateY(-1px);
+            background: rgba(255, 255, 255, 0.18);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 14px;
+            }
+
+            .selfservice-container {
+                padding: 26px 20px;
+                border-radius: 18px;
+            }
+
+            .selfservice-header h1 {
+                font-size: 1.7rem;
+            }
+
+            .icon-header {
+                font-size: 2.6rem;
+            }
+
+            .link-sistema a {
+                font-size: 0.95rem;
+            }
         }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="selfservice-container">
@@ -537,8 +724,8 @@ if (isset($_SESSION['instancia_existente'])) {
                 <strong>Atenção!</strong> Já existe uma instância cadastrada com este email.
             </div>
 
-            <div class="info-box mb-4" style="background-color: #fff3cd; border-left-color: #ffc107;">
-                <i class="fas fa-info-circle" style="color: #ffc107;"></i>
+            <div class="info-box instance-found-box mb-4">
+                <i class="fas fa-info-circle"></i>
                 <strong>Instância encontrada:</strong><br>
                 <small>
                     Nome: <?php echo htmlspecialchars($instancia_info['NOME'] ?? 'N/A'); ?><br>
@@ -548,18 +735,18 @@ if (isset($_SESSION['instancia_existente'])) {
                 </small>
             </div>
 
-            <div class="link-sistema mb-3" style="border-color: #ffc107;">
+            <div class="link-sistema link-warning mb-3">
                 <strong>Link da sua instância:</strong><br>
                 <a href="<?php echo htmlspecialchars($link_instancia_existente); ?>" target="_blank" id="linkInstanciaExistente">
                     <?php echo htmlspecialchars($link_instancia_existente); ?>
                 </a>
             </div>
 
-            <button class="btn btn-success btn-block mb-2" onclick="window.open('<?php echo htmlspecialchars($link_instancia_existente); ?>', '_blank')">
+            <button class="btn btn-open-instance btn-block mb-2" onclick="window.open('<?php echo htmlspecialchars($link_instancia_existente); ?>', '_blank')">
                 <i class="fas fa-external-link-alt"></i> Acessar Minha Instância
             </button>
 
-            <button class="btn btn-secondary btn-block mb-3" onclick="copiarLinkExistente()">
+            <button class="btn btn-copy btn-block mb-3" onclick="copiarLinkExistente()">
                 <i class="fas fa-copy"></i> Copiar Link
             </button>
 
@@ -571,7 +758,7 @@ if (isset($_SESSION['instancia_existente'])) {
             <form method="post" action="selfservice.php" class="mb-3">
                 <?php echo ss_csrf_field(); ?>
                 <input type="hidden" name="criar_nova_instancia" value="1">
-                <button type="submit" class="btn btn-primary btn-block">
+                <button type="submit" class="btn btn-create-instance btn-block">
                     <i class="fas fa-plus-circle"></i> Criar Nova Instância (Manter a Existente)
                 </button>
                 <small class="text-muted d-block mt-1">
@@ -639,7 +826,7 @@ if (isset($_SESSION['instancia_existente'])) {
                     <i class="fas fa-external-link-alt"></i> Acessar Sistema
                 </button>
 
-                <button class="btn btn-secondary mt-2" onclick="copiarLink()">
+                <button class="btn btn-copy mt-2" onclick="copiarLink()">
                     <i class="fas fa-copy"></i> Copiar Link
                 </button>
 
@@ -722,17 +909,14 @@ if (isset($_SESSION['instancia_existente'])) {
         <?php endif; ?>
     </div>
 
-    <div style="max-width:720px;margin:18px auto 28px;padding:0 16px;display:flex;justify-content:center;gap:10px;flex-wrap:wrap">
-        <a href="instal.html" class="btn btn-outline-light btn-sm" style="border-color:rgba(255,255,255,.7);color:#fff">
-            <i class="fas fa-book mr-1"></i>Página de Instalação
-        </a>
-        <a href="admin.php" class="btn btn-outline-light btn-sm" style="border-color:rgba(255,255,255,.7);color:#fff">
+    <div class="quick-links">
+        <a href="admin.php" class="btn btn-sm quick-link-btn">
             <i class="fas fa-user-shield mr-1"></i>Administração
         </a>
-        <a href="../index.php" class="btn btn-outline-light btn-sm" style="border-color:rgba(255,255,255,.7);color:#fff">
+        <a href="../index.php" class="btn btn-sm quick-link-btn">
             <i class="fas fa-sitemap mr-1"></i>Página de Links
         </a>
-        <a href="../qrcode/default.php" class="btn btn-outline-light btn-sm" style="border-color:rgba(255,255,255,.7);color:#fff">
+        <a href="../qrcode/default.php" class="btn btn-sm quick-link-btn">
             <i class="fas fa-qrcode mr-1"></i>QR Code
         </a>
     </div>

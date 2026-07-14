@@ -25,7 +25,8 @@ function obterPayloadDispositivo(): array {
 
 function gerarVariacoesPalavra(string $palavra): array {
     if (empty($palavra)) return [];
-    $palavra   = strtolower(trim($palavra));
+    $palavra   = normalizarTextoBusca($palavra);
+    if ($palavra === '') return [];
     $variacoes = [$palavra];
 
     $substituicoes = [['m', 'n'], ['im', 'in']];
@@ -63,6 +64,54 @@ function gerarVariacoesPalavra(string $palavra): array {
     }
 
     return array_unique($variacoes);
+}
+
+function normalizarTextoBusca(string $texto): string {
+    $texto = mb_strtolower(trim($texto), 'UTF-8');
+    if ($texto === '') return '';
+
+    $semAcento = @iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $texto);
+    if ($semAcento !== false && $semAcento !== '') {
+        $texto = $semAcento;
+    }
+
+    $texto = preg_replace('/[^a-z0-9]+/i', ' ', $texto);
+    $texto = preg_replace('/\s+/', ' ', (string)$texto);
+    return trim((string)$texto);
+}
+
+function montarPalavrasChaveComum(string $comumBase, string $extrasCsv = ''): array {
+    $palavras = [];
+
+    $baseNormalizada = normalizarTextoBusca($comumBase);
+    if ($baseNormalizada !== '') {
+        foreach (gerarVariacoesPalavra($baseNormalizada) as $v) {
+            $vn = normalizarTextoBusca($v);
+            if ($vn !== '') $palavras[] = $vn;
+        }
+    }
+
+    if ($extrasCsv !== '') {
+        foreach (array_map('trim', explode(',', $extrasCsv)) as $extra) {
+            $en = normalizarTextoBusca($extra);
+            if ($en !== '') $palavras[] = $en;
+        }
+    }
+
+    return array_values(array_unique($palavras));
+}
+
+function textoCorrespondePalavrasChave(string $texto, array $palavrasChave): bool {
+    $textoNormalizado = normalizarTextoBusca($texto);
+    if ($textoNormalizado === '' || empty($palavrasChave)) return false;
+
+    foreach ($palavrasChave as $palavra) {
+        $p = normalizarTextoBusca((string)$palavra);
+        if ($p !== '' && stripos($textoNormalizado, $p) !== false) {
+            return true;
+        }
+    }
+    return false;
 }
 
 // ── Backup (arquivo SQLite) ───────────────────────────────────────────────────

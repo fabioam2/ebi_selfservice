@@ -84,3 +84,25 @@ Seguir o padrão `tipo(escopo): mensagem`:
 - `fix(bootstrap):` — correção de bug
 - `ui(selfservice):` — mudança visual
 - `chore:` — configuração, gitignore, CLAUDE.md
+
+---
+
+## Estado Atual Verificado (2026-07-14)
+
+- Integridade sintática: `267` arquivos PHP validados com `php -l` (sem erros).
+- Caminho canônico de ambiente: o `selfservice` usa `.env` na raiz do projeto (`PROJECT_ROOT/.env`).
+- Instalação/admin: `selfservice/install.php` e `selfservice/admin.php` estão alinhados para `ADMIN_PASSWORD_HASH` no mesmo `.env`.
+- Segurança de credenciais: `selfservice/install.php` não deve persistir senha de admin em texto plano no arquivo `.instalado`.
+
+## Pendências Estruturais Conhecidas
+
+- `selfservice/cleanup_instances.php` ainda lê atividade em `config/.lastaccess`, mas o bootstrap atual grava `.lastaccess` na raiz da instância.
+- Fluxo de cadastro em `selfservice/selfservice.php` precisa tratar retorno de `db_inserir_usuario()` e rollback lógico quando a criação da instância falhar.
+- Tabela `ss_users` (`selfservice/inc/db_manager.php`) não possui `UNIQUE(email)`; definir política oficial (permitir ou bloquear múltiplas contas por e-mail) e refletir no schema.
+
+## Regras Operacionais de Revisão
+
+- Antes de alterar fluxos críticos (`admin`, `selfservice`, `install`, `criar_instancia`), executar ao menos:
+  - `php -l` no(s) arquivo(s) alterado(s)
+  - `find . -name '*.php' -print0 | xargs -0 -I{} php -l '{}'` em mudanças amplas
+- Em buscas de código no repositório, ignorar diretórios temporários (`.claude/worktrees/`) para evitar falso positivo de código duplicado.

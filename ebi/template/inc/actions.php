@@ -337,9 +337,15 @@ if (isset($_POST['salvar_config_impressora'])) {
         $conteudo    = file_get_contents($config_file);
 
         if ($conteudo !== false) {
+            $cidadeInstancia = trim((string)($_POST['config_cidade_instancia'] ?? ''));
+            $comumInstancia  = trim((string)($_POST['config_comum_instancia'] ?? ''));
+
             $campos = [
                 'PRINTER_NAME'                  => trim($_POST['config_printer_name']                  ?? 'ZDesigner 105SL'),
-                'PALAVRA_CONTADOR_COMUM'        => trim($_POST['config_palavra_contador_comum']        ?? 'bonfim'),
+                // Mantido por compatibilidade; base oficial passa a ser INFO_USUARIO.COMUM.
+                'PALAVRA_CONTADOR_COMUM'        => $comumInstancia !== ''
+                    ? $comumInstancia
+                    : trim($_POST['config_palavra_contador_comum'] ?? 'bonfim'),
                 'LISTA_PALAVRAS_CONTADOR_COMUM' => trim($_POST['config_lista_palavras_contador_comum'] ?? ''),
                 'URL_IMPRESSORA'                => trim($_POST['config_url_impressora']                ?? 'http://127.0.0.1:9100/write'),
             ];
@@ -356,6 +362,13 @@ if (isset($_POST['salvar_config_impressora'])) {
             }
             foreach ($intCampos as $key => $val) {
                 $conteudo = preg_replace('/^' . preg_quote($key, '/') . '\s*=\s*.+$/m', $key . ' = ' . $val, $conteudo);
+            }
+
+            if ($cidadeInstancia !== '') {
+                $conteudo = preg_replace('/^CIDADE\s*=\s*.+$/m', 'CIDADE = "' . addslashes($cidadeInstancia) . '"', $conteudo);
+            }
+            if ($comumInstancia !== '') {
+                $conteudo = preg_replace('/^COMUM\s*=\s*.+$/m', 'COMUM = "' . addslashes($comumInstancia) . '"', $conteudo);
             }
 
             if (file_put_contents($config_file, $conteudo, LOCK_EX) !== false) {

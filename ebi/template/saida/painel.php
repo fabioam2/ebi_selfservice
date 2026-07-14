@@ -5,6 +5,7 @@
  */
 
 require __DIR__ . '/inc/bootstrap.php';
+require_once dirname(__DIR__) . '/inc/db_instance.php';
 
 // Verificar autenticação
 if (!isset($_SESSION['logado_saida']) || $_SESSION['logado_saida'] !== true) {
@@ -14,13 +15,15 @@ if (!isset($_SESSION['logado_saida']) || $_SESSION['logado_saida'] !== true) {
 
 $erro_zerar = '';
 
-// Processar ação de zerar arquivo
+// Processar ação de zerar registros
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['acao']) && $_POST['acao'] === 'zerar_arquivo') {
     csrf_validate();
 
     if (verificar_senha_painel($_POST['admin_senha'] ?? '')) {
-        if (file_exists(ARQUIVO_SAIDAS)) {
-            @unlink(ARQUIVO_SAIDAS);
+        try {
+            ebi_db()->exec('DELETE FROM saidas');
+        } catch (Throwable $e) {
+            error_log('[EBI Painel] zerar saidas: ' . $e->getMessage());
         }
         header('Location: ' . sanitize_for_html($_SERVER['PHP_SELF']));
         exit;
@@ -39,36 +42,32 @@ if (isset($_GET['refresh']) && is_numeric($_GET['refresh'])) {
 }
 $mostrar_todos = isset($_GET['ver']) && $_GET['ver'] === 'todos';
 
-// Lógica para ler e processar os dados
+// Lê saídas do SQLite e junta com nomes das crianças
 $entradas_agrupadas = [];
-if (file_exists(ARQUIVO_SAIDAS) && is_readable(ARQUIVO_SAIDAS)) {
-    $linhas = file(ARQUIVO_SAIDAS, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-    $linhas_recentes = array_reverse($linhas);
-    $registros_para_exibir = $mostrar_todos ? $linhas_recentes : array_slice($linhas_recentes, 0, 10);
+try {
+    $limite = $mostrar_todos ? 500 : 50;
+    $rows = ebi_db()->prepare(
+        'SELECT s.id, s.cod_resp, s.nome_responsavel, s.portaria, s.registered_at,
+                (SELECT GROUP_CONCAT(nome_crianca, \'; \')
+                 FROM cadastros WHERE cod_resp = s.cod_resp) as criancas_nomes
+         FROM saidas s
+         ORDER BY s.registered_at DESC LIMIT ?'
+    );
+    $rows->execute([$limite]);
+    $saidas = $rows->fetchAll();
 
-    foreach ($registros_para_exibir as $linha) {
-        $dados = explode(';', $linha, 5);
-        if (count($dados) === 5) {
-            list($timestamp, $codigo_qr, $responsavel, $crianca, $portaria) = $dados;
-
-            // Inicializa o grupo se for a primeira vez que o código QR aparece
-            if (!isset($entradas_agrupadas[$codigo_qr])) {
-                $entradas_agrupadas[$codigo_qr] = [
-                    'timestamp' => $timestamp,
-                    'portaria' => sanitize_for_html($portaria),
-                    'responsavel' => sanitize_for_html($responsavel),
-                    'criancas' => []
-                ];
-            }
-
-            $crianca_sanitizada = sanitize_for_html($crianca);
-
-            // Adiciona a criança SOMENTE se ela ainda não estiver na lista
-            if (!in_array($crianca_sanitizada, $entradas_agrupadas[$codigo_qr]['criancas'])) {
-                $entradas_agrupadas[$codigo_qr]['criancas'][] = $crianca_sanitizada;
-            }
-        }
+    foreach ($saidas as $s) {
+        $key = $s['id'];
+        $criancas = array_filter(array_map('trim', explode(';', $s['criancas_nomes'] ?? '')));
+        $entradas_agrupadas[$key] = [
+            'timestamp'  => $s['registered_at'],
+            'portaria'   => sanitize_for_html(strtoupper($s['portaria'])),
+            'responsavel'=> sanitize_for_html($s['nome_responsavel']),
+            'criancas'   => array_values(array_map('sanitize_for_html', array_filter($criancas))),
+        ];
     }
+} catch (Throwable $e) {
+    error_log('[EBI Painel] listar saidas: ' . $e->getMessage());
 }
 ?>
 <!DOCTYPE html>
@@ -213,8 +212,8 @@ if (file_exists(ARQUIVO_SAIDAS) && is_readable(ARQUIVO_SAIDAS)) {
                         ?>
                         <tr class="<?php echo $cor_classe; ?>">
                             <td>
-                                <?php echo date('H:i', $entrada['timestamp']); ?> -
-                                <?php echo implode('; ', $entrada['criancas']); ?> -
+                                <?php echo date('H:i', strtotime($entrada['timestamp'])); ?> -
+                                <?php echo !empty($entrada['criancas']) ? implode('; ', $entrada['criancas']) : '—'; ?> -
                                 <strong><?php echo $entrada['responsavel']; ?></strong>
                             </td>
                         </tr>
