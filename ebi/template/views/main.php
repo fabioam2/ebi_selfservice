@@ -663,9 +663,9 @@
                             </div>
 
                             <div class="form-group">
-                                <label for="config_palavra_contador_comum">Palavra-chave para Contador "Comum"</label>
-                                <input type="text" class="form-control" id="config_palavra_contador_comum" name="config_palavra_contador_comum" value="<?php echo PALAVRA_CONTADOR_COMUM; ?>" required>
-                                <small class="form-text text-muted">Palavra base para contagem (ex: "bonfim", "jardim", etc.). O sistema gera automaticamente variações similares para tolerância a erros.</small>
+                                <label>Base do Contador "Comum"</label>
+                                <input type="text" class="form-control" value="<?php echo sanitize_for_html(defined('INSTANCE_COMUM') ? INSTANCE_COMUM : ''); ?>" readonly>
+                                <small class="form-text text-muted">A base do contador é sempre a Comum da instância. Para alterar, edite o campo "Comum da Instância" acima.</small>
                             </div>
 
                             <div class="form-group">
