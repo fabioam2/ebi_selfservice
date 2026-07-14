@@ -45,6 +45,7 @@ require_once __DIR__ . '/inc/paths.php';
 // Carregar dependências
 require_once __DIR__ . '/criar_instancia.php';
 require_once __DIR__ . '/inc/user_manager.php';
+require_once __DIR__ . '/inc/db_manager.php';
 
 // Senha de administrador - hash bcrypt (gere com: php -r "echo password_hash('SuaSenha', PASSWORD_BCRYPT, ['cost'=>12]);")
 // Senha padrão de fábrica: Senha123!  — TROQUE em produção via .env (ADMIN_PASSWORD_HASH).
@@ -1078,6 +1079,9 @@ function processarMarkdownSimples($texto) {
                     <a class="nav-link <?php echo $page === 'users' ? 'active' : ''; ?>" href="?page=users">
                         <i class="fas fa-users"></i> Usuários
                     </a>
+                    <a class="nav-link <?php echo $page === 'stats' ? 'active' : ''; ?>" href="?page=stats">
+                        <i class="fas fa-chart-bar"></i> Estatísticas
+                    </a>
                     <a class="nav-link <?php echo $page === 'settings' ? 'active' : ''; ?>" href="?page=settings">
                         <i class="fas fa-cog"></i> Configurações
                     </a>
@@ -1121,6 +1125,9 @@ function processarMarkdownSimples($texto) {
                         break;
                     case 'settings':
                         include __DIR__ . '/inc/admin_settings.php';
+                        break;
+                    case 'stats':
+                        include __DIR__ . '/inc/admin_stats.php';
                         break;
                     default:
                         echo '<div class="alert alert-warning">Página não encontrada</div>';

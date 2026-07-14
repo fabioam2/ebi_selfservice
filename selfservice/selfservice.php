@@ -34,14 +34,9 @@ if (!checkRateLimit($clientIP, $maxRequests, $timeWindow)) {
 
 // Load paths configuration
 require_once __DIR__ . '/inc/paths.php';
+require_once __DIR__ . '/inc/db_manager.php';
 
-// Configurações do Self-Service
-define('DB_SELFSERVICE', __DIR__ . '/data/selfservice_users.txt');
-
-// Cria diretórios necessários
-if (!file_exists(dirname(DB_SELFSERVICE))) {
-    mkdir(dirname(DB_SELFSERVICE), 0755, true);
-}
+// Cria diretório de instâncias se necessário
 if (!file_exists(INSTANCE_BASE_PATH)) {
     mkdir(INSTANCE_BASE_PATH, 0755, true);
 }
@@ -158,21 +153,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['criar_nova_instancia']
         } else {
             // Gerar novo ID único
             $user_id = uniqid('user_', true);
-            $hash_senha = password_hash($senha, PASSWORD_DEFAULT);
-            $data_cadastro = date('Y-m-d H:i:s');
+            $hash_senha = password_hash($senha, PASSWORD_BCRYPT, ['cost' => 12]);
 
-            // Salvar usuário
-            $linha = implode('|', [
-                $user_id,
-                $email,
-                $nome,
-                $cidade,
-                $comum,
-                $hash_senha,
-                $data_cadastro
-            ]);
-
-            file_put_contents(DB_SELFSERVICE, $linha . PHP_EOL, FILE_APPEND | LOCK_EX);
+            // Registrar usuário no banco central
+            db_inserir_usuario($user_id, $email, $nome, $cidade, $comum, $hash_senha);
 
             // Criar instância do sistema para o usuário
             require_once 'criar_instancia.php';
@@ -251,18 +235,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['cadastrar'])) {
     $instanciaExistente = null;
     $user_id_existente = null;
 
-    if (empty($erros) && file_exists(DB_SELFSERVICE)) {
-        $linhas = file(DB_SELFSERVICE, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-        foreach ($linhas as $linha) {
-            $dados = explode('|', $linha);
-            if (isset($dados[1]) && $dados[1] === $email) {
-                $user_id_existente = $dados[0];
-                // Verificar se a instância ainda existe fisicamente
-                require_once 'criar_instancia.php';
-                if (verificarInstanciaExiste($user_id_existente)) {
-                    $instanciaExistente = obterInfoInstancia($user_id_existente);
-                    break;
-                }
+    if (empty($erros)) {
+        $usuarioExistente = db_buscar_usuario_por_email($email);
+        if ($usuarioExistente !== null) {
+            $user_id_existente = $usuarioExistente['user_id'];
+            require_once 'criar_instancia.php';
+            if (verificarInstanciaExiste($user_id_existente)) {
+                $instanciaExistente = obterInfoInstancia($user_id_existente);
             }
         }
     }
@@ -300,21 +279,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['cadastrar'])) {
     if (empty($erros)) {
         // Gerar ID único para o usuário
         $user_id = uniqid('user_', true);
-        $hash_senha = password_hash($senha, PASSWORD_DEFAULT);
-        $data_cadastro = date('Y-m-d H:i:s');
+        $hash_senha = password_hash($senha, PASSWORD_BCRYPT, ['cost' => 12]);
 
-        // Salvar usuário
-        $linha = implode('|', [
-            $user_id,
-            $email,
-            $nome,
-            $cidade,
-            $comum,
-            $hash_senha,
-            $data_cadastro
-        ]);
-
-        file_put_contents(DB_SELFSERVICE, $linha . PHP_EOL, FILE_APPEND | LOCK_EX);
+        // Registrar usuário no banco central
+        db_inserir_usuario($user_id, $email, $nome, $cidade, $comum, $hash_senha);
 
         // Criar instância do sistema para o usuário
         require_once 'criar_instancia.php';
