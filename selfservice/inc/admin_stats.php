@@ -10,12 +10,13 @@ if (!in_array($periodo, [7, 30, 90, 365], true)) {
 }
 $desde = date('Y-m-d', strtotime("-{$periodo} days"));
 
-$statsPorDia   = db_stats_por_dia($desde);
-$statsPorComum = db_stats_por_comum($desde);
-$statsPorCidade= db_stats_por_cidade($desde);
-$statsHoje     = db_stats_totais_hoje();
-$statsGeral    = db_stats_totais_geral();
-$statsMensal   = db_stats_mensal(12);
+$statsPorDia       = db_stats_por_dia($desde);
+$statsPorComum     = db_stats_por_comum($desde);
+$statsPorCidade    = db_stats_por_cidade($desde);
+$statsPorInstancia = db_stats_por_instancia($desde);
+$statsHoje         = db_stats_totais_hoje();
+$statsGeral        = db_stats_totais_geral();
+$statsMensal       = db_stats_mensal(12);
 
 // Agrega faixas etárias do período
 $ageTotals = ['age_0_3' => 0, 'age_4_7' => 0, 'age_8_11' => 0, 'age_12_14' => 0, 'age_15_17' => 0];
@@ -265,6 +266,39 @@ $totalCriancasPeriodo = array_sum($ageTotals) ?: 1; // evita divisão por zero
                 <td class="text-right"><?php echo number_format((int)$row['total_impressoes']); ?></td>
                 <td class="text-right"><?php echo number_format((int)$row['total_saidas']); ?></td>
                 <td class="text-right"><?php echo (int)$row['dias_ativos']; ?></td>
+            </tr>
+        <?php endforeach; ?>
+        </tbody>
+    </table>
+</div>
+<?php endif; ?>
+
+<!-- Por Instância (Comum / Cidade) -->
+<?php if (!empty($statsPorInstancia)): ?>
+<div class="content-header mt-4">
+    <h4><i class="fas fa-sitemap mr-2"></i>Por Instância
+        <small class="text-muted">(últimos <?php echo $periodo; ?> dias)</small>
+    </h4>
+</div>
+<div class="table-custom">
+    <table class="table table-hover mb-0">
+        <thead>
+            <tr>
+                <th>Comum</th>
+                <th>Cidade</th>
+                <th class="text-right">Cadastros</th>
+                <th class="text-right">Pulseiras</th>
+                <th class="text-right">Saídas</th>
+            </tr>
+        </thead>
+        <tbody>
+        <?php foreach ($statsPorInstancia as $row): ?>
+            <tr>
+                <td><?php echo htmlspecialchars(ucfirst($row['comum'] ?? '—')); ?></td>
+                <td><?php echo htmlspecialchars($row['cidade'] ?? '—'); ?></td>
+                <td class="text-right"><?php echo number_format((int)$row['total_cadastros']); ?></td>
+                <td class="text-right"><?php echo number_format((int)$row['total_impressoes']); ?></td>
+                <td class="text-right"><?php echo number_format((int)$row['total_saidas']); ?></td>
             </tr>
         <?php endforeach; ?>
         </tbody>

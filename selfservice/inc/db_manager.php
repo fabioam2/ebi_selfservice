@@ -238,6 +238,23 @@ function db_stats_por_comum(string $desde): array {
     return $stmt->fetchAll();
 }
 
+function db_stats_por_instancia(string $desde): array {
+    $stmt = central_db()->prepare(
+        'SELECT user_id,
+                comum,
+                cidade,
+                SUM(total_cadastros)  as total_cadastros,
+                SUM(total_impressoes) as total_impressoes,
+                SUM(total_saidas)     as total_saidas
+         FROM admin_daily_stats
+         WHERE date >= ?
+         GROUP BY user_id
+         ORDER BY total_cadastros DESC'
+    );
+    $stmt->execute([$desde]);
+    return $stmt->fetchAll();
+}
+
 function db_stats_por_cidade(string $desde): array {
     $stmt = central_db()->prepare(
         'SELECT cidade,

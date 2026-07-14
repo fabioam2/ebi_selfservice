@@ -37,6 +37,13 @@
 
 
         .dropdown-menu button.dropdown-item, .dropdown-menu a.dropdown-item { cursor: pointer; }
+        /* Submenu aninhado */
+        .dropdown-submenu { position: relative; }
+        .dropdown-submenu .dropdown-menu { top: 0; left: 100%; margin-top: -4px; display: none; }
+        .dropdown-submenu:hover .dropdown-menu { display: block; }
+        .dropdown-submenu > a::after { float: right; margin-top: 5px; }
+        /* Botão Como Usar */
+        .btn-ajuda { font-size: .8rem; padding: 4px 10px; }
         .modal-backdrop.show { opacity: .5; }
         .modal.show { display: block; }
         #backupPreviewContent { font-size: 0.8em; white-space: pre-wrap; max-height: 100px; overflow-y: auto; background-color: #f8f9fa; border: 1px solid #dee2e6; padding: 5px; margin-top: 10px; border-radius: .2rem;}
@@ -155,19 +162,33 @@
                     </svg>
                 </button>
                 <div class="dropdown-menu" aria-labelledby="dropdownMenuAdmin">
+                    <!-- Estatísticas BI -->
                     <h6 class="dropdown-header">Relatórios</h6>
-                    <button class="dropdown-item" type="button" id="btnImprimirLista">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer mr-1" viewBox="0 0 16 16"><path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/><path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/></svg>
-                        Imprimir Lista
-                    </button>
-                    <button class="dropdown-item" type="button" id="btnBaixarCSV">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-filetype-csv mr-1" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M14 4.5V14a2 2 0 0 1-2 2h-1v-1h1a1 1 0 0 0 1-1V4.5h-2A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v9H2V2a2 2 0 0 1 2-2h5.5zM3.517 14.841a1.13 1.13 0 0 0 .401.823c.13.108.289.192.478.252.19.061.411.091.665.091.338 0 .624-.053.859-.158.236-.105.416-.252.539-.44.125-.189.187-.408.187-.656 0-.224-.045-.41-.134-.56a1.001 1.001 0 0 0-.375-.357 2.027 2.027 0 0 0-.566-.21l-.621-.144a.97.97 0 0 1-.404-.176.37.37 0 0 1-.144-.299c0-.156.062-.284.185-.384.125-.101.296-.152.512-.152.143 0 .266.023.37.068a.624.624 0 0 1 .246.181.56.56 0 0 1 .12.258h.75a1.092 1.092 0 0 0-.2-.566 1.21 1.21 0 0 0-.5-.41 1.813 1.813 0 0 0-.78-.152c-.293 0-.551.05-.776.15-.225.099-.4.24-.527.421-.127.182-.19.395-.19.639 0 .201.04.376.122.524.082.149.2.27.352.367.152.095.332.167.539.213l.618.144c.207.049.361.113.463.193a.387.387 0 0 1 .152.326.505.505 0 0 1-.085.29.559.559 0 0 1-.255.193c-.111.047-.249.07-.413.07-.117 0-.223-.013-.32-.04a.838.838 0 0 1-.248-.115.578.578 0 0 1-.255-.384h-.765zM.806 13.693c0-.248.034-.46.102-.633a.868.868 0 0 1 .302-.399.814.814 0 0 1 .475-.137c.15 0 .283.032.398.097a.7.7 0 0 1 .272.26.85.85 0 0 1 .12.381h.765v-.072a1.33 1.33 0 0 0-.466-.964 1.441 1.441 0 0 0-.489-.272 1.838 1.838 0 0 0-.606-.097c-.356 0-.66.074-.911.223-.25.148-.44.359-.572.632-.13.274-.196.6-.196.979v.498c0 .379.064.704.193.976.131.271.322.48.572.626.25.145.554.217.914.217.293 0 .554-.055.785-.164.23-.11.414-.26.55-.454a1.27 1.27 0 0 0 .226-.674v-.076h-.764a.799.799 0 0 1-.118.363.7.7 0 0 1-.272.25.874.874 0 0 1-.401.087.845.845 0 0 1-.478-.132.833.833 0 0 1-.299-.392 1.699 1.699 0 0 1-.102-.627v-.495zM6.78 15.29a1.176 1.176 0 0 1-.111-.449h.764a.578.578 0 0 0 .255.384c.07.049.154.087.25.114.095.028.201.041.319.041.164 0 .301-.023.413-.07a.559.559 0 0 0 .255-.193.507.507 0 0 0 .085-.29.387.387 0 0 0-.153-.326c-.101-.08-.256-.144-.463-.193l-.618-.143a1.72 1.72 0 0 1-.539-.214 1.001 1.001 0 0 1-.351-.367 1.068 1.068 0 0 1-.123-.524c0-.244.063-.457.19-.639.127-.181.303-.322.527-.422.225-.1.484-.149.777-.149.304 0 .568.05.79.152a1.21 1.21 0 0 1 .5.41c.12.174.186.381.2.566h-.75a.56.56 0 0 0-.12-.258.624.624 0 0 0-.246-.181.824.824 0 0 0-.37-.068c-.216 0-.387.05-.512.152a.472.472 0 0 0-.184.384c0 .121.048.22.143.3a.97.97 0 0 0 .404.175l.621.143c.217.05.406.12.566.211a1 1 0 0 1 .375.358c.09.148.134.335.134.56 0 .247-.063.466-.187.656-.124.188-.304.335-.54.44-.235.105-.52.158-.858.158-.254 0-.476-.03-.665-.09a1.404 1.404 0 0 1-.478-.253 1.13 1.13 0 0 1-.29-.375z"/></svg>
-                        Baixar CSV
-                    </button>
-                    <button class="dropdown-item" type="button" id="btnBaixarXLS">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-spreadsheet mr-1" viewBox="0 0 16 16"><path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2M9.5 3A1.5 1.5 0 0 0 11 4.5h2V9H3V2a1 1 0 0 1 1-1h5.5zM3 12v-2h2v2zm0 1h2v2H4a1 1 0 0 1-1-1zm3 2v-2h3v2zm4 0v-2h3v1a1 1 0 0 1-1 1zm3-3h-3v-2h3zm-7 0v-2h3v2z"/></svg>
-                        Baixar XLS
-                    </button>
+                    <a class="dropdown-item" href="?acao=stats">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bar-chart-fill mr-1" viewBox="0 0 16 16"><path d="M1 11a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1zm5-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1zm5-5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1z"/></svg>
+                        Estatísticas (BI)
+                    </a>
+                    <!-- Lista com sub-itens -->
+                    <div class="dropdown-submenu">
+                        <a class="dropdown-item dropdown-toggle" href="#" id="menuLista">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-list-ul mr-1" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m-3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2m0 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2m0 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2"/></svg>
+                            Lista
+                        </a>
+                        <div class="dropdown-menu">
+                            <button class="dropdown-item" type="button" id="btnImprimirLista">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer mr-1" viewBox="0 0 16 16"><path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/><path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/></svg>
+                                Imprimir
+                            </button>
+                            <button class="dropdown-item" type="button" id="btnBaixarCSV">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-filetype-csv mr-1" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M14 4.5V14a2 2 0 0 1-2 2h-1v-1h1a1 1 0 0 0 1-1V4.5h-2A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v9H2V2a2 2 0 0 1 2-2h5.5z"/></svg>
+                                Baixar CSV
+                            </button>
+                            <button class="dropdown-item" type="button" id="btnBaixarXLS">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-spreadsheet mr-1" viewBox="0 0 16 16"><path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2M9.5 3A1.5 1.5 0 0 0 11 4.5h2V9H3V2a1 1 0 0 1 1-1h5.5zM3 12v-2h2v2zm0 1h2v2H4a1 1 0 0 1-1-1zm3 2v-2h3v2zm4 0v-2h3v1a1 1 0 0 1-1 1zm3-3h-3v-2h3zm-7 0v-2h3v2z"/></svg>
+                                Baixar XLS
+                            </button>
+                        </div>
+                    </div>
                     <div class="dropdown-divider"></div>
                     <button class="dropdown-item" type="button" onclick="abrirModalConfigImpressora()">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer mr-1" viewBox="0 0 16 16"><path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/><path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/></svg>
@@ -204,7 +225,11 @@
             <div class="d-flex align-items-center" style="min-width: 220px; justify-content: flex-end;">
                 <a href="./saida/index.php" class="btn btn-outline-secondary btn-sm mr-1" target="_blank">Saída</a>
                 <a href="./saida/painel.php" class="btn btn-outline-secondary btn-sm mr-1" target="_blank">Painel Saída</a>
-                <a href="https://qrcode.ccbcampinas.org.br/" class="btn btn-outline-secondary btn-sm" target="_blank">QrCode</a>
+                <a href="https://qrcode.ccbcampinas.org.br/" class="btn btn-outline-secondary btn-sm mr-1" target="_blank">QrCode</a>
+                <button type="button" class="btn btn-outline-info btn-sm btn-ajuda" onclick="abrirModalAjuda()" title="Como usar o sistema">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-question-circle mr-1" viewBox="0 0 16 16"><path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/></svg>
+                    Como Usar
+                </button>
             </div>
         </header>
 
@@ -708,6 +733,135 @@
             </div>
         </div>
 
+        <!-- Modal Como Usar -->
+        <div class="modal fade" id="modalAjuda" tabindex="-1" role="dialog" aria-labelledby="modalAjudaLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header bg-info text-white">
+                        <h5 class="modal-title" id="modalAjudaLabel">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-question-circle mr-2" viewBox="0 0 16 16"><path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/></svg>
+                            Como Usar o Sistema de Cadastro
+                        </h5>
+                        <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <!-- Passo 1 -->
+                            <div class="col-md-6 mb-3">
+                                <div class="border rounded p-3 h-100">
+                                    <h6 class="text-primary font-weight-bold">
+                                        <span class="badge badge-primary mr-1">1</span> Cadastrar Crianças
+                                    </h6>
+                                    <p class="small mb-2">Preencha os campos do formulário para cada criança:</p>
+                                    <ul class="small pl-3 mb-0">
+                                        <li><strong>Nome da Criança</strong> — como aparecerá na pulseira</li>
+                                        <li><strong>Responsável</strong> — nome do pai/mãe que vai retirar</li>
+                                        <li><strong>Telefone</strong> — para contato se necessário</li>
+                                        <li><strong>Idade</strong> — usada para direcionar à sala correta</li>
+                                        <li><strong>Comum</strong> — congregação de origem</li>
+                                        <li><strong>Portaria</strong> — portaria de entrada (A, B, C…)</li>
+                                    </ul>
+                                    <div class="alert alert-info mt-2 mb-0 p-2 small">
+                                        <strong>Dica:</strong> Cadastre todas as crianças do mesmo responsável de uma vez — use o botão <em>Copiar Responsável</em> para agilizar.
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Passo 2 -->
+                            <div class="col-md-6 mb-3">
+                                <div class="border rounded p-3 h-100">
+                                    <h6 class="text-success font-weight-bold">
+                                        <span class="badge badge-success mr-1">2</span> Usar Leitor de QR Code
+                                    </h6>
+                                    <p class="small mb-2">Acelere o cadastro com um leitor de QR Code (pistola ou celular):</p>
+                                    <ul class="small pl-3 mb-2">
+                                        <li>Conecte o leitor ao computador (USB ou Bluetooth)</li>
+                                        <li>Clique no campo <strong>Responsável</strong> ou <strong>Telefone</strong></li>
+                                        <li>Aponte o leitor para o QR Code do responsável</li>
+                                        <li>Os dados são preenchidos automaticamente</li>
+                                    </ul>
+                                    <div class="alert alert-success mb-0 p-2 small">
+                                        <strong>Gerar QR Codes:</strong> Acesse o botão <strong>QrCode</strong> no canto superior direito ou clique <a href="https://qrcode.ccbcampinas.org.br/" target="_blank">aqui</a> para criar os QR Codes dos responsáveis com seus dados pré-preenchidos.
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Passo 3 -->
+                            <div class="col-md-6 mb-3">
+                                <div class="border rounded p-3 h-100">
+                                    <h6 class="text-warning font-weight-bold">
+                                        <span class="badge badge-warning mr-1">3</span> Imprimir Pulseiras
+                                    </h6>
+                                    <p class="small mb-2">Após o cadastro, selecione as crianças e imprima as pulseiras:</p>
+                                    <ul class="small pl-3 mb-0">
+                                        <li>Marque as caixas ao lado de cada criança</li>
+                                        <li>Clique em <strong>Imprimir</strong> (botão verde) ou use <kbd>Enter</kbd></li>
+                                        <li>A pulseira sai com nome, responsável e QR Code</li>
+                                        <li>O leitor QR Code na saída usa esse código para identificar as crianças</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <!-- Passo 4 -->
+                            <div class="col-md-6 mb-3">
+                                <div class="border rounded p-3 h-100">
+                                    <h6 class="text-danger font-weight-bold">
+                                        <span class="badge badge-danger mr-1">4</span> Controle de Saída
+                                    </h6>
+                                    <p class="small mb-2">A portaria usa o módulo de <strong>Saída</strong> para liberar as crianças:</p>
+                                    <ul class="small pl-3 mb-2">
+                                        <li>Acesse <strong>Saída</strong> no canto superior direito</li>
+                                        <li>O responsável apresenta o QR Code da pulseira</li>
+                                        <li>O sistema identifica e lista as crianças vinculadas</li>
+                                        <li>A portaria confirma e registra a saída</li>
+                                    </ul>
+                                    <div class="alert alert-secondary mb-0 p-2 small">
+                                        Use <strong>Painel Saída</strong> para monitorar em tempo real as saídas registradas.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Menu de Relatórios -->
+                        <div class="border rounded p-3 mt-1 bg-light">
+                            <h6 class="font-weight-bold mb-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bar-chart mr-1" viewBox="0 0 16 16"><path d="M4 11H2v3h2zm5-4H7v7h2zm5-5v12h-2V2zm-2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zm-5 4a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1zm-5 4a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1z"/></svg>
+                                Menu ☰ — Opções Disponíveis
+                            </h6>
+                            <div class="row small">
+                                <div class="col-md-4">
+                                    <strong>Relatórios</strong>
+                                    <ul class="pl-3 mb-0">
+                                        <li><strong>Estatísticas (BI)</strong> — gráficos e histórico por período</li>
+                                        <li><strong>Lista → Imprimir</strong> — impressão da lista de cadastros</li>
+                                        <li><strong>Lista → CSV / XLS</strong> — exportar para planilha</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Impressora</strong>
+                                    <ul class="pl-3 mb-0">
+                                        <li>Configurar impressora ZPL</li>
+                                        <li>QZ Tray — conexão USB/rede</li>
+                                        <li>Calibrar — ajustar posição</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Dados</strong>
+                                    <ul class="pl-3 mb-0">
+                                        <li>Zerar Arquivo — apaga todos os cadastros do dia</li>
+                                        <li>Recuperar Backup — restaura cadastros anteriores</li>
+                                        <li>Sair — encerrar sessão</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <label class="mr-auto small text-muted">
+                            <input type="checkbox" id="chkNaoMostrarAjuda"> Não mostrar novamente
+                        </label>
+                        <button type="button" class="btn btn-info text-white" data-dismiss="modal">Entendido!</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Rodapé com versão do sistema -->
         <div class="text-center mt-4 mb-2" style="font-size: 9px; color: #b0b0b0; opacity: 0.6;">
             v<?php echo VERSAO_SISTEMA; ?>
@@ -1074,6 +1228,24 @@
             atualizarEstadoModoTeste();
 
         });
+
+        // ============ MODAL COMO USAR ============
+
+        function abrirModalAjuda() {
+            $('#modalAjuda').modal('show');
+        }
+
+        // Mostrar automaticamente no primeiro acesso
+        (function() {
+            if (!localStorage.getItem('ebi_ajuda_visto')) {
+                setTimeout(function() { $('#modalAjuda').modal('show'); }, 600);
+            }
+            $('#modalAjuda').on('hide.bs.modal', function() {
+                if ($('#chkNaoMostrarAjuda').is(':checked')) {
+                    localStorage.setItem('ebi_ajuda_visto', '1');
+                }
+            });
+        })();
 
         // ============ FUNÇÕES DE CONFIGURAÇÃO E DEBUG ============
 

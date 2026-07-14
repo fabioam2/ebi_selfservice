@@ -128,4 +128,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
+// ── View de estatísticas ──────────────────────────────────────────────────────
+if (($_GET['acao'] ?? '') === 'stats') {
+    require __DIR__ . '/views/stats.php';
+    exit;
+}
+
 require __DIR__ . '/views/main.php';
