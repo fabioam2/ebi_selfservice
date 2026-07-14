@@ -329,6 +329,50 @@ if (isset($_POST['confirmar_recuperacao'])) {
 
 // ── Configurações da impressora ───────────────────────────────────────────────
 
+if (isset($_POST['alterar_senha_instancia'])) {
+    $senhaAtual = (string)($_POST['senha_atual'] ?? '');
+    $novaSenha  = (string)($_POST['nova_senha'] ?? '');
+    $confirmar  = (string)($_POST['confirmar_nova_senha'] ?? '');
+
+    if (!verificar_senha_admin($senhaAtual)) {
+        $_SESSION['mensagemErro'] = 'Senha atual incorreta.';
+    } elseif (strlen($novaSenha) < 8) {
+        $_SESSION['mensagemErro'] = 'A nova senha deve ter ao menos 8 caracteres.';
+    } elseif (!hash_equals($novaSenha, $confirmar)) {
+        $_SESSION['mensagemErro'] = 'A confirmação da nova senha não confere.';
+    } else {
+        $config_file = CAMINHO_CONFIG_INI;
+        $conteudo = file_get_contents($config_file);
+
+        if ($conteudo === false) {
+            $_SESSION['mensagemErro'] = 'Erro ao ler config.ini para alterar a senha.';
+        } else {
+            $novoHash = password_hash($novaSenha, PASSWORD_BCRYPT, ['cost' => 12]);
+            $substituicoes = [
+                '/^\s*SENHA_ADMIN_HASH\s*=.*$/mi'  => 'SENHA_ADMIN_HASH = "' . $novoHash . '"',
+                '/^\s*SENHA_PAINEL_HASH\s*=.*$/mi' => 'SENHA_PAINEL_HASH = "' . $novoHash . '"',
+                '/^\s*SENHA_ADMIN_REAL\s*=.*$/mi'  => 'SENHA_ADMIN_REAL = ""',
+                '/^\s*SENHA_PAINEL\s*=.*$/mi'      => 'SENHA_PAINEL = ""',
+            ];
+
+            foreach ($substituicoes as $pattern => $replacement) {
+                $conteudo = preg_replace($pattern, $replacement, $conteudo);
+            }
+
+            if (file_put_contents($config_file, $conteudo, LOCK_EX) !== false) {
+                @chmod($config_file, 0600);
+                $_SESSION['mensagemSucesso'] = 'Senha da instância alterada com sucesso!';
+            } else {
+                $_SESSION['mensagemErro'] = 'Erro ao salvar nova senha em config.ini.';
+            }
+        }
+    }
+
+    $_SESSION['focar_apos_acao'] = true;
+    header('Location: ' . sanitize_for_html($_SERVER['PHP_SELF']));
+    return;
+}
+
 if (isset($_POST['salvar_config_impressora'])) {
     $senhaOk = verificar_senha_admin($_POST['admin_senha'] ?? '');
 

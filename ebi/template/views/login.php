@@ -35,7 +35,7 @@
             <button type="submit" name="tentativa_login" class="btn btn-primary btn-block">Entrar</button>
         </form>
         <div class="text-center mt-3">
-            <a href="recuperar_senha.php" style="font-size:.85rem;color:#6c757d">
+            <a href="index.php?acao=recuperar_senha" style="font-size:.85rem;color:#6c757d">
                 <i class="fas fa-key mr-1"></i>Esqueci minha senha
             </a>
         </div>

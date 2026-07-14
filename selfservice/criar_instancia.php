@@ -599,18 +599,39 @@ function validarUserId(string $user_id): bool {
 }
 
 /**
- * Retorna o caminho do config.ini de uma instância (considera layout novo e antigo).
+ * Retorna todos os caminhos possíveis de config.ini para uma instância
+ * (layout novo e legados) que existirem no disco.
+ *
+ * @return array<int,string>
  */
-function caminhoConfigInstancia(string $user_id): ?string {
+function caminhosConfigInstancia(string $user_id): array {
     if (!defined('INSTANCE_BASE_PATH')) {
         require_once __DIR__ . '/inc/paths.php';
     }
+
     $base = INSTANCE_BASE_PATH . '/' . $user_id;
-    $novo = $base . '/config.ini';
-    if (file_exists($novo)) return $novo;
-    $legado = $base . '/config/config.ini';
-    if (file_exists($legado)) return $legado;
-    return null;
+    $candidatos = [
+        $base . '/config.ini',
+        $base . '/config/config.ini',
+        $base . '/public_html/ebi/config.ini',
+    ];
+
+    $encontrados = [];
+    foreach ($candidatos as $caminho) {
+        if (file_exists($caminho) && is_file($caminho)) {
+            $encontrados[] = $caminho;
+        }
+    }
+
+    return array_values(array_unique($encontrados));
+}
+
+/**
+ * Retorna o caminho do config.ini de uma instância (considera layout novo e antigo).
+ */
+function caminhoConfigInstancia(string $user_id): ?string {
+    $todos = caminhosConfigInstancia($user_id);
+    return $todos[0] ?? null;
 }
 
 /**
@@ -628,45 +649,47 @@ function redefinirSenhaInstancia(string $user_id, string $novaSenha): array {
         return ['sucesso' => false, 'erro' => 'Senha deve ter ao menos 8 caracteres'];
     }
 
-    $configFile = caminhoConfigInstancia($user_id);
-    if ($configFile === null) {
+    $configFiles = caminhosConfigInstancia($user_id);
+    if (empty($configFiles)) {
         return ['sucesso' => false, 'erro' => 'config.ini da instância não encontrado'];
     }
 
     $hash = password_hash($novaSenha, PASSWORD_BCRYPT, ['cost' => 12]);
 
-    $conteudo = file_get_contents($configFile);
-    if ($conteudo === false) {
-        return ['sucesso' => false, 'erro' => 'Falha ao ler config.ini'];
-    }
-
-    // Substitui hashes e zera qualquer senha legada em texto plano
-    $substituicoes = [
-        '/^\s*SENHA_ADMIN_HASH\s*=.*$/mi'  => 'SENHA_ADMIN_HASH = "' . $hash . '"',
-        '/^\s*SENHA_PAINEL_HASH\s*=.*$/mi' => 'SENHA_PAINEL_HASH = "' . $hash . '"',
-        '/^\s*SENHA_ADMIN_REAL\s*=.*$/mi'  => 'SENHA_ADMIN_REAL = ""',
-        '/^\s*SENHA_PAINEL\s*=.*$/mi'      => 'SENHA_PAINEL = ""',
-    ];
-    foreach ($substituicoes as $pattern => $replacement) {
-        $conteudo = preg_replace($pattern, $replacement, $conteudo);
-    }
-
-    // Se alguma chave não existia, adiciona na seção [SEGURANCA]
-    foreach (['SENHA_ADMIN_HASH', 'SENHA_PAINEL_HASH'] as $chave) {
-        if (!preg_match('/^\s*' . $chave . '\s*=/mi', $conteudo)) {
-            $conteudo = preg_replace(
-                '/^\[SEGURANCA\].*$/mi',
-                "[SEGURANCA]\n$chave = \"$hash\"",
-                $conteudo,
-                1
-            );
+    foreach ($configFiles as $configFile) {
+        $conteudo = file_get_contents($configFile);
+        if ($conteudo === false) {
+            return ['sucesso' => false, 'erro' => 'Falha ao ler config.ini'];
         }
-    }
 
-    if (file_put_contents($configFile, $conteudo, LOCK_EX) === false) {
-        return ['sucesso' => false, 'erro' => 'Falha ao gravar config.ini'];
+        // Substitui hashes e zera qualquer senha legada em texto plano
+        $substituicoes = [
+            '/^\s*SENHA_ADMIN_HASH\s*=.*$/mi'  => 'SENHA_ADMIN_HASH = "' . $hash . '"',
+            '/^\s*SENHA_PAINEL_HASH\s*=.*$/mi' => 'SENHA_PAINEL_HASH = "' . $hash . '"',
+            '/^\s*SENHA_ADMIN_REAL\s*=.*$/mi'  => 'SENHA_ADMIN_REAL = ""',
+            '/^\s*SENHA_PAINEL\s*=.*$/mi'      => 'SENHA_PAINEL = ""',
+        ];
+        foreach ($substituicoes as $pattern => $replacement) {
+            $conteudo = preg_replace($pattern, $replacement, $conteudo);
+        }
+
+        // Se alguma chave não existia, adiciona na seção [SEGURANCA]
+        foreach (['SENHA_ADMIN_HASH', 'SENHA_PAINEL_HASH'] as $chave) {
+            if (!preg_match('/^\s*' . $chave . '\s*=/mi', $conteudo)) {
+                $conteudo = preg_replace(
+                    '/^\[SEGURANCA\].*$/mi',
+                    "[SEGURANCA]\n$chave = \"$hash\"",
+                    $conteudo,
+                    1
+                );
+            }
+        }
+
+        if (file_put_contents($configFile, $conteudo, LOCK_EX) === false) {
+            return ['sucesso' => false, 'erro' => 'Falha ao gravar config.ini'];
+        }
+        @chmod($configFile, 0600);
     }
-    @chmod($configFile, 0600);
 
     // Log
     if (defined('DATA_PATH')) {
