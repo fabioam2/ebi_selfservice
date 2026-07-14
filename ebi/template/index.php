@@ -65,10 +65,6 @@ foreach ($todosOsCadastros as $c) {
 
 // ── Contador "Comum destaque" ─────────────────────────────────────────────────
 $comumBaseCadastro = defined('INSTANCE_COMUM') ? trim((string)INSTANCE_COMUM) : '';
-if ($comumBaseCadastro === '' && defined('PALAVRA_CONTADOR_COMUM')) {
-    // Compatibilidade com instâncias antigas sem INFO_USUARIO.COMUM
-    $comumBaseCadastro = trim((string)PALAVRA_CONTADOR_COMUM);
-}
 
 $listaPalavrasAdicionais = defined('LISTA_PALAVRAS_CONTADOR_COMUM') ? LISTA_PALAVRAS_CONTADOR_COMUM : '';
 $palavrasChaveComumDestaque = montarPalavrasChaveComum($comumBaseCadastro, $listaPalavrasAdicionais);
