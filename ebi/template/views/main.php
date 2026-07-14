@@ -211,6 +211,10 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer mr-1" viewBox="0 0 16 16"><path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/><path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/></svg>
                         Configurar Impressora e Instância
                     </button>
+                    <button class="dropdown-item" type="button" onclick="abrirModalAlterarSenha()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-key-fill mr-1" viewBox="0 0 16 16"><path d="M3 8a4 4 0 1 1 7.937.5H14a1 1 0 0 1 1 1v1h-1v1h-1v1h-2.062A4.001 4.001 0 0 1 3 8m4-3a3 3 0 1 0 2.83 4H11v1h1v1h1v-1h1V9h-3.17A3.001 3.001 0 0 0 7 5"/></svg>
+                        Alterar Senha
+                    </button>
                     <button class="dropdown-item" type="button" onclick="toggleModoDebugImpressao()" id="btnToggleDebug">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bug mr-1" viewBox="0 0 16 16"><path d="M4.355.522a.5.5 0 0 1 .623.333l.291.956A4.979 4.979 0 0 1 8 1c1.007 0 1.946.298 2.731.811l.29-.956a.5.5 0 1 1 .957.29l-.41 1.352A4.985 4.985 0 0 1 13 6h.5a.5.5 0 0 0 0-1h-.538l-.853-2.56a.5.5 0 1 1 .957-.29l.956 2.87A2 2 0 0 1 15.5 7.5v1a2 2 0 0 1-2 2h-.5v.5a5 5 0 0 1-10 0V10h-.5a2 2 0 0 1-2-2v-1a2 2 0 0 1 1.478-1.93l.956-2.87a.5.5 0 1 1 .957.29L2.538 5H2a.5.5 0 0 0 0 1h.5a4.985 4.985 0 0 1 1.432-3.503l-.41-1.352a.5.5 0 0 1 .333-.623zM4 7v4a4 4 0 0 0 8 0V7a4 4 0 0 0-8 0z"/></svg>
                         <span id="labelDebugMode">Modo Debug: OFF</span>
@@ -694,6 +698,45 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-save mr-1" viewBox="0 0 16 16"><path d="M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z"/></svg>
                                 Salvar Configurações
                             </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Alterar Senha -->
+        <div class="modal fade" id="modalAlterarSenha" tabindex="-1" role="dialog" aria-labelledby="modalAlterarSenhaLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <form method="post" action="<?php echo sanitize_for_html($_SERVER["PHP_SELF"]); ?>">
+                        <?php echo csrf_field(); ?>
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title" id="modalAlterarSenhaLabel">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-key-fill mr-1" viewBox="0 0 16 16"><path d="M3 8a4 4 0 1 1 7.937.5H14a1 1 0 0 1 1 1v1h-1v1h-1v1h-2.062A4.001 4.001 0 0 1 3 8m4-3a3 3 0 1 0 2.83 4H11v1h1v1h1v-1h1V9h-3.17A3.001 3.001 0 0 0 7 5"/></svg>
+                                Alterar Senha da Instância
+                            </h5>
+                            <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label for="senha_atual_instancia">Senha Atual</label>
+                                <input type="password" class="form-control" id="senha_atual_instancia" name="senha_atual" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="nova_senha_instancia">Nova Senha</label>
+                                <input type="password" class="form-control" id="nova_senha_instancia" name="nova_senha" minlength="8" required>
+                                <small class="form-text text-muted">Mínimo de 8 caracteres.</small>
+                            </div>
+                            <div class="form-group mb-0">
+                                <label for="confirmar_nova_senha_instancia">Confirmar Nova Senha</label>
+                                <input type="password" class="form-control" id="confirmar_nova_senha_instancia" name="confirmar_nova_senha" minlength="8" required>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary" name="alterar_senha_instancia">Salvar Nova Senha</button>
                         </div>
                     </form>
                 </div>
@@ -1285,6 +1328,10 @@
 
         function abrirModalConfigImpressora() {
             $('#modalConfigImpressora').modal('show');
+        }
+
+        function abrirModalAlterarSenha() {
+            $('#modalAlterarSenha').modal('show');
         }
 
         function toggleModoDebugImpressao() {

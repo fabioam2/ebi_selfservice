@@ -15,6 +15,10 @@ $_ebi_root_dir = defined('INSTANCE_DIR')
     : dirname(dirname(__DIR__));
 if (file_exists($_ebi_root_dir . '/vendor/autoload.php')) {
     require_once $_ebi_root_dir . '/vendor/autoload.php';
+
+    if (class_exists('Dotenv\\Dotenv') && file_exists($_ebi_root_dir . '/.env')) {
+        Dotenv\Dotenv::createImmutable($_ebi_root_dir)->safeLoad();
+    }
 }
 require_once $_ebi_root_dir . '/selfservice/inc/email_manager.php';
 

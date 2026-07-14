@@ -6,6 +6,12 @@
 $mensagemLoginErro = '';
 $loginPageMensagemSucesso = '';
 
+// Recuperação de senha pública (não exige login)
+if (isset($_GET['acao']) && $_GET['acao'] === 'recuperar_senha') {
+    require __DIR__ . '/../recuperar_senha.php';
+    exit;
+}
+
 // Rate limiting simples por sessão
 if (!isset($_SESSION['tentativas_login'])) {
     $_SESSION['tentativas_login'] = 0;
