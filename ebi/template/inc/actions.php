@@ -386,10 +386,8 @@ if (isset($_POST['salvar_config_impressora'])) {
 
             $campos = [
                 'PRINTER_NAME'                  => trim($_POST['config_printer_name']                  ?? 'ZDesigner 105SL'),
-                // Mantido por compatibilidade; base oficial passa a ser INFO_USUARIO.COMUM.
-                'PALAVRA_CONTADOR_COMUM'        => $comumInstancia !== ''
-                    ? $comumInstancia
-                    : trim($_POST['config_palavra_contador_comum'] ?? 'bonfim'),
+                // Sempre sincroniza a base de contagem com a COMUM da instância.
+                'PALAVRA_CONTADOR_COMUM'        => $comumInstancia,
                 'LISTA_PALAVRAS_CONTADOR_COMUM' => trim($_POST['config_lista_palavras_contador_comum'] ?? ''),
                 'URL_IMPRESSORA'                => trim($_POST['config_url_impressora']                ?? 'http://127.0.0.1:9100/write'),
             ];

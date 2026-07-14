@@ -5,14 +5,27 @@
  * Gera nova senha temporária, atualiza config.ini e envia por e-mail.
  */
 
-require __DIR__ . '/inc/bootstrap.php';
+if (!defined('CAMINHO_CONFIG_INI')) {
+    require __DIR__ . '/inc/bootstrap.php';
+}
 
 // Não exige login — é a tela de recuperação pública.
 
 // Carrega PHPMailer via autoload do projeto raiz
-$_ebi_root_dir = defined('INSTANCE_DIR')
-    ? dirname(dirname(dirname(INSTANCE_DIR)))
-    : dirname(dirname(__DIR__));
+function _ebi_encontrar_raiz_projeto(string $inicio): string {
+    $dir = realpath($inicio) ?: $inicio;
+    for ($i = 0; $i < 10; $i++) {
+        if (is_file($dir . '/selfservice/inc/email_manager.php')) {
+            return $dir;
+        }
+        $pai = dirname($dir);
+        if ($pai === $dir) break;
+        $dir = $pai;
+    }
+    return dirname(dirname(__DIR__));
+}
+
+$_ebi_root_dir = _ebi_encontrar_raiz_projeto(__DIR__);
 if (file_exists($_ebi_root_dir . '/vendor/autoload.php')) {
     require_once $_ebi_root_dir . '/vendor/autoload.php';
 
