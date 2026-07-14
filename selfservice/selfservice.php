@@ -995,9 +995,6 @@ if (isset($_SESSION['instancia_existente'])) {
         <a href="admin.php" class="btn btn-sm quick-link-btn">
             <i class="fas fa-user-shield mr-1"></i>Administração
         </a>
-        <a href="../index.php" class="btn btn-sm quick-link-btn">
-            <i class="fas fa-sitemap mr-1"></i>Página de Links
-        </a>
         <a href="../qrcode/default.php" class="btn btn-sm quick-link-btn">
             <i class="fas fa-qrcode mr-1"></i>QR Code
         </a>

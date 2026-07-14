@@ -1092,6 +1092,9 @@ function processarMarkdownSimples($texto) {
                     <a class="nav-link <?php echo $page === 'docs' ? 'active' : ''; ?>" href="?page=docs">
                         <i class="fas fa-book"></i> Documentação
                     </a>
+                    <a class="nav-link <?php echo $page === 'links' ? 'active' : ''; ?>" href="?page=links">
+                        <i class="fas fa-sitemap"></i> Página de Links
+                    </a>
                     <hr>
                     <a class="nav-link" href="selfservice.php" target="_blank">
                         <i class="fas fa-external-link-alt"></i> Cadastro
@@ -1132,6 +1135,9 @@ function processarMarkdownSimples($texto) {
                         break;
                     case 'stats':
                         include __DIR__ . '/inc/admin_stats.php';
+                        break;
+                    case 'links':
+                        include __DIR__ . '/inc/admin_links.php';
                         break;
                     default:
                         echo '<div class="alert alert-warning">Página não encontrada</div>';
