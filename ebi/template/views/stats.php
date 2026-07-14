@@ -39,9 +39,6 @@ arsort($comumAgr);
 
 // Da comum vs fora da comum
 $comumBase = defined('INSTANCE_COMUM') ? trim((string)INSTANCE_COMUM) : '';
-if ($comumBase === '' && defined('PALAVRA_CONTADOR_COMUM')) {
-    $comumBase = trim((string)PALAVRA_CONTADOR_COMUM);
-}
 $palavrasComumBI = montarPalavrasChaveComum($comumBase, defined('LISTA_PALAVRAS_CONTADOR_COMUM') ? LISTA_PALAVRAS_CONTADOR_COMUM : '');
 $nomeComum       = $comumBase !== '' ? ucfirst($comumBase) : 'Comum';
 $totalDaComum    = 0;

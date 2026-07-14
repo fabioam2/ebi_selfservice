@@ -192,9 +192,9 @@
                             Lista
                         </a>
                         <div class="dropdown-menu">
-                            <button class="dropdown-item" type="button" id="btnImprimirLista">
+                            <button class="dropdown-item" type="button" id="btnBaixarPDF">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer mr-1" viewBox="0 0 16 16"><path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/><path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/></svg>
-                                Imprimir
+                                Baixar PDF
                             </button>
                             <button class="dropdown-item" type="button" id="btnBaixarCSV">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-filetype-csv mr-1" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M14 4.5V14a2 2 0 0 1-2 2h-1v-1h1a1 1 0 0 0 1-1V4.5h-2A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v9H2V2a2 2 0 0 1 2-2h5.5z"/></svg>
@@ -901,6 +901,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qz-tray@2/qz-tray.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
     <script>
         var csrfToken = <?php echo json_encode(csrf_token()); ?>;
         const NUM_LINHAS_FORM_CADASTRO = <?php echo NUM_LINHAS_FORMULARIO_CADASTRO; ?>;
@@ -1128,42 +1130,45 @@
                 focarPrimeiroCampoCadastro();
             });
 
-            $('#btnImprimirLista').on('click', function() {
-                var printWindow = window.open('', '_blank', 'height=600,width=800');
-                printWindow.document.write('<html><head><title>Lista de Crianças</title>');
-                printWindow.document.write('<style>');
-                printWindow.document.write('body { font-family: Arial, sans-serif; font-size: 10pt; margin: 20px;}');
-                printWindow.document.write('table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }');
-                printWindow.document.write('th, td { border: 1px solid #ccc; padding: 4px; text-align: left; vertical-align: top; }');
-                printWindow.document.write('th { background-color: #f0f0f0; font-weight: bold; }');
-                printWindow.document.write('h2 { text-align: center; margin-bottom: 15px; }');
-                printWindow.document.write('</style></head><body>');
-                printWindow.document.write('<h2>Lista de Crianças Cadastradas</h2>');
-                printWindow.document.write('<table>');
+            $('#btnBaixarPDF').on('click', function() {
+                var dados = extrairDadosTabelaVisivel();
+                if (!dados.rows.length) {
+                    alert('Nenhum registro visível para exportar em PDF.');
+                    return;
+                }
 
-                var $thead = $('.tabela-scrollable thead').clone();
-                $thead.find('.no-print').remove();
-                printWindow.document.write('<thead>' + $thead.html() + '</thead>');
+                if (!window.jspdf || !window.jspdf.jsPDF) {
+                    alert('Biblioteca de PDF não carregada. Atualize a página e tente novamente.');
+                    return;
+                }
 
-                printWindow.document.write('<tbody>');
-                $('#lista-criancas tr').each(function() {
-                    if ($(this).is(':visible')) {
-                        var $row = $(this).clone();
-                        $row.find('.no-print').remove();
+                var jsPDF = window.jspdf.jsPDF;
+                var doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+                var titulo = 'Lista de Crianças Cadastradas';
+                var agora = new Date();
+                var ts = agora.getFullYear()
+                    + String(agora.getMonth() + 1).padStart(2, '0')
+                    + String(agora.getDate()).padStart(2, '0')
+                    + '_'
+                    + String(agora.getHours()).padStart(2, '0')
+                    + String(agora.getMinutes()).padStart(2, '0');
 
-                        var $statusIcon = $row.find('.status-icon');
-                        if ($statusIcon.find('svg').length > 0) {
-                            $statusIcon.parent().html('Sim');
-                        } else {
-                            $statusIcon.parent().html('Não');
-                        }
-                        printWindow.document.write('<tr>' + $row.html() + '</tr>');
-                    }
+                doc.setFontSize(13);
+                doc.text(titulo, 40, 34);
+                doc.setFontSize(9);
+                doc.text('Gerado em: ' + agora.toLocaleString('pt-BR'), 40, 50);
+
+                doc.autoTable({
+                    startY: 62,
+                    head: [dados.headers],
+                    body: dados.rows,
+                    styles: { fontSize: 8, cellPadding: 3 },
+                    headStyles: { fillColor: [0, 123, 255] },
+                    theme: 'striped',
+                    margin: { left: 20, right: 20 }
                 });
-                printWindow.document.write('</tbody></table></body></html>');
-                printWindow.document.close();
-                printWindow.focus();
-                setTimeout(function(){ printWindow.print(); }, 500);
+
+                doc.save('lista_criancas_' + ts + '.pdf');
             });
 
             // Função auxiliar para extrair dados visíveis da tabela
