@@ -156,7 +156,6 @@ if (!isset($_SESSION['logado_saida']) || $_SESSION['logado_saida'] !== true) {
 }
 
 // --- INTERFACE DE REGISTRO (após autenticação) ---
-$todosOsCadastros = lerTodosCadastros(ARQUIVO_DADOS);
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
