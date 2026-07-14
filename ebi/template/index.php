@@ -64,30 +64,20 @@ foreach ($todosOsCadastros as $c) {
 }
 
 // ── Contador "Comum destaque" ─────────────────────────────────────────────────
-$palavrasChaveComumDestaque = [];
-$palavraBase = defined('PALAVRA_CONTADOR_COMUM') ? PALAVRA_CONTADOR_COMUM : '';
-if ($palavraBase !== '') {
-    $palavrasChaveComumDestaque = gerarVariacoesPalavra($palavraBase);
+$comumBaseCadastro = defined('INSTANCE_COMUM') ? trim((string)INSTANCE_COMUM) : '';
+if ($comumBaseCadastro === '' && defined('PALAVRA_CONTADOR_COMUM')) {
+    // Compatibilidade com instâncias antigas sem INFO_USUARIO.COMUM
+    $comumBaseCadastro = trim((string)PALAVRA_CONTADOR_COMUM);
 }
+
 $listaPalavrasAdicionais = defined('LISTA_PALAVRAS_CONTADOR_COMUM') ? LISTA_PALAVRAS_CONTADOR_COMUM : '';
-if ($listaPalavrasAdicionais !== '') {
-    foreach (array_map('trim', explode(',', $listaPalavrasAdicionais)) as $extra) {
-        if ($extra !== '' && !in_array(strtolower($extra), $palavrasChaveComumDestaque)) {
-            $palavrasChaveComumDestaque[] = strtolower($extra);
-        }
-    }
-}
-$nomeComumDestaque  = defined('PALAVRA_CONTADOR_COMUM') ? ucfirst(PALAVRA_CONTADOR_COMUM) : '';
+$palavrasChaveComumDestaque = montarPalavrasChaveComum($comumBaseCadastro, $listaPalavrasAdicionais);
+$nomeComumDestaque  = $comumBaseCadastro !== '' ? $comumBaseCadastro : 'Comum';
 $totalComumDestaque = 0;
 foreach ($todosOsCadastros as $c) {
-    $comumLower = strtolower(trim($c['comum'] ?? ''));
-    if ($comumLower !== '') {
-        foreach ($palavrasChaveComumDestaque as $palavra) {
-            if (stripos($comumLower, $palavra) !== false) {
-                $totalComumDestaque++;
-                break;
-            }
-        }
+    $comumTexto = (string)($c['comum'] ?? '');
+    if ($comumTexto !== '' && textoCorrespondePalavrasChave($comumTexto, $palavrasChaveComumDestaque)) {
+        $totalComumDestaque++;
     }
 }
 

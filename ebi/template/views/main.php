@@ -149,11 +149,28 @@
         }
         .status-icon .print-status { display: none; } 
 
+        .instancia-info-topo {
+            text-align: center;
+            font-size: 0.72rem;
+            letter-spacing: 0.04em;
+            color: #6c757d;
+            margin-bottom: 0.4rem;
+            text-transform: uppercase;
+        }
+
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
+        <div class="instancia-info-topo">
+            <?php
+            $cidadeTopo = defined('INSTANCE_CIDADE') ? trim((string)INSTANCE_CIDADE) : '';
+            $comumTopo  = defined('INSTANCE_COMUM') ? trim((string)INSTANCE_COMUM) : '';
+            $cabecalhoInstancia = trim($cidadeTopo . ' - ' . $comumTopo, ' -');
+            echo sanitize_for_html($cabecalhoInstancia !== '' ? $cabecalhoInstancia : 'Cidade - Comum');
+            ?>
+        </div>
         <header class="d-flex align-items-center justify-content-between mb-3">
             <div class="dropdown" style="min-width: 220px;">
                 <button class="btn btn-light border" type="button" id="dropdownMenuAdmin" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Menu Administração" style="line-height:1; padding: 6px 10px;">
@@ -192,7 +209,7 @@
                     <div class="dropdown-divider"></div>
                     <button class="dropdown-item" type="button" onclick="abrirModalConfigImpressora()">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer mr-1" viewBox="0 0 16 16"><path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/><path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/></svg>
-                        Configurar Impressora
+                        Configurar Impressora e Instância
                     </button>
                     <button class="dropdown-item" type="button" onclick="toggleModoDebugImpressao()" id="btnToggleDebug">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bug mr-1" viewBox="0 0 16 16"><path d="M4.355.522a.5.5 0 0 1 .623.333l.291.956A4.979 4.979 0 0 1 8 1c1.007 0 1.946.298 2.731.811l.29-.956a.5.5 0 1 1 .957.29l-.41 1.352A4.985 4.985 0 0 1 13 6h.5a.5.5 0 0 0 0-1h-.538l-.853-2.56a.5.5 0 1 1 .957-.29l.956 2.87A2 2 0 0 1 15.5 7.5v1a2 2 0 0 1-2 2h-.5v.5a5 5 0 0 1-10 0V10h-.5a2 2 0 0 1-2-2v-1a2 2 0 0 1 1.478-1.93l.956-2.87a.5.5 0 1 1 .957.29L2.538 5H2a.5.5 0 0 0 0 1h.5a4.985 4.985 0 0 1 1.432-3.503l-.41-1.352a.5.5 0 0 1 .333-.623zM4 7v4a4 4 0 0 0 8 0V7a4 4 0 0 0-8 0z"/></svg>
@@ -363,12 +380,12 @@
                         3 Anos: <?php echo $totalCriancas3Anos; ?>
                     </div>
                     <?php if (!empty($palavrasChaveComumDestaque)): ?>
-                    <div class="total-cadastros-info" title="Total de cadastros de <?php echo sanitize_for_html($nomeComumDestaque); ?>">
+                    <div class="total-cadastros-info" title="Total de cadastros da comum configurada (<?php echo sanitize_for_html($nomeComumDestaque); ?>)">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-house-heart-fill" viewBox="0 0 16 16">
                             <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L8 2.207l6.646 6.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.707 1.5Z"/>
                             <path d="m8 3.293 6 6V13.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5V9.293l6-6Zm0 5.189c1.664-1.673 5.825 1.254 0 5.018-5.825-3.764-1.664-6.691 0-5.018Z"/>
                         </svg>
-                        <?php echo sanitize_for_html($nomeComumDestaque); ?>: <?php echo $totalComumDestaque; ?>
+                        Comum: <?php echo $totalComumDestaque; ?>
                     </div>
                     <?php endif; ?>
                 </div>
@@ -578,7 +595,7 @@
                         <div class="modal-header bg-info text-white">
                             <h5 class="modal-title" id="modalConfigImpressoraLabel">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-printer mr-2" viewBox="0 0 16 16"><path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/><path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/></svg>
-                                Configuração da Impressora
+                                Configuração da Impressora e Instância
                             </h5>
                             <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                                 <span aria-hidden="true">&times;</span>
@@ -621,6 +638,18 @@
                                         <small class="form-text text-muted">Posição inicial (normalmente 1)</small>
                                     </div>
                                 </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="config_cidade_instancia">Cidade da Instância</label>
+                                <input type="text" class="form-control" id="config_cidade_instancia" name="config_cidade_instancia" value="<?php echo sanitize_for_html(defined('INSTANCE_CIDADE') ? INSTANCE_CIDADE : ''); ?>" required>
+                                <small class="form-text text-muted">Usada no cabeçalho da EBI e nas estatísticas administrativas.</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="config_comum_instancia">Comum da Instância</label>
+                                <input type="text" class="form-control" id="config_comum_instancia" name="config_comum_instancia" value="<?php echo sanitize_for_html(defined('INSTANCE_COMUM') ? INSTANCE_COMUM : ''); ?>" required>
+                                <small class="form-text text-muted">Usada no contador "Comum" e nas estatísticas administrativas.</small>
                             </div>
 
                             <div class="form-group">

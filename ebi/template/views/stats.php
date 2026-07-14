@@ -38,11 +38,15 @@ arsort($portariaAgr);
 arsort($comumAgr);
 
 // Da comum vs fora da comum
-$palavraBase     = defined('PALAVRA_CONTADOR_COMUM') ? strtolower(PALAVRA_CONTADOR_COMUM) : '';
-$nomeComum       = defined('PALAVRA_CONTADOR_COMUM') ? ucfirst(PALAVRA_CONTADOR_COMUM) : 'Comum';
+$comumBase = defined('INSTANCE_COMUM') ? trim((string)INSTANCE_COMUM) : '';
+if ($comumBase === '' && defined('PALAVRA_CONTADOR_COMUM')) {
+    $comumBase = trim((string)PALAVRA_CONTADOR_COMUM);
+}
+$palavrasComumBI = montarPalavrasChaveComum($comumBase, defined('LISTA_PALAVRAS_CONTADOR_COMUM') ? LISTA_PALAVRAS_CONTADOR_COMUM : '');
+$nomeComum       = $comumBase !== '' ? ucfirst($comumBase) : 'Comum';
 $totalDaComum    = 0;
 foreach ($comumAgr as $c => $cnt) {
-    if ($palavraBase !== '' && stripos($c, $palavraBase) !== false) {
+    if (textoCorrespondePalavrasChave((string)$c, $palavrasComumBI)) {
         $totalDaComum += $cnt;
     }
 }
