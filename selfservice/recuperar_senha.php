@@ -162,5 +162,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <a class="voltar" href="./">← Voltar ao cadastro</a>
+    <div style="font-size:9px;color:rgba(255,255,255,0.4);text-align:center;margin-top:12px">v<?php echo defined('VERSAO_SISTEMA') ? VERSAO_SISTEMA : date('YmdHi'); ?></div>
 </body>
 </html>

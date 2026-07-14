@@ -246,8 +246,9 @@ if (!isset($_SESSION['admin_logado']) || $_SESSION['admin_logado'] !== true) {
                 </button>
             </form>
             <div class="text-center mt-3">
-                <small class="text-muted">EBI Self-Service v3.0</small>
+                <small class="text-muted">EBI Self-Service</small>
             </div>
+            <div class="text-center mt-2 mb-1" style="font-size:9px;color:#b0b0b0;opacity:0.6">v<?php echo defined('VERSAO_SISTEMA') ? VERSAO_SISTEMA : date('YmdHi'); ?></div>
         </div>
     </body>
     </html>
@@ -1228,6 +1229,6 @@ function processarMarkdownSimples($texto) {
             setupBulkActions();
         });
     </script>
-
+    <div class="text-center mt-3 mb-2" style="font-size:9px;color:#b0b0b0;opacity:0.6">v<?php echo defined('VERSAO_SISTEMA') ? VERSAO_SISTEMA : date('YmdHi'); ?></div>
 </body>
 </html>

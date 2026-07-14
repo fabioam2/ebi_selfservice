@@ -144,6 +144,15 @@ function verificar_senha_painel(string $senhaDigitada): bool {
     return false;
 }
 
+if (!defined('VERSAO_SISTEMA')) {
+    $_saida_git_root = defined('INSTANCE_DIR')
+        ? dirname(dirname(dirname(INSTANCE_DIR)))
+        : dirname(dirname(dirname(__DIR__)));
+    $_saida_vg = @shell_exec('git -C ' . escapeshellarg($_saida_git_root) . " log -1 --format=%cd --date=format:'%Y%m%d%H%M' 2>/dev/null");
+    define('VERSAO_SISTEMA', ($_saida_vg && preg_match('/^\d{12}$/', trim($_saida_vg))) ? trim($_saida_vg) : date('YmdHi'));
+    unset($_saida_git_root, $_saida_vg);
+}
+
 function _migrar_senha_painel_hash(string $senhaPlana): void {
     if (!defined('CAMINHO_CONFIG_INI') || !is_writable(CAMINHO_CONFIG_INI)) return;
     $hash     = password_hash($senhaPlana, PASSWORD_BCRYPT, ['cost' => 12]);
