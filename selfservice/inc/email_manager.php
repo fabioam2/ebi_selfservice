@@ -244,6 +244,109 @@ function enviarEmailAcesso(string $destinatario, string $nome, string $linkSiste
 }
 
 /**
+ * Envia email com links de todas as contas vinculadas ao mesmo email.
+ *
+ * @param string $destinatario Email de destino
+ * @param string $nome Nome do usuário
+ * @param array<int,array{nome:string,cidade:string,comum:string,link:string}> $contas
+ * @return array{sucesso: bool, erro?: string}
+ */
+function enviarEmailRecuperacaoContas(string $destinatario, string $nome, array $contas): array {
+        $config = carregarConfigEmail();
+
+        if (!$config['habilitado']) {
+                return ['sucesso' => false, 'erro' => 'Envio de email está desabilitado'];
+        }
+
+        if (empty($contas)) {
+                return ['sucesso' => false, 'erro' => 'Nenhuma conta encontrada para envio'];
+        }
+
+        try {
+                if (!file_exists(__DIR__ . '/../../vendor/autoload.php')) {
+                        return ['sucesso' => false, 'erro' => 'PHPMailer não instalado'];
+                }
+                require_once __DIR__ . '/../../vendor/autoload.php';
+
+                $mail = new PHPMailer(true);
+                $mail->isSMTP();
+                $mail->Host       = $config['smtp_host'];
+                $mail->SMTPAuth   = true;
+                $mail->Username   = $config['smtp_user'];
+                $mail->Password   = $config['smtp_password'];
+                $mail->SMTPSecure = $config['smtp_secure'] === 'ssl' ? PHPMailer::ENCRYPTION_SMTPS : PHPMailer::ENCRYPTION_STARTTLS;
+                $mail->Port       = $config['smtp_port'];
+                $mail->CharSet    = 'UTF-8';
+
+                $mail->setFrom($config['from_email'], $config['from_name']);
+                $mail->addAddress($destinatario, $nome);
+                $mail->addReplyTo($config['from_email'], $config['from_name']);
+
+                $nomeSafe = htmlspecialchars($nome, ENT_QUOTES, 'UTF-8');
+                $mail->isHTML(true);
+                $mail->Subject = '🔐 Recuperação de Contas — EBI Self-Service';
+
+                $itensHtml = '';
+                $itensTxt  = '';
+                foreach ($contas as $conta) {
+                        $nomeConta   = htmlspecialchars((string)($conta['nome'] ?? ''), ENT_QUOTES, 'UTF-8');
+                        $cidadeConta = htmlspecialchars((string)($conta['cidade'] ?? ''), ENT_QUOTES, 'UTF-8');
+                        $comumConta  = htmlspecialchars((string)($conta['comum'] ?? ''), ENT_QUOTES, 'UTF-8');
+                        $linkConta   = htmlspecialchars((string)($conta['link'] ?? ''), ENT_QUOTES, 'UTF-8');
+
+                        $itensHtml .= "
+                                <div style='border:1px solid #e3e8ef;border-radius:8px;padding:12px;margin-bottom:10px;background:#fafcff'>
+                                        <div><strong>Nome:</strong> {$nomeConta}</div>
+                                        <div><strong>Cidade:</strong> {$cidadeConta}</div>
+                                        <div><strong>Comum:</strong> {$comumConta}</div>
+                                        <div style='margin-top:6px'><strong>Link:</strong> <a href='{$linkConta}' target='_blank'>{$linkConta}</a></div>
+                                </div>";
+
+                        $itensTxt .= "Nome: " . ($conta['nome'] ?? '') . "\n"
+                                            .  "Cidade: " . ($conta['cidade'] ?? '') . "\n"
+                                            .  "Comum: " . ($conta['comum'] ?? '') . "\n"
+                                            .  "Link: " . ($conta['link'] ?? '') . "\n\n";
+                }
+
+                $mail->Body = "
+                <!DOCTYPE html>
+                <html lang='pt-BR'>
+                <head><meta charset='UTF-8'></head>
+                <body style='font-family:Arial,sans-serif;background:#f4f6fb;margin:0;padding:20px'>
+                    <div style='max-width:620px;margin:0 auto;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 4px 10px rgba(0,0,0,.1)'>
+                        <div style='background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:24px 20px;text-align:center'>
+                            <h1 style='margin:0;font-size:22px'>🔐 Recuperação de Contas</h1>
+                        </div>
+                        <div style='padding:24px 20px;color:#2d3748'>
+                            <p>Olá, <strong>{$nomeSafe}</strong>!</p>
+                            <p>Recebemos uma solicitação para recuperar as contas vinculadas a este e-mail.</p>
+                            <p><strong>Contas encontradas:</strong></p>
+                            {$itensHtml}
+                            <p style='margin-top:18px;background:#fff8e1;border-left:4px solid #ffb300;padding:10px;border-radius:4px'>
+                                Se você não solicitou esta recuperação, ignore este e-mail.
+                            </p>
+                        </div>
+                        <div style='background:#f4f4f4;padding:14px;text-align:center;color:#777;font-size:12px'>
+                            EBI Self-Service · Este é um email automático, não responda.
+                        </div>
+                    </div>
+                </body>
+                </html>";
+
+                $mail->AltBody = "Olá, {$nome}!\n\n"
+                                            . "Recebemos uma solicitação para recuperar as contas vinculadas ao seu e-mail.\n\n"
+                                            . $itensTxt
+                                            . "Se você não solicitou esta recuperação, ignore este e-mail.\n\n"
+                                            . "EBI Self-Service";
+
+                $mail->send();
+                return ['sucesso' => true];
+        } catch (Exception $e) {
+                return ['sucesso' => false, 'erro' => $mail->ErrorInfo ?? $e->getMessage()];
+        }
+}
+
+/**
  * Envia email com nova senha temporária (reset de senha).
  *
  * @param string $destinatario Email do usuário

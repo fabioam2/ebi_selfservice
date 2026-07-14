@@ -35,6 +35,7 @@ if (!checkRateLimit($clientIP, $maxRequests, $timeWindow)) {
 // Load paths configuration
 require_once __DIR__ . '/inc/paths.php';
 require_once __DIR__ . '/inc/db_manager.php';
+require_once __DIR__ . '/inc/email_manager.php';
 
 // Cria diretório de instâncias se necessário
 if (!file_exists(INSTANCE_BASE_PATH)) {
@@ -65,6 +66,59 @@ function ss_csrf_validate() {
 
 $mensagem = '';
 $tipo_mensagem = '';
+
+// ============================================================================
+// PROCESSAR AÇÃO DE RECUPERAR CONTAS POR EMAIL
+// ============================================================================
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['recuperar_conta_email'])) {
+    if (!ss_csrf_validate()) {
+        $tipo_mensagem = 'danger';
+        $mensagem = 'Requisição inválida (token de segurança). Tente novamente.';
+    } else {
+        $emailRecuperacao = trim((string)($_POST['email_recuperacao'] ?? ''));
+
+        if ($emailRecuperacao === '') {
+            $tipo_mensagem = 'danger';
+            $mensagem = 'Informe o e-mail no campo acima para recuperar a conta.';
+        } elseif (!filter_var($emailRecuperacao, FILTER_VALIDATE_EMAIL)) {
+            $tipo_mensagem = 'danger';
+            $mensagem = 'Informe um e-mail válido para recuperar a conta.';
+        } else {
+            $usuarios = db_listar_usuarios_por_email($emailRecuperacao);
+
+            if (empty($usuarios)) {
+                $tipo_mensagem = 'info';
+                $mensagem = 'Nenhuma conta foi encontrada para este e-mail.';
+            } else {
+                $baseUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http')
+                         . '://' . $_SERVER['HTTP_HOST'];
+                $rootPath = dirname(dirname($_SERVER['PHP_SELF']));
+                $pathPrefix = ($rootPath === '/' || $rootPath === '\\') ? '' : $rootPath;
+
+                $contas = [];
+                foreach ($usuarios as $u) {
+                    $contas[] = [
+                        'nome' => (string)($u['nome'] ?? ''),
+                        'cidade' => (string)($u['cidade'] ?? ''),
+                        'comum' => (string)($u['comum'] ?? ''),
+                        'link' => $baseUrl . $pathPrefix . '/ebi/i/' . (string)$u['user_id'] . '/index.php',
+                    ];
+                }
+
+                $nomeDestinatario = (string)($usuarios[0]['nome'] ?? 'Usuário');
+                $envio = enviarEmailRecuperacaoContas($emailRecuperacao, $nomeDestinatario, $contas);
+
+                if (!empty($envio['sucesso'])) {
+                    $tipo_mensagem = 'success';
+                    $mensagem = 'Enviamos os links das contas para o e-mail informado.';
+                } else {
+                    $tipo_mensagem = 'danger';
+                    $mensagem = 'Não foi possível enviar o e-mail de recuperação: ' . htmlspecialchars((string)($envio['erro'] ?? 'erro desconhecido'));
+                }
+            }
+        }
+    }
+}
 
 // ============================================================================
 // PROCESSAR AÇÃO DE APAGAR INSTÂNCIA EXISTENTE
@@ -509,6 +563,24 @@ if (isset($_SESSION['instancia_existente'])) {
             box-shadow: 0 8px 18px rgba(14, 116, 144, 0.4);
             filter: brightness(1.03);
         }
+
+        .btn-recuperar-conta {
+            background: #fff;
+            color: var(--brand-strong);
+            border: 1px solid rgba(14, 116, 144, 0.35);
+            border-radius: 11px;
+            padding: 11px 22px;
+            font-weight: 700;
+            width: 100%;
+            margin-top: 10px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+
+        .btn-recuperar-conta:hover {
+            background: #f2fbff;
+            transform: translateY(-1px);
+            box-shadow: 0 7px 14px rgba(14, 116, 144, 0.15);
+        }
         
         .sucesso-box {
             background: linear-gradient(180deg, #f3fff8 0%, var(--success-bg) 100%);
@@ -905,6 +977,16 @@ if (isset($_SESSION['instancia_existente'])) {
                 <button type="submit" name="cadastrar" class="btn btn-cadastrar">
                     <i class="fas fa-rocket"></i> Criar Minha Conta Grátis
                 </button>
+
+                <button type="button" class="btn btn-recuperar-conta" id="btnRecuperarContaEmail">
+                    <i class="fas fa-envelope-open-text"></i> Recuperar conta com email
+                </button>
+            </form>
+
+            <form method="post" action="selfservice.php" id="formRecuperarContaEmail" class="d-none">
+                <?php echo ss_csrf_field(); ?>
+                <input type="hidden" name="recuperar_conta_email" value="1">
+                <input type="hidden" name="email_recuperacao" id="email_recuperacao" value="">
             </form>
         <?php endif; ?>
     </div>
@@ -997,6 +1079,26 @@ if (isset($_SESSION['instancia_existente'])) {
             } else {
                 this.setCustomValidity('');
             }
+        });
+
+        $('#btnRecuperarContaEmail').on('click', function() {
+            const email = ($('#email').val() || '').trim();
+
+            if (!email) {
+                alert('Preencha o e-mail acima para recuperar a conta.');
+                $('#email').focus();
+                return;
+            }
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                alert('Informe um e-mail válido para recuperar a conta.');
+                $('#email').focus();
+                return;
+            }
+
+            $('#email_recuperacao').val(email);
+            $('#formRecuperarContaEmail').trigger('submit');
         });
     </script>
     <div class="text-center mt-4 mb-2" style="font-size:9px;color:#b0b0b0;opacity:0.6">v<?php echo defined('VERSAO_SISTEMA') ? VERSAO_SISTEMA : date('YmdHi'); ?></div>

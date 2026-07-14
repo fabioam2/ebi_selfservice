@@ -799,7 +799,7 @@
                             <div class="col-md-6 mb-3">
                                 <div class="border rounded p-3 h-100">
                                     <h6 class="text-success font-weight-bold">
-                                        <span class="badge badge-success mr-1">2</span> Usar Leitor de QR Code
+                                        <span class="badge badge-success mr-1">2</span> QR Code (pistola)
                                     </h6>
                                     <p class="small mb-2">Acelere o cadastro com um leitor de QR Code (pistola ou celular):</p>
                                     <ul class="small pl-3 mb-2">

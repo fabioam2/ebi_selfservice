@@ -81,6 +81,12 @@ function db_buscar_usuario_por_email(string $email): ?array {
     return $stmt->fetch() ?: null;
 }
 
+function db_listar_usuarios_por_email(string $email): array {
+    $stmt = central_db()->prepare('SELECT * FROM ss_users WHERE lower(email) = lower(?) ORDER BY created_at DESC');
+    $stmt->execute([$email]);
+    return $stmt->fetchAll() ?: [];
+}
+
 function db_buscar_usuario_por_id(string $user_id): ?array {
     $stmt = central_db()->prepare('SELECT * FROM ss_users WHERE user_id = ? LIMIT 1');
     $stmt->execute([$user_id]);
