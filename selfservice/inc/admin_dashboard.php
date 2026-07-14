@@ -52,6 +52,43 @@
     </div>
 </div>
 
+<!-- Cards EBI — cadastros do dia de todas as instâncias -->
+<?php
+$_dash_ebi_hoje = [];
+if (function_exists('db_stats_totais_hoje')) {
+    try { $_dash_ebi_hoje = db_stats_totais_hoje(); } catch (Throwable $_) {}
+}
+?>
+<div class="row">
+    <div class="col-md-4">
+        <div class="card stats-card primary">
+            <div class="text-center">
+                <i class="fas fa-baby icon"></i>
+                <h3 class="mb-0"><?php echo number_format((int)($_dash_ebi_hoje['cadastros_hoje'] ?? 0)); ?></h3>
+                <p class="mb-0">Cadastros EBI Hoje</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stats-card success">
+            <div class="text-center">
+                <i class="fas fa-print icon"></i>
+                <h3 class="mb-0"><?php echo number_format((int)($_dash_ebi_hoje['impressoes_hoje'] ?? 0)); ?></h3>
+                <p class="mb-0">Pulseiras Impressas Hoje</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card stats-card warning">
+            <div class="text-center">
+                <i class="fas fa-sign-out-alt icon"></i>
+                <h3 class="mb-0"><?php echo number_format((int)($_dash_ebi_hoje['saidas_hoje'] ?? 0)); ?></h3>
+                <p class="mb-0">Saídas Registradas Hoje</p>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Linha 2 de Estatísticas -->
 <div class="row">
     <div class="col-md-3">

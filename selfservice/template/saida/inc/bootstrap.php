@@ -23,7 +23,7 @@ $data_file_path = $baseDir . $config['GERAL']['ARQUIVO_DADOS'];
 define('ARQUIVO_DADOS', $data_file_path);
 define('DELIMITADOR', $config['GERAL']['DELIMITADOR']);
 define('MAX_BACKUPS', $config['GERAL']['MAX_BACKUPS']);
-define('SENHA_PAINEL', $config['SEGURANCA']['SENHA_PAINEL'] ?? 'MudeEstaSenha@123');
+define('SENHA_PAINEL', $config['SEGURANCA']['SENHA_PAINEL'] ?? 'Senha123!');
 define('TEMPO_SESSAO', (int)($config['SEGURANCA']['TEMPO_SESSAO'] ?? 1800));
 define('MAX_TENTATIVAS_LOGIN', (int)($config['SEGURANCA']['MAX_TENTATIVAS_LOGIN'] ?? 5));
 define('TEMPO_BLOQUEIO', (int)($config['SEGURANCA']['TEMPO_BLOQUEIO'] ?? 300));

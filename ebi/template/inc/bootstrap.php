@@ -1,56 +1,87 @@
 <?php
 /**
  * Bootstrap: carrega configuração, constantes, sessão e helpers.
- * Assume que este arquivo está em template/inc/, config.ini em template/.
+ *
+ * Suporta dois modos de operação:
+ *  1. Modo template direto  — config.ini em __DIR__/../config.ini
+ *  2. Modo thin stub        — INSTANCE_DIR definido pelo stub; config.ini em INSTANCE_DIR/config.ini
+ *
+ * Após este arquivo, ebi_db() retorna o PDO da instância.
  */
 
-$config_file = __DIR__ . '/../config.ini';
+// ── Localizar a raiz da instância ────────────────────────────────────────────
+$_ebi_instance_root = defined('INSTANCE_DIR') ? INSTANCE_DIR : dirname(__DIR__);
+
+$config_file = $_ebi_instance_root . '/config.ini';
 if (!file_exists($config_file)) {
-    die("Erro: Arquivo de configuração não encontrado em: " . htmlspecialchars($config_file));
+    die('Erro: config.ini não encontrado em: ' . htmlspecialchars($config_file));
 }
 
 $config = parse_ini_file($config_file, true, INI_SCANNER_TYPED);
 
 if (!isset($config['GERAL'], $config['SEGURANCA'], $config['IMPRESSORA_ZPL'])) {
-    die("Erro: Falta uma ou mais seções ([GERAL], [SEGURANCA], [IMPRESSORA_ZPL]) no arquivo de configuração.");
+    die('Erro: Seções obrigatórias ([GERAL], [SEGURANCA], [IMPRESSORA_ZPL]) ausentes no config.ini.');
 }
 
-$baseDir = dirname(__DIR__);
-$data_file_path = $baseDir . $config['GERAL']['ARQUIVO_DADOS'];
-define('ARQUIVO_DADOS', $data_file_path);
-define('DELIMITADOR', $config['GERAL']['DELIMITADOR']);
-define('MAX_BACKUPS', $config['GERAL']['MAX_BACKUPS']);
-define('NUM_LINHAS_FORMULARIO_CADASTRO', $config['GERAL']['NUM_LINHAS_FORMULARIO_CADASTRO']);
-define('NUM_CAMPOS_POR_LINHA_NO_ARQUIVO', $config['GERAL']['NUM_CAMPOS_POR_LINHA_NO_ARQUIVO']);
+// ── Constantes de banco de dados ─────────────────────────────────────────────
+$_ebi_data_dir = $_ebi_instance_root . '/data';
 
-define('SENHA_ADMIN_HASH', (string)($config['SEGURANCA']['SENHA_ADMIN_HASH'] ?? ''));
-define('SENHA_ADMIN_REAL', (string)($config['SEGURANCA']['SENHA_ADMIN_REAL'] ?? '')); // legado (texto plano)
-define('SENHA_LOGIN', SENHA_ADMIN_REAL); // compat legado
+define('DB_INSTANCE_PATH', $_ebi_data_dir . '/instance.db');
+define('ARQUIVO_DADOS',    $_ebi_data_dir . '/cadastro_criancas.txt'); // compat legado
+
+// Caminho para o BD central: a profundidade depende do modo de operação.
+// Template (ebi/template/):     2 dirname() → raiz do projeto
+// Instância (ebi/i/user_XXX/): 3 dirname() → raiz do projeto
+$_ebi_central_base = defined('INSTANCE_DIR')
+    ? dirname(dirname(dirname($_ebi_instance_root)))  // ebi/i/user_XXX/ → ebi/i/ → ebi/ → raiz
+    : dirname(dirname($_ebi_instance_root));           // ebi/template/   → ebi/   → raiz
+define('CENTRAL_DB_PATH', $_ebi_central_base . '/selfservice/data/ebi.db');
+
+// Identificação da instância para propagar stats ao BD central
+$_ebi_info_usuario = $config['INFO_USUARIO'] ?? [];
+if (!defined('INSTANCE_USER_ID')) {
+    define('INSTANCE_USER_ID', (string)($_ebi_info_usuario['USER_ID'] ?? ''));
+}
+if (!defined('INSTANCE_CIDADE')) {
+    define('INSTANCE_CIDADE', (string)($_ebi_info_usuario['CIDADE'] ?? ''));
+}
+if (!defined('INSTANCE_COMUM')) {
+    define('INSTANCE_COMUM', (string)($_ebi_info_usuario['COMUM'] ?? ''));
+}
+
+// ── Constantes gerais ─────────────────────────────────────────────────────────
+define('DELIMITADOR',                   $config['GERAL']['DELIMITADOR']             ?? '|');
+define('MAX_BACKUPS',                   $config['GERAL']['MAX_BACKUPS']              ?? 10);
+define('NUM_LINHAS_FORMULARIO_CADASTRO',$config['GERAL']['NUM_LINHAS_FORMULARIO_CADASTRO'] ?? 5);
+define('NUM_CAMPOS_POR_LINHA_NO_ARQUIVO',$config['GERAL']['NUM_CAMPOS_POR_LINHA_NO_ARQUIVO'] ?? 8);
+
+// ── Constantes de segurança ───────────────────────────────────────────────────
+define('SENHA_ADMIN_HASH',  (string)($config['SEGURANCA']['SENHA_ADMIN_HASH']  ?? ''));
+define('SENHA_ADMIN_REAL',  (string)($config['SEGURANCA']['SENHA_ADMIN_REAL']  ?? '')); // legado
+define('SENHA_LOGIN',        SENHA_ADMIN_REAL);
 define('CAMINHO_CONFIG_INI', $config_file);
 
-define('PRINTER_NAME', $config['IMPRESSORA_ZPL']['PRINTER_NAME'] ?? 'ZDesigner 105SL');
-define('PALAVRA_CONTADOR_COMUM', $config['IMPRESSORA_ZPL']['PALAVRA_CONTADOR_COMUM'] ?? 'bonfim');
-define('LISTA_PALAVRAS_CONTADOR_COMUM', $config['IMPRESSORA_ZPL']['LISTA_PALAVRAS_CONTADOR_COMUM'] ?? 'parque, parqui, par que');
-define('TAMPULSEIRA', $config['IMPRESSORA_ZPL']['TAMPULSEIRA']);
-define('DOTS', $config['IMPRESSORA_ZPL']['DOTS']);
-define('FECHO', $config['IMPRESSORA_ZPL']['FECHO']);
-define('FECHOINI', $config['IMPRESSORA_ZPL']['FECHOINI'] ?? 1);
-define('PULSEIRAUTIL', (TAMPULSEIRA - FECHO) * DOTS);
+// ── Constantes da impressora ZPL ──────────────────────────────────────────────
+define('PRINTER_NAME',                 $config['IMPRESSORA_ZPL']['PRINTER_NAME']                  ?? 'ZDesigner 105SL');
+define('PALAVRA_CONTADOR_COMUM',       $config['IMPRESSORA_ZPL']['PALAVRA_CONTADOR_COMUM']         ?? 'bonfim');
+define('LISTA_PALAVRAS_CONTADOR_COMUM',$config['IMPRESSORA_ZPL']['LISTA_PALAVRAS_CONTADOR_COMUM'] ?? '');
+define('TAMPULSEIRA',                  $config['IMPRESSORA_ZPL']['TAMPULSEIRA']);
+define('DOTS',                         $config['IMPRESSORA_ZPL']['DOTS']);
+define('FECHO',                        $config['IMPRESSORA_ZPL']['FECHO']);
+define('FECHOINI',                     $config['IMPRESSORA_ZPL']['FECHOINI'] ?? 1);
+define('PULSEIRAUTIL',                 (TAMPULSEIRA - FECHO) * DOTS);
+define('URL_IMPRESSORA',               rtrim($config['IMPRESSORA_ZPL']['URL_IMPRESSORA'] ?? 'http://127.0.0.1:9100/write', '/'));
 
-$urlImpressora = $config['IMPRESSORA_ZPL']['URL_IMPRESSORA'] ?? 'http://127.0.0.1:9100/write';
-define('URL_IMPRESSORA', rtrim($urlImpressora, '/'));
-
-// Timeout de sessão configurável
-$tempoSessao = $config['SEGURANCA']['TEMPO_SESSAO'] ?? 1800;
-define('TEMPO_SESSAO', (int)$tempoSessao);
+// ── Sessão ────────────────────────────────────────────────────────────────────
+$_ebi_tempo_sessao = (int)($config['SEGURANCA']['TEMPO_SESSAO'] ?? 1800);
+define('TEMPO_SESSAO', $_ebi_tempo_sessao);
 
 if (session_status() === PHP_SESSION_NONE) {
-    // Hardening de cookie da sessão
     $cookieParams = [
         'lifetime' => 0,
-        'path' => '/',
-        'domain' => '',
-        'secure' => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
+        'path'     => '/',
+        'domain'   => '',
+        'secure'   => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
         'httponly' => true,
         'samesite' => 'Lax',
     ];
@@ -59,13 +90,14 @@ if (session_status() === PHP_SESSION_NONE) {
     } else {
         session_set_cookie_params(
             $cookieParams['lifetime'], $cookieParams['path'],
-            $cookieParams['domain'], $cookieParams['secure'], $cookieParams['httponly']
+            $cookieParams['domain'],   $cookieParams['secure'],
+            $cookieParams['httponly']
         );
     }
     session_start();
 }
 
-// Headers de segurança HTTP (best-effort; só envia se ainda não há saída)
+// ── Headers de segurança HTTP ─────────────────────────────────────────────────
 if (!headers_sent()) {
     header('X-Content-Type-Options: nosniff');
     header('X-Frame-Options: SAMEORIGIN');
@@ -77,7 +109,7 @@ if (!headers_sent()) {
     }
 }
 
-// Verificar timeout de sessão
+// ── Timeout de sessão ─────────────────────────────────────────────────────────
 if (isset($_SESSION['logado']) && $_SESSION['logado'] === true) {
     if (isset($_SESSION['ultimo_acesso']) && (time() - $_SESSION['ultimo_acesso']) > TEMPO_SESSAO) {
         $_SESSION['logado'] = false;
@@ -88,19 +120,21 @@ if (isset($_SESSION['logado']) && $_SESSION['logado'] === true) {
     }
 }
 
-// Atualizar timestamp de último acesso da instância
-$lastAccessFile = dirname(dirname(ARQUIVO_DADOS)) . '/.lastaccess';
-@file_put_contents($lastAccessFile, time());
+// ── Timestamp de último acesso da instância ───────────────────────────────────
+@file_put_contents($_ebi_instance_root . '/.lastaccess', time());
+
+// ── Funções utilitárias ───────────────────────────────────────────────────────
 
 function sanitize_for_html($string) {
     return htmlspecialchars(trim((string)($string ?? '')), ENT_QUOTES, 'UTF-8');
 }
 
 function sanitize_for_file($string) {
-    return str_replace(DELIMITADOR, '-', trim($string ?? ''));
+    return str_replace(defined('DELIMITADOR') ? DELIMITADOR : '|', '-', trim($string ?? ''));
 }
 
-// --- CSRF ---
+// ── CSRF ──────────────────────────────────────────────────────────────────────
+
 function csrf_token() {
     if (empty($_SESSION['csrf_token'])) {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
@@ -122,47 +156,30 @@ function csrf_validate() {
     }
 }
 
-/** Regenera o token após login (opcional, evita fixação). */
 function csrf_regenerate() {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
-/**
- * Verifica uma senha (texto plano) contra as credenciais configuradas.
- * Aceita hash bcrypt em SENHA_ADMIN_HASH; como fallback compara com SENHA_ADMIN_REAL
- * (modo legado). Se o legado for usado, migra automaticamente para hash gravando no config.ini.
- *
- * @param string $senhaDigitada
- * @return bool
- */
-function verificar_senha_admin($senhaDigitada) {
-    $senhaDigitada = (string)$senhaDigitada;
-    if ($senhaDigitada === '') return false;
+// ── Verificação de senha ──────────────────────────────────────────────────────
 
-    $hash = defined('SENHA_ADMIN_HASH') ? SENHA_ADMIN_HASH : '';
+function verificar_senha_admin(string $senhaDigitada): bool {
+    if ($senhaDigitada === '') return false;
+    $hash  = defined('SENHA_ADMIN_HASH') ? SENHA_ADMIN_HASH : '';
     if ($hash !== '' && preg_match('/^\$2[aby]\$/', $hash)) {
         return password_verify($senhaDigitada, $hash);
     }
-
-    // Legado — texto plano (somente se o admin não migrou ainda).
     $plain = defined('SENHA_ADMIN_REAL') ? SENHA_ADMIN_REAL : '';
     if ($plain !== '' && hash_equals($plain, $senhaDigitada)) {
-        // Migra automaticamente para hash.
         migrar_senha_legada_para_hash('SENHA_ADMIN_HASH', 'SENHA_ADMIN_REAL', $senhaDigitada);
         return true;
     }
     return false;
 }
 
-/**
- * Verifica uma senha para o painel/saída (similar ao admin, mas usa SENHA_PAINEL_HASH).
- */
-function verificar_senha_painel($senhaDigitada) {
-    $senhaDigitada = (string)$senhaDigitada;
+function verificar_senha_painel(string $senhaDigitada): bool {
     if ($senhaDigitada === '') return false;
-
     global $config;
-    $hash = (string)($config['SEGURANCA']['SENHA_PAINEL_HASH'] ?? '');
+    $hash  = (string)($config['SEGURANCA']['SENHA_PAINEL_HASH'] ?? '');
     if ($hash !== '' && preg_match('/^\$2[aby]\$/', $hash)) {
         return password_verify($senhaDigitada, $hash);
     }
@@ -174,24 +191,16 @@ function verificar_senha_painel($senhaDigitada) {
     return false;
 }
 
-/**
- * Grava hash bcrypt no config.ini e limpa a chave legada de texto plano.
- * Operação best-effort: se não houver permissão de escrita, apenas ignora.
- */
-function migrar_senha_legada_para_hash($chaveHash, $chaveLegado, $senhaPlana) {
+function migrar_senha_legada_para_hash(string $chaveHash, string $chaveLegado, string $senhaPlana): void {
     if (!defined('CAMINHO_CONFIG_INI')) return;
     $arq = CAMINHO_CONFIG_INI;
     if (!is_writable($arq)) return;
-
     $novoHash = password_hash($senhaPlana, PASSWORD_BCRYPT, ['cost' => 12]);
     $conteudo = file_get_contents($arq);
     if ($conteudo === false) return;
-
-    // Atualiza/insere chaves dentro do bloco [SEGURANCA]
-    $linhas = preg_split("/\r?\n/", $conteudo);
+    $linhas    = preg_split("/\r?\n/", $conteudo);
     $dentroSeg = false;
-    $setHash = false;
-    $setLegado = false;
+    $setHash   = false;
     foreach ($linhas as $i => $ln) {
         if (preg_match('/^\s*\[([^\]]+)\]/', $ln, $m)) {
             if ($dentroSeg && !$setHash) {
@@ -204,15 +213,13 @@ function migrar_senha_legada_para_hash($chaveHash, $chaveLegado, $senhaPlana) {
         if ($dentroSeg) {
             if (preg_match('/^\s*' . preg_quote($chaveHash, '/') . '\s*=/', $ln)) {
                 $linhas[$i] = $chaveHash . ' = "' . $novoHash . '"';
-                $setHash = true;
+                $setHash    = true;
             } elseif (preg_match('/^\s*' . preg_quote($chaveLegado, '/') . '\s*=/', $ln)) {
                 $linhas[$i] = $chaveLegado . ' = ""';
-                $setLegado = true;
             }
         }
     }
     if (!$setHash) {
-        // Se não havia seção [SEGURANCA], anexa uma.
         $linhas[] = '[SEGURANCA]';
         $linhas[] = $chaveHash . ' = "' . $novoHash . '"';
     }
@@ -220,35 +227,31 @@ function migrar_senha_legada_para_hash($chaveHash, $chaveLegado, $senhaPlana) {
     @chmod($arq, 0600);
 }
 
-/** Obtém a versão do sistema baseada no último commit git ou data de modificação. */
-function obter_versao_sistema() {
+// ── Versão do sistema ─────────────────────────────────────────────────────────
+
+function obter_versao_sistema(): string {
     static $versao = null;
-
-    if ($versao !== null) {
-        return $versao;
-    }
-
-    // Tenta obter data do último commit git
-    $gitDir = dirname(dirname(__DIR__));
+    if ($versao !== null) return $versao;
+    // Raiz da instância (evita capturar $_ebi_instance_root do escopo externo)
+    $instanceRoot = defined('INSTANCE_DIR') ? INSTANCE_DIR : dirname(dirname(__DIR__));
+    // Raiz do projeto (3 níveis acima de qualquer modo)
+    // Template: ebi/template/inc/ → ebi/template/ → ebi/ → raiz
+    // Instância: ebi/i/user_XXX/  → ebi/i/        → ebi/ → raiz
+    $gitDir = defined('INSTANCE_DIR')
+        ? dirname(dirname(dirname(INSTANCE_DIR)))
+        : dirname(dirname(dirname(__DIR__)));
     if (is_dir($gitDir . '/.git')) {
-        $comando = "cd " . escapeshellarg($gitDir) . " && git log -1 --format=%cd --date=format:'%Y%m%d%H%M' 2>/dev/null";
-        $output = @shell_exec($comando);
-        if ($output && preg_match('/^\d{12}$/', trim($output))) {
-            $versao = trim($output);
-            return $versao;
+        $cmd = "cd " . escapeshellarg($gitDir) . " && git log -1 --format=%cd --date=format:'%Y%m%d%H%M' 2>/dev/null";
+        $out = @shell_exec($cmd);
+        if ($out && preg_match('/^\d{12}$/', trim($out))) {
+            return $versao = trim($out);
         }
     }
-
-    // Fallback: usa data de modificação do arquivo index.php
-    $indexFile = dirname(__DIR__) . '/index.php';
+    $indexFile = $instanceRoot . '/index.php';
     if (file_exists($indexFile)) {
-        $versao = date('YmdHi', filemtime($indexFile));
-        return $versao;
+        return $versao = date('YmdHi', filemtime($indexFile));
     }
-
-    // Fallback final: data atual
-    $versao = date('YmdHi');
-    return $versao;
+    return $versao = date('YmdHi');
 }
 
 define('VERSAO_SISTEMA', obter_versao_sistema());

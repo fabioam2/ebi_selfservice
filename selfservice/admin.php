@@ -45,10 +45,12 @@ require_once __DIR__ . '/inc/paths.php';
 // Carregar dependências
 require_once __DIR__ . '/criar_instancia.php';
 require_once __DIR__ . '/inc/user_manager.php';
+require_once __DIR__ . '/inc/db_manager.php';
 
 // Senha de administrador - hash bcrypt (gere com: php -r "echo password_hash('SuaSenha', PASSWORD_BCRYPT, ['cost'=>12]);")
 // Senha padrão de fábrica: Senha123!  — TROQUE em produção via .env (ADMIN_PASSWORD_HASH).
-$adminPasswordHash = $_ENV['ADMIN_PASSWORD_HASH'] ?? '$2y$12$BPPI8U9mvBmGP/kI0pH/n.PUkkn/cB/9qrOaePiKcVy.vitwF7VsW';
+$adminPasswordHash = (string)($_ENV['ADMIN_PASSWORD_HASH'] ?? '');
+$adminHashValido = (bool)preg_match('/^\$2[aby]\$\d{2}\$[\.\/A-Za-z0-9]{53}$/', $adminPasswordHash);
 define('SENHA_ADMIN_HASH', $adminPasswordHash);
 
 // ============================================================================
@@ -159,7 +161,9 @@ function exibirAlerta($mensagem, $tipo = 'info') {
 // ============================================================================
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
-    if (admin_csrf_validate() && password_verify($_POST['senha_admin'] ?? '', SENHA_ADMIN_HASH)) {
+    if (!$adminHashValido) {
+        $erro_login = "Configuração inválida: defina ADMIN_PASSWORD_HASH no arquivo .env.";
+    } elseif (admin_csrf_validate() && password_verify($_POST['senha_admin'] ?? '', SENHA_ADMIN_HASH)) {
         session_regenerate_id(true);
         $_SESSION['admin_logado'] = true;
         $_SESSION['admin_login_time'] = time();
@@ -245,8 +249,9 @@ if (!isset($_SESSION['admin_logado']) || $_SESSION['admin_logado'] !== true) {
                 </button>
             </form>
             <div class="text-center mt-3">
-                <small class="text-muted">EBI Self-Service v3.0</small>
+                <small class="text-muted">EBI Self-Service</small>
             </div>
+            <div class="text-center mt-2 mb-1" style="font-size:9px;color:#b0b0b0;opacity:0.6">v<?php echo defined('VERSAO_SISTEMA') ? VERSAO_SISTEMA : date('YmdHi'); ?></div>
         </div>
     </body>
     </html>
@@ -1078,6 +1083,9 @@ function processarMarkdownSimples($texto) {
                     <a class="nav-link <?php echo $page === 'users' ? 'active' : ''; ?>" href="?page=users">
                         <i class="fas fa-users"></i> Usuários
                     </a>
+                    <a class="nav-link <?php echo $page === 'stats' ? 'active' : ''; ?>" href="?page=stats">
+                        <i class="fas fa-chart-bar"></i> Estatísticas
+                    </a>
                     <a class="nav-link <?php echo $page === 'settings' ? 'active' : ''; ?>" href="?page=settings">
                         <i class="fas fa-cog"></i> Configurações
                     </a>
@@ -1121,6 +1129,9 @@ function processarMarkdownSimples($texto) {
                         break;
                     case 'settings':
                         include __DIR__ . '/inc/admin_settings.php';
+                        break;
+                    case 'stats':
+                        include __DIR__ . '/inc/admin_stats.php';
                         break;
                     default:
                         echo '<div class="alert alert-warning">Página não encontrada</div>';
@@ -1221,6 +1232,6 @@ function processarMarkdownSimples($texto) {
             setupBulkActions();
         });
     </script>
-
+    <div class="text-center mt-3 mb-2" style="font-size:9px;color:#b0b0b0;opacity:0.6">v<?php echo defined('VERSAO_SISTEMA') ? VERSAO_SISTEMA : date('YmdHi'); ?></div>
 </body>
 </html>

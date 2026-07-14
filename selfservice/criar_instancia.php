@@ -1,5 +1,32 @@
 <?php
 
+// Carrega db_instance.php do template para obter _ebi_db_init() (schema da instância)
+if (!function_exists('_ebi_db_init')) {
+    $_ebi_db_inc = defined('TEMPLATE_PATH')
+        ? TEMPLATE_PATH . '/inc/db_instance.php'
+        : dirname(__DIR__) . '/ebi/template/inc/db_instance.php';
+    require_once $_ebi_db_inc;
+}
+
+// Carrega db_manager.php para operações no banco central
+if (!function_exists('db_remover_usuario')) {
+    require_once __DIR__ . '/inc/db_manager.php';
+}
+
+/**
+ * Inicializa o schema SQLite de uma instância recém-criada.
+ * Não usa o singleton ebi_db() para evitar colisões em criações simultâneas.
+ */
+function _inicializar_instance_db(string $dbPath): void {
+    $pdo = new PDO('sqlite:' . $dbPath, null, null, [
+        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    ]);
+    $pdo->exec('PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL;');
+    _ebi_db_init($pdo);
+    @chmod($dbPath, 0600);
+}
+
 /**
  * Sanitiza valor para uso seguro em arquivos INI.
  * Remove caracteres que poderiam quebrar a estrutura do INI.
@@ -217,36 +244,37 @@ VERIFICAR_INTEGRIDADE = true
         file_put_contents($userInstanceDir . 'config.ini', $configContent);
         @chmod($userInstanceDir . 'config.ini', 0600);
 
-        // 2. Criar arquivos de dados vazios dentro de data/
-        $headerCadastro = "# Sistema de Cadastro de Crianças - $comum_safe\n";
-        $headerCadastro .= "# Criado em: " . date('Y-m-d H:i:s') . "\n";
-        $headerCadastro .= "# Formato: ID|Nome|Responsável|Telefone|Idade|Comum|StatusImpresso|Portaria|CodResp\n";
-        file_put_contents($dataDir . 'cadastro_criancas.txt', $headerCadastro);
-        file_put_contents($dataDir . 'painel_criancas.txt', $headerCadastro);
+        // 2. Inicializar banco de dados SQLite da instância
+        _inicializar_instance_db($dataDir . 'instance.db');
 
-        // 3. Copiar estrutura do template diretamente para a raiz da instância
-        //    (index.php + inc/ + views/ + saida/ + assets/ + calibrar.php)
-        $itensTemplate = ['index.php', 'calibrar.php', 'inc', 'views', 'saida', 'assets'];
-        $copyRecursive = function ($origem, $destino) use (&$copyRecursive) {
-            if (is_dir($origem)) {
-                if (!is_dir($destino)) {
-                    mkdir($destino, 0755, true);
-                }
-                foreach (scandir($origem) as $f) {
-                    if ($f === '.' || $f === '..') continue;
-                    $copyRecursive($origem . '/' . $f, $destino . '/' . $f);
-                }
-            } elseif (is_file($origem)) {
-                // Não sobrescreve o config.ini já gerado com as credenciais do usuário
-                if (basename($destino) === 'config.ini') return;
-                copy($origem, $destino);
-            }
-        };
-        foreach ($itensTemplate as $item) {
-            $origemItem = rtrim($templateDir, '/') . '/' . $item;
-            if (file_exists($origemItem)) {
-                $copyRecursive($origemItem, $userInstanceDir . $item);
-            }
+        // 3. Criar thin stubs que apontam para o código compartilhado em ebi/template/.
+        //    Stubs definem INSTANCE_DIR para que o bootstrap saiba onde ficam
+        //    config.ini e data/ desta instância específica.
+        $stubs = [
+            'index.php'    => "<?php\ndefine('INSTANCE_DIR', __DIR__);\nrequire dirname(dirname(__DIR__)) . '/template/index.php';\n",
+            'calibrar.php' => "<?php\ndefine('INSTANCE_DIR', __DIR__);\nrequire dirname(dirname(__DIR__)) . '/template/calibrar.php';\n",
+        ];
+        foreach ($stubs as $nome => $conteudo) {
+            file_put_contents($userInstanceDir . $nome, $conteudo);
+        }
+
+        // Stubs do módulo saída
+        if (!is_dir($userInstanceDir . 'saida')) {
+            mkdir($userInstanceDir . 'saida', 0755, true);
+        }
+        $saidaStubs = [
+            'index.php'        => "<?php\ndefine('INSTANCE_DIR', dirname(__DIR__));\nrequire dirname(dirname(dirname(__DIR__))) . '/template/saida/index.php';\n",
+            'painel.php'       => "<?php\ndefine('INSTANCE_DIR', dirname(__DIR__));\nrequire dirname(dirname(dirname(__DIR__))) . '/template/saida/painel.php';\n",
+            'processar_qr.php' => "<?php\ndefine('INSTANCE_DIR', dirname(__DIR__));\nrequire dirname(dirname(dirname(__DIR__))) . '/template/saida/processar_qr.php';\n",
+        ];
+        foreach ($saidaStubs as $nome => $conteudo) {
+            file_put_contents($userInstanceDir . 'saida/' . $nome, $conteudo);
+        }
+
+        // Copiar saida/index.html (redirect estático — não é PHP, não vira stub)
+        $saidaHtml = rtrim($templateDir, '/') . '/saida/index.html';
+        if (file_exists($saidaHtml)) {
+            copy($saidaHtml, $userInstanceDir . 'saida/index.html');
         }
 
         // 4. Copiar .htaccess do template (bloqueia .ini/.txt/.log/.env/.md, ocultos e .bkp.N)
@@ -544,6 +572,9 @@ function removerInstancia(string $user_id): array {
 
     try {
         rrmdir($userInstanceDir);
+
+        // Remover do banco central
+        db_remover_usuario($user_id);
 
         // Log de remoção
         $logRemocao = DATA_PATH . '/instancias_removidas.log';

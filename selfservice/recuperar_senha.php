@@ -4,7 +4,7 @@
  *
  * Fluxo:
  *  1. Usuário informa o e-mail cadastrado.
- *  2. Sistema procura em selfservice/data/selfservice_users.txt.
+ *  2. Sistema procura no banco central SQLite (ss_users).
  *  3. Se encontrar, gera nova senha temporária, atualiza o config.ini
  *     da instância e envia por e-mail.
  *  4. Para evitar enumeração de e-mails, a resposta é SEMPRE a mesma,
@@ -34,6 +34,7 @@ if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
 
 require_once __DIR__ . '/inc/rate_limit.php';
 require_once __DIR__ . '/inc/paths.php';
+require_once __DIR__ . '/inc/db_manager.php';
 require_once __DIR__ . '/criar_instancia.php';
 require_once __DIR__ . '/inc/email_manager.php';
 
@@ -67,24 +68,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $mensagem = 'Informe um e-mail válido.';
         $tipo = 'danger';
     } else {
-        // Procurar usuário em selfservice_users.txt
-        $dbFile = __DIR__ . '/data/selfservice_users.txt';
+        // Procurar usuário no banco central SQLite
         $usuario = null;
-        if (file_exists($dbFile)) {
-            $linhas = file($dbFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-            foreach ($linhas as $linha) {
-                $p = explode('|', $linha);
-                if (count($p) >= 7 && strcasecmp(trim($p[1]), $emailDigitado) === 0) {
-                    $usuario = [
-                        'user_id' => $p[0],
-                        'email'   => $p[1],
-                        'nome'    => $p[2],
-                        'cidade'  => $p[3],
-                        'comum'   => $p[4],
-                    ];
-                    break; // primeiro registro com esse e-mail
-                }
-            }
+        $row = db_buscar_usuario_por_email($emailDigitado);
+        if ($row !== null) {
+            $usuario = [
+                'user_id' => $row['user_id'],
+                'email'   => $row['email'],
+                'nome'    => $row['nome'],
+                'cidade'  => $row['cidade'],
+                'comum'   => $row['comum'],
+            ];
         }
 
         $logFile = __DIR__ . '/data/recuperacao_senha.log';
@@ -168,5 +162,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <a class="voltar" href="./">← Voltar ao cadastro</a>
+    <div style="font-size:9px;color:rgba(255,255,255,0.4);text-align:center;margin-top:12px">v<?php echo defined('VERSAO_SISTEMA') ? VERSAO_SISTEMA : date('YmdHi'); ?></div>
 </body>
 </html>

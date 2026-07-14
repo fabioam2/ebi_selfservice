@@ -1,12 +1,13 @@
 <?php
 /**
- * API JSON para Processamento de Consulta e Registro de Saídas
- * Reutiliza autenticação e configuração do EBI via bootstrap.php
+ * API JSON para consulta e registro de saídas — usa SQLite.
  */
 
 require __DIR__ . '/inc/bootstrap.php';
+require_once dirname(__DIR__) . '/inc/db_instance.php';
+require_once dirname(__DIR__) . '/inc/stats.php';
 
-// --- BLOCO DE SEGURANÇA ---
+// ── Autenticação ──────────────────────────────────────────────────────────────
 if (!isset($_SESSION['logado_saida']) || $_SESSION['logado_saida'] !== true) {
     header('Content-Type: application/json');
     http_response_code(403);
@@ -17,142 +18,92 @@ if (!isset($_SESSION['logado_saida']) || $_SESSION['logado_saida'] !== true) {
 header('Content-Type: application/json; charset=utf-8');
 
 $json_data = file_get_contents('php://input');
-$data = json_decode($json_data);
+$data      = json_decode($json_data);
 
 if (!isset($data->type)) {
     http_response_code(400);
-    echo json_encode(['status' => 'error', 'message' => 'Tipo de requisição inválida.']);
+    echo json_encode(['status' => 'error', 'message' => 'Tipo de requisição inválido.']);
     exit;
 }
 
-// --- FLUXO 1: APENAS CONSULTA DE DADOS ---
+// ── FLUXO 1: Consulta por cod_resp ────────────────────────────────────────────
 if ($data->type === 'consultar' && isset($data->codigo)) {
-    $cod_resp_procurado = trim((string)$data->codigo);
+    $cod_resp = (int)trim((string)$data->codigo);
 
-    // Validar entrada
-    if (!is_numeric($cod_resp_procurado) || $cod_resp_procurado < 1) {
+    if ($cod_resp < 1) {
         http_response_code(400);
         echo json_encode(['status' => 'error', 'message' => 'Código de responsável inválido.']);
         exit;
     }
 
-    if (!file_exists(ARQUIVO_DADOS)) {
-        http_response_code(500);
-        echo json_encode(['status' => 'error', 'message' => 'Arquivo de cadastro não encontrado.']);
-        exit;
-    }
+    $rows = db_listar_por_cod_resp($cod_resp);
 
-    $responsavel_nome = '';
-    $criancas_nomes = [];
-    $handle = fopen(ARQUIVO_DADOS, "r");
-
-    if ($handle) {
-        while (($line = fgets($handle)) !== false) {
-            // Ignorar linhas de comentário
-            if (isset($line[0]) && $line[0] === '#') {
-                continue;
-            }
-
-            $line_data = explode(DELIMITADOR, trim($line));
-
-            // Validar formato da linha (min 9 campos)
-            if (count($line_data) >= 9 && trim($line_data[8]) === $cod_resp_procurado) {
-                if (empty($responsavel_nome)) {
-                    $responsavel_nome = trim($line_data[2]);
-                }
-
-                $nome_crianca = trim($line_data[1]);
-                $idade = trim($line_data[4]);
-
-                // Formatar nome com idade
-                if (!empty($nome_crianca)) {
-                    $criancas_nomes[] = $nome_crianca . ' [' . $idade . ' anos]';
-                }
-            }
-        }
-        fclose($handle);
-    }
-
-    if (empty($criancas_nomes)) {
+    if (empty($rows)) {
         http_response_code(404);
-        echo json_encode(['status' => 'error', 'message' => 'Código de responsável (' . sanitize_for_html($cod_resp_procurado) . ') não encontrado.']);
+        echo json_encode(['status' => 'error', 'message' => "Código {$cod_resp} não encontrado."]);
         exit;
+    }
+
+    $responsavel_nome = $rows[0]['nome_responsavel'] ?? '';
+    $criancas_nomes   = [];
+    foreach ($rows as $r) {
+        $nome = trim($r['nome_crianca'] ?? '');
+        if ($nome !== '') {
+            $criancas_nomes[] = $nome . ' [' . $r['idade'] . ' anos]';
+        }
     }
 
     echo json_encode([
-        'status' => 'success_lookup',
+        'status'      => 'success_lookup',
         'responsavel' => sanitize_for_html($responsavel_nome),
-        'criancas' => array_map('sanitize_for_html', $criancas_nomes),
-        'codResp' => sanitize_for_html($cod_resp_procurado)
+        'criancas'    => array_map('sanitize_for_html', $criancas_nomes),
+        'codResp'     => $cod_resp,
     ]);
     exit;
 }
 
-// --- FLUXO 2: REGISTRO DOS DADOS APÓS CONFIRMAÇÃO ---
-if ($data->type === 'registrar' && isset($data->registroData) && isset($data->portaria)) {
+// ── FLUXO 2: Registro de saída ────────────────────────────────────────────────
+if ($data->type === 'registrar' && isset($data->registroData, $data->portaria)) {
     $registroData = trim((string)$data->registroData);
-    $portaria = trim((string)$data->portaria);
+    $portaria     = strtoupper(trim((string)$data->portaria));
 
-    // Validar formato
-    if (empty($registroData) || empty($portaria)) {
+    if (empty($registroData) || !preg_match('/^[A-Z]$/', $portaria)) {
         http_response_code(400);
-        echo json_encode(['status' => 'error', 'message' => 'Dados incompletos para registro.']);
-        exit;
-    }
-
-    // Validar portaria (deve ser uma única letra)
-    if (!preg_match('/^[A-Z]$/', $portaria)) {
-        http_response_code(400);
-        echo json_encode(['status' => 'error', 'message' => 'Portaria inválida.']);
+        echo json_encode(['status' => 'error', 'message' => 'Dados incompletos ou portaria inválida.']);
         exit;
     }
 
     $partes = explode(';', $registroData);
-
-    if (count($partes) < 3) {
+    if (count($partes) < 2) {
         http_response_code(400);
-        echo json_encode(['status' => 'error', 'message' => 'Formato dos dados para registro inválido.']);
+        echo json_encode(['status' => 'error', 'message' => 'Formato dos dados inválido.']);
         exit;
     }
 
-    $codigo_qr = trim($partes[0]);
-    $responsavel = trim($partes[1]);
-    $criancas = array_slice($partes, 2);
+    $cod_resp   = (int)trim($partes[0]);
+    $responsavel = sanitize_for_file(trim($partes[1]));
 
-    // Validar código
-    if (!is_numeric($codigo_qr) || $codigo_qr < 1) {
+    if ($cod_resp < 1) {
         http_response_code(400);
         echo json_encode(['status' => 'error', 'message' => 'Código de responsável inválido.']);
         exit;
     }
 
-    // SALVA OS DADOS
-    $timestamp = time();
-    $linhas_para_salvar = '';
-    $criancas_registradas = 0;
+    try {
+        db_inserir_saida($cod_resp, $responsavel, $portaria);
+        stats_on_saida($portaria);
 
-    foreach ($criancas as $crianca) {
-        $crianca_limpa = trim($crianca);
-        if (!empty($crianca_limpa)) {
-            // Sanitizar dados antes de salvar
-            $linhas_para_salvar .= $timestamp . ';' . sanitize_for_file($codigo_qr) . ';' . sanitize_for_file($responsavel) . ';' . sanitize_for_file($crianca_limpa) . ';' . sanitize_for_file($portaria) . PHP_EOL;
-            $criancas_registradas++;
-        }
-    }
+        $nomes = array_slice($partes, 2);
+        $criancasRegistradas = count(array_filter(array_map('trim', $nomes)));
 
-    if (!empty($linhas_para_salvar)) {
-        if (@file_put_contents(ARQUIVO_SAIDAS, $linhas_para_salvar, FILE_APPEND | LOCK_EX) !== false) {
-            echo json_encode([
-                'status' => 'success_registered',
-                'message' => $criancas_registradas . ' criança(s) registrada(s) para ' . sanitize_for_html($responsavel) . '.'
-            ]);
-        } else {
-            http_response_code(500);
-            echo json_encode(['status' => 'error', 'message' => 'Erro ao salvar os dados. Verifique permissões do arquivo.']);
-        }
-    } else {
-        http_response_code(400);
-        echo json_encode(['status' => 'error', 'message' => 'Nenhuma criança válida para registro.']);
+        echo json_encode([
+            'status'  => 'success_registered',
+            'message' => $criancasRegistradas . ' criança(s) registrada(s) para ' . sanitize_for_html($responsavel) . '.',
+        ]);
+    } catch (PDOException $e) {
+        http_response_code(500);
+        echo json_encode(['status' => 'error', 'message' => 'Erro ao salvar saída.']);
+        error_log('[EBI Saída] ' . $e->getMessage());
     }
     exit;
 }

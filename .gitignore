@@ -37,6 +37,8 @@ composer.phar
 # Dados do sistema
 /selfservice/data/*.txt
 /selfservice/data/*.log
+/selfservice/data/*.db
+/ebi/i/**/data/*.db
 !/selfservice/data/.gitkeep
 
 # Backups

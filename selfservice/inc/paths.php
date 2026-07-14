@@ -120,3 +120,9 @@ foreach ($directories as $dir) {
         @mkdir($dir, 0755, true);
     }
 }
+
+if (!defined('VERSAO_SISTEMA')) {
+    $_vg = @shell_exec('git -C ' . escapeshellarg(PROJECT_ROOT) . " log -1 --format=%cd --date=format:'%Y%m%d%H%M' 2>/dev/null");
+    define('VERSAO_SISTEMA', ($_vg && preg_match('/^\d{12}$/', trim($_vg))) ? trim($_vg) : date('YmdHi'));
+    unset($_vg);
+}

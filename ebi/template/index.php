@@ -1,127 +1,131 @@
 <?php
 /**
- * Entry point - Cadastro de Crianças (EBI).
- * Config e sessão em inc/bootstrap; auth em inc/auth; ações POST em inc/actions; view em views/main.
+ * Entry point — Cadastro de Crianças (EBI).
+ * Suporta modo direto (config.ini em __DIR__) e modo thin stub (INSTANCE_DIR pré-definido).
  */
 
 require __DIR__ . '/inc/bootstrap.php';
 require __DIR__ . '/inc/auth.php';
 require __DIR__ . '/inc/funcoes.php';
 
-// Preview de backup (GET) — apenas logado
-if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['acao']) && $_GET['acao'] === 'preview_backup' && isset($_GET['arquivo'])) {
-    $nomeArquivoBackup = basename((string)$_GET['arquivo']);
-    $diretorioBase = realpath(dirname(ARQUIVO_DADOS));
-    $nomeBase = basename(ARQUIVO_DADOS);
+// ── Preview de backup (GET) ───────────────────────────────────────────────────
+if ($_SERVER['REQUEST_METHOD'] === 'GET'
+    && isset($_GET['acao']) && $_GET['acao'] === 'preview_backup'
+    && isset($_GET['arquivo'])
+) {
+    $backupBasename = basename((string)$_GET['arquivo']);
+    $dbBase         = DB_INSTANCE_PATH;
+    $dbDir          = realpath(dirname($dbBase));
 
-    // Regex restrito: <nome_base>.bkp.<N>
-    $regexPermitido = '/^' . preg_quote($nomeBase, '/') . '\.bkp\.\d{1,4}$/';
+    // O nome deve ser instance.db.bkp.N
+    if ($dbDir !== false
+        && preg_match('/^instance\.db\.bkp\.\d{1,4}$/', $backupBasename)
+    ) {
+        $backupFull = $dbDir . DIRECTORY_SEPARATOR . $backupBasename;
+        $realBackup = realpath($backupFull);
 
-    $caminhoCompletoBackup = ($diretorioBase !== false)
-        ? $diretorioBase . DIRECTORY_SEPARATOR . $nomeArquivoBackup
-        : '';
+        if ($realBackup !== false && strpos($realBackup, $dbDir . DIRECTORY_SEPARATOR) === 0 && is_file($realBackup)) {
+            try {
+                $bkPdo = new PDO('sqlite:' . $realBackup, null, null, [
+                    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+                    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                ]);
+                $rows = $bkPdo->query(
+                    'SELECT id, nome_crianca, nome_responsavel, idade, comum FROM cadastros ORDER BY id DESC LIMIT 3'
+                )->fetchAll();
 
-    $real = $caminhoCompletoBackup !== '' ? realpath($caminhoCompletoBackup) : false;
-
-    $valido = preg_match($regexPermitido, $nomeArquivoBackup)
-        && $real !== false
-        && $diretorioBase !== false
-        && strpos($real, $diretorioBase . DIRECTORY_SEPARATOR) === 0
-        && is_file($real);
-
-    if ($valido) {
-        $linhas = file($real, FILE_IGNORE_NEW_LINES);
-        if ($linhas !== false) {
-            $ultimasLinhas = array_slice($linhas, -3);
-            header('Content-Type: text/plain; charset=utf-8');
-            echo implode("\n", $ultimasLinhas);
-        } else {
-            http_response_code(500);
-            echo "Erro ao ler o arquivo de backup.";
+                header('Content-Type: text/plain; charset=utf-8');
+                foreach (array_reverse($rows) as $r) {
+                    echo $r['id'] . '|' . $r['nome_crianca'] . '|' . $r['nome_responsavel']
+                         . '|' . $r['idade'] . '|' . $r['comum'] . "\n";
+                }
+            } catch (PDOException $e) {
+                http_response_code(500);
+                echo 'Erro ao ler backup SQLite.';
+            }
+            exit;
         }
-    } else {
-        http_response_code(404);
-        echo "Arquivo de backup não encontrado ou inválido.";
     }
+
+    http_response_code(404);
+    echo 'Arquivo de backup não encontrado ou inválido.';
     exit;
 }
 
-$todosOsCadastros = lerTodosCadastros(ARQUIVO_DADOS);
+// ── Carrega todos os cadastros (SQLite) ───────────────────────────────────────
+$todosOsCadastros      = lerTodosCadastros();
 $totalDeCadastrosGeral = count($todosOsCadastros);
 
 $totalCriancas3Anos = 0;
-foreach ($todosOsCadastros as $cadastro) {
-    if (isset($cadastro['idade']) && in_array(trim($cadastro['idade']), ['3', '03'], true)) {
+foreach ($todosOsCadastros as $c) {
+    if (in_array(trim((string)($c['idade'] ?? '')), ['3', '03'], true)) {
         $totalCriancas3Anos++;
     }
 }
 
-// Contador "Comum" - usa PALAVRA_CONTADOR_COMUM com variações similares + lista adicional
+// ── Contador "Comum destaque" ─────────────────────────────────────────────────
 $palavrasChaveComumDestaque = [];
 $palavraBase = defined('PALAVRA_CONTADOR_COMUM') ? PALAVRA_CONTADOR_COMUM : '';
-if (!empty($palavraBase)) {
+if ($palavraBase !== '') {
     $palavrasChaveComumDestaque = gerarVariacoesPalavra($palavraBase);
 }
 $listaPalavrasAdicionais = defined('LISTA_PALAVRAS_CONTADOR_COMUM') ? LISTA_PALAVRAS_CONTADOR_COMUM : '';
-if (!empty($listaPalavrasAdicionais)) {
-    $extras = array_map('trim', explode(',', $listaPalavrasAdicionais));
-    foreach ($extras as $extra) {
-        if ($extra !== '') {
-            $extraLower = strtolower($extra);
-            if (!in_array($extraLower, $palavrasChaveComumDestaque)) {
-                $palavrasChaveComumDestaque[] = $extraLower;
-            }
+if ($listaPalavrasAdicionais !== '') {
+    foreach (array_map('trim', explode(',', $listaPalavrasAdicionais)) as $extra) {
+        if ($extra !== '' && !in_array(strtolower($extra), $palavrasChaveComumDestaque)) {
+            $palavrasChaveComumDestaque[] = strtolower($extra);
         }
     }
 }
-$nomeComumDestaque = 'Comum'; // Nome fixo
+$nomeComumDestaque  = defined('PALAVRA_CONTADOR_COMUM') ? ucfirst(PALAVRA_CONTADOR_COMUM) : '';
 $totalComumDestaque = 0;
-if (!empty($palavrasChaveComumDestaque)) {
-    foreach ($todosOsCadastros as $cadastro) {
-        if (isset($cadastro['comum']) && trim($cadastro['comum']) !== '') {
-            $comumLower = strtolower(trim($cadastro['comum']));
-            foreach ($palavrasChaveComumDestaque as $palavra) {
-                if (stripos($comumLower, $palavra) !== false) {
-                    $totalComumDestaque++;
-                    break;
-                }
+foreach ($todosOsCadastros as $c) {
+    $comumLower = strtolower(trim($c['comum'] ?? ''));
+    if ($comumLower !== '') {
+        foreach ($palavrasChaveComumDestaque as $palavra) {
+            if (stripos($comumLower, $palavra) !== false) {
+                $totalComumDestaque++;
+                break;
             }
         }
     }
 }
 
-$mensagemSucesso = $_SESSION['mensagemSucesso'] ?? '';
-$mensagemErro = $_SESSION['mensagemErro'] ?? '';
+// ── Mensagens e flags de sessão ───────────────────────────────────────────────
+$mensagemSucesso      = $_SESSION['mensagemSucesso']      ?? '';
+$mensagemErro         = $_SESSION['mensagemErro']         ?? '';
 $exibirModalRecuperacao = $_SESSION['exibirModalRecuperacao'] ?? false;
-$scriptsImpressao = $_SESSION['scripts_impressao'] ?? '';
+$scriptsImpressao     = $_SESSION['scripts_impressao']    ?? '';
 
-unset($_SESSION['mensagemSucesso'], $_SESSION['mensagemErro'], $_SESSION['exibirModalRecuperacao'], $_SESSION['scripts_impressao']);
+unset(
+    $_SESSION['mensagemSucesso'],
+    $_SESSION['mensagemErro'],
+    $_SESSION['exibirModalRecuperacao'],
+    $_SESSION['scripts_impressao']
+);
 
 $backupsDisponiveis = [];
 if ($exibirModalRecuperacao) {
-    $backupsDisponiveis = listarBackups(ARQUIVO_DADOS);
+    $backupsDisponiveis = listarBackups();
 }
 
 $focarPrimeiroCampoAposCadastro = false;
-if (isset($_SESSION['cadastro_realizado_sucesso']) && $_SESSION['cadastro_realizado_sucesso']) {
+if (!empty($_SESSION['cadastro_realizado_sucesso'])) {
     $focarPrimeiroCampoAposCadastro = true;
     unset($_SESSION['cadastro_realizado_sucesso']);
 }
 
 $focarAposAcao = false;
-if (isset($_SESSION['focar_apos_acao']) && $_SESSION['focar_apos_acao']) {
+if (!empty($_SESSION['focar_apos_acao'])) {
     $focarAposAcao = true;
     unset($_SESSION['focar_apos_acao']);
 }
 
+// ── Processamento de POST ─────────────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_validate();
     require __DIR__ . '/inc/actions.php';
     exit;
-}
-
-if (!empty($mensagemErro) && !isset($_SESSION['focar_apos_acao']) && !isset($_SESSION['cadastro_realizado_sucesso'])) {
-    $_SESSION['focar_apos_acao'] = true;
 }
 
 require __DIR__ . '/views/main.php';

@@ -12,6 +12,12 @@ if (file_exists(__DIR__ . '/.instalado')) {
     die("⚠️ Sistema já foi instalado! Delete o arquivo .instalado para reinstalar.");
 }
 
+function render_install_version_footer(): void {
+    echo "<div class='text-center mt-4 mb-2' style='font-size:9px;color:#b0b0b0;opacity:0.6'>v"
+       . (defined('VERSAO_SISTEMA') ? VERSAO_SISTEMA : date('YmdHi'))
+       . "</div>";
+}
+
 $erros = [];
 $avisos = [];
 $sucessos = [];
@@ -69,6 +75,7 @@ echo "</div>";
 
 if (!empty($erros)) {
     echo "<div class='alert alert-danger'><strong>Instalação interrompida!</strong> Corrija os erros acima.</div>";
+    render_install_version_footer();
     echo "</div></body></html>";
     exit;
 }
@@ -160,8 +167,8 @@ foreach ($testarDiretorios as $path => $name) {
         unlink($testFile);
         echo "<p class='success'>✅ Permissão de escrita OK em $name</p>";
     } else {
-        echo "<p class='error'>❌ Sem permissão de escrita em /$dir</p>";
-        $erros[] = "Permissão negada em $dir";
+        echo "<p class='error'>❌ Sem permissão de escrita em $name</p>";
+        $erros[] = "Permissão negada em $name";
     }
 }
 
@@ -204,13 +211,18 @@ echo "<h5>⚠️ IMPORTANTE - Senha de Administrador</h5>";
 echo "<p>Sua senha temporária de admin foi gerada:</p>";
 echo "<pre>$senhaAdmin</pre>";
 echo "<p><strong>COPIE ESTA SENHA AGORA!</strong> Ela será necessária para acessar o painel administrativo.</p>";
-echo "<p>Você pode alterá-la editando o arquivo <code>admin.php</code></p>";
+echo "<p>Você pode alterá-la editando a variável <code>ADMIN_PASSWORD_HASH</code> no arquivo <code>.env</code></p>";
 echo "</div>";
 
 // Atualizar .env com o hash da nova senha (admin.php lê $_ENV['ADMIN_PASSWORD_HASH'])
-$envFile = __DIR__ . '/.env';
+$envFile = dirname(__DIR__) . '/.env';
+$envExample = dirname(__DIR__) . '/.env.example';
 if (!file_exists($envFile)) {
-    @touch($envFile);
+    if (file_exists($envExample)) {
+        @copy($envExample, $envFile);
+    } else {
+        @touch($envFile);
+    }
     @chmod($envFile, 0600);
 }
 $envLinhas = @file($envFile, FILE_IGNORE_NEW_LINES) ?: [];
@@ -259,7 +271,7 @@ if ($tudoOk && empty($erros)) {
     // Criar arquivo de marcação de instalação
     $infoInstalacao = "Sistema instalado em: " . date('Y-m-d H:i:s') . "\n";
     $infoInstalacao .= "PHP Version: $phpVersion\n";
-    $infoInstalacao .= "Senha Admin (texto): $senhaAdmin\n";
+    $infoInstalacao .= "Senha Admin (texto): [NAO_ARMAZENADA]\n";
     $infoInstalacao .= "Senha Admin (hash) : $senhaAdminHash\n";
     file_put_contents(__DIR__ . '/.instalado', $infoInstalacao);
     @chmod(__DIR__ . '/.instalado', 0600);
@@ -290,7 +302,7 @@ if ($tudoOk && empty($erros)) {
     echo "<h4>⚠️ Segurança:</h4>";
     echo "<ul>";
     echo "<li>Delete o arquivo <strong>install.php</strong> agora!</li>";
-    echo "<li>Altere a senha de admin em <code>admin.php</code> se necessário</li>";
+    echo "<li>Altere a senha de admin no arquivo <code>.env</code> se necessário</li>";
     echo "<li>Use HTTPS em produção</li>";
     echo "<li>Faça backups regulares</li>";
     echo "</ul>";
@@ -309,5 +321,6 @@ if ($tudoOk && empty($erros)) {
     echo "</div>";
 }
 
+render_install_version_footer();
 echo "</div></body></html>";
 ?>
