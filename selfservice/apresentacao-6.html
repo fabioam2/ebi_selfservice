@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0f4c5c">
+  <title>EBI — Apresentação V6</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --deep: #062c33;
+      --sea: #0f4c5c;
+      --teal: #157a8c;
+      --aqua: #5bc0be;
+      --silk: #f7f5f0;
+      --cream: #fffdf7;
+      --sand: #e8e3d9;
+      --coral: #e07a5f;
+      --sun: #f2cc8f;
+      --ink: #1d2d35;
+      --muted: #6b7b83;
+      --line: rgba(15, 76, 92, 0.14);
+      --shadow: 0 24px 70px rgba(6, 44, 51, 0.22);
+      --radius: 22px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { background: var(--deep); }
+
+    body {
+      font-family: "DM Sans", system-ui, sans-serif;
+      color: var(--ink);
+      height: 100vh;
+      overflow: hidden;
+      display: grid;
+      grid-template-rows: 64px minmax(0, 1fr) auto auto;
+      background:
+        radial-gradient(ellipse 90% 60% at 12% 18%, rgba(91, 192, 190, 0.14), transparent 55%),
+        radial-gradient(ellipse 80% 55% at 88% 82%, rgba(224, 122, 95, 0.11), transparent 50%),
+        linear-gradient(165deg, var(--silk) 0%, #efebe4 100%);
+    }
+
+    button, select, input { font: inherit; }
+    button { cursor: pointer; -webkit-tap-highlight-color: transparent; border: none; background: none; }
+
+    /* ── Ambient canvas ───────────────────── */
+    #ambient {
+      position: fixed; inset: 0; z-index: 0;
+      pointer-events: none; opacity: 0.55;
+    }
+
+    /* ── Header ───────────────────────────── */
+    .top {
+      position: relative; z-index: 10;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 clamp(16px, 4vw, 42px);
+      border-bottom: 1px solid var(--line);
+      background: rgba(247, 245, 240, 0.82);
+      backdrop-filter: blur(14px);
+    }
+
+    .brand {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 700; letter-spacing: 0.02em; color: var(--sea);
+    }
+    .brand-mark {
+      width: 34px; height: 34px; border-radius: 10px;
+      display: grid; place-items: center;
+      background: var(--sea); color: var(--cream); font-size: 0.85rem;
+    }
+    .brand small { font-weight: 400; color: var(--muted); font-size: 0.78rem; margin-left: 6px; }
+
+    .top-actions { display: flex; align-items: center; gap: 8px; }
+
+    .tbtn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      height: 38px; padding: 0 13px;
+      border: 1px solid var(--line); border-radius: 10px;
+      background: rgba(255, 255, 255, 0.55);
+      color: var(--muted); font-size: 0.78rem; font-weight: 700;
+      transition: all 0.18s ease;
+    }
+    .tbtn:hover { border-color: var(--teal); color: var(--sea); background: rgba(21, 122, 140, 0.08); }
+    .tbtn.on { border-color: var(--coral); color: var(--coral); background: rgba(224, 122, 95, 0.08); }
+    .tbtn.icon-only { width: 38px; padding: 0; font-size: 0.95rem; }
+
+    /* ── Voice popover ────────────────────── */
+    .voice-pop {
+      position: fixed; top: 62px; right: clamp(16px, 4vw, 42px); z-index: 30;
+      width: min(340px, calc(100vw - 32px));
+      padding: 18px;
+      border: 1px solid rgba(15, 76, 92, 0.22); border-radius: 14px;
+      background: rgba(255, 253, 247, 0.98);
+      box-shadow: var(--shadow);
+      display: none;
+    }
+    .voice-pop.open { display: block; animation: drop 0.2s ease both; }
+    @keyframes drop { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; } }
+    .voice-pop h3 { font-size: 0.92rem; color: var(--ink); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+    .voice-pop h3 i { color: var(--coral); }
+    .vlabel { display: block; font-size: 0.64rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 6px; }
+    .vselect {
+      width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 8px;
+      background: var(--cream); color: var(--ink); font-size: 0.8rem; outline: none;
+    }
+    .vselect:focus { border-color: var(--teal); }
+    .vrow { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; margin-top: 14px; }
+    .vrow label { margin: 0; }
+    .vrange { accent-color: var(--teal); }
+    .vval { font-size: 0.74rem; color: var(--teal); font-weight: 700; min-width: 38px; text-align: right; }
+    .vhint { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 0.7rem; color: var(--muted); line-height: 1.5; }
+    .vhint i { color: var(--sun); margin-right: 4px; }
+
+    /* ── Stage ────────────────────────────── */
+    main {
+      position: relative; z-index: 5;
+      display: grid; place-items: center;
+      padding: 28px clamp(16px, 4vw, 48px);
+      min-height: 0; overflow: hidden;
+    }
+
+    .deck {
+      width: min(1120px, 100%);
+      height: 100%;
+      display: grid; place-items: center;
+    }
+
+    .slide {
+      display: none;
+      width: 100%;
+      grid-template-columns: minmax(0, 1fr) minmax(320px, 0.85fr);
+      gap: clamp(28px, 5vw, 80px);
+      align-items: center;
+      padding: 12px;
+    }
+    .slide.on { display: grid; }
+
+    .copy { opacity: 0; }
+    .art { opacity: 0; }
+    .slide.on .copy { animation: rise 0.65s 0.1s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .slide.on .art { animation: rise 0.7s 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      margin-bottom: 16px;
+      color: var(--teal); font-size: 0.72rem; font-weight: 800;
+      letter-spacing: 0.12em; text-transform: uppercase;
+    }
+    .eyebrow::before { content: ""; width: 26px; height: 2px; border-radius: 2px; background: currentColor; }
+
+    h1, h2 { font-family: "Playfair Display", Georgia, serif; margin: 0; line-height: 1.08; letter-spacing: -0.02em; color: var(--deep); }
+
+    .slide h2 { font-size: clamp(1.85rem, 4.8vw, 3.4rem); max-width: 560px; }
+
+    .lead {
+      margin-top: 22px; max-width: 540px;
+      font-size: clamp(0.96rem, 1.45vw, 1.08rem); line-height: 1.72; color: var(--muted);
+    }
+    .lead strong { color: var(--ink); font-weight: 700; }
+    .lead .hl { color: var(--teal); font-weight: 700; }
+    .lead .hl2 { color: var(--coral); font-weight: 700; }
+
+    .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+    .tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 12px; border: 1px solid var(--line); border-radius: 99px;
+      background: rgba(255, 255, 255, 0.65);
+      font-size: 0.72rem; font-weight: 700; color: var(--muted);
+    }
+    .tag i { color: var(--coral); }
+
+    /* ── Art panels ───────────────────────── */
+    .art {
+      position: relative;
+      min-height: 360px;
+      border-radius: var(--radius);
+      background: var(--cream);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      display: grid; place-items: center;
+      overflow: hidden;
+    }
+    .art::before {
+      content: ""; position: absolute; inset: 0;
+      background-image:
+        radial-gradient(circle at 20% 30%, rgba(91, 192, 190, 0.12), transparent 40%),
+        radial-gradient(circle at 80% 70%, rgba(224, 122, 95, 0.1), transparent 42%);
+      pointer-events: none;
+    }
+    .art > * { position: relative; z-index: 1; }
+
+    /* Decorative rings */
+    .ring { position: absolute; border-radius: 50%; border: 1px solid rgba(15, 76, 92, 0.1); }
+    .ring.r1 { width: 420px; height: 420px; }
+    .ring.r2 { width: 320px; height: 320px; border-color: rgba(224, 122, 95, 0.12); }
+    .ring.r3 { width: 220px; height: 220px; border-color: rgba(91, 192, 190, 0.18); }
+    .slide.on .ring.r1 { animation: spin 24s linear infinite; }
+    .slide.on .ring.r2 { animation: spin 18s linear infinite reverse; }
+    .slide.on .ring.r3 { animation: spin 12s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Hero orb */
+    .hero-orb {
+      width: 150px; height: 150px; border-radius: 50%;
+      display: grid; place-items: center;
+      background: linear-gradient(135deg, var(--sea), var(--teal));
+      color: var(--cream); font-size: 3rem;
+      box-shadow: 0 18px 50px rgba(15, 76, 92, 0.28), inset 0 2px 0 rgba(255,255,255,0.2);
+      animation: breathe 4s ease-in-out infinite;
+    }
+    @keyframes breathe { 50% { transform: scale(1.04); box-shadow: 0 24px 60px rgba(15, 76, 92, 0.34), inset 0 2px 0 rgba(255,255,255,0.2); } }
+
+    .float-chip {
+      position: absolute;
+      padding: 8px 13px; border-radius: 99px;
+      background: var(--cream); border: 1px solid var(--line);
+      box-shadow: 0 6px 18px rgba(6, 44, 51, 0.08);
+      font-size: 0.7rem; font-weight: 700; color: var(--sea);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .float-chip i { color: var(--coral); }
+    .c1 { top: 18%; left: 10%; }
+    .c2 { bottom: 20%; right: 10%; }
+    .slide.on .float-chip { animation: bob 3.5s ease-in-out infinite; }
+    .slide.on .c2 { animation-delay: 0.8s; }
+    @keyframes bob { 50% { transform: translateY(-10px); } }
+
+    /* Shield */
+    .shield-wrap { text-align: center; }
+    .shield-wrap i { font-size: 5.2rem; color: var(--teal); filter: drop-shadow(0 12px 24px rgba(21, 122, 140, 0.22)); animation: shield-breathe 3.5s ease-in-out infinite; }
+    @keyframes shield-breathe { 50% { filter: drop-shadow(0 18px 34px rgba(21, 122, 140, 0.35)); transform: scale(1.03); } }
+    .shield-wrap span { display: block; margin-top: 14px; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+
+    /* Phone mock */
+    .phone {
+      width: 170px; height: 290px; border-radius: 28px;
+      border: 6px solid var(--deep); background: var(--cream);
+      padding: 14px 10px;
+      box-shadow: 0 22px 55px rgba(6, 44, 51, 0.24);
+      transform: rotate(-3deg);
+      position: relative;
+    }
+    .phone::before { content: ""; position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: 46px; height: 5px; border-radius: 99px; background: var(--deep); }
+    .phone-screen { height: 100%; display: flex; flex-direction: column; align-items: center; padding-top: 18px; color: var(--deep); }
+    .phone-screen .ps-title { font-size: 0.6rem; font-weight: 800; letter-spacing: 0.08em; color: var(--teal); }
+    .phone-screen .ps-qr { font-size: 5rem; margin: 18px 0 8px; color: var(--deep); }
+    .phone-screen .ps-line { width: 110px; height: 5px; border-radius: 3px; background: rgba(15, 76, 92, 0.12); margin-top: 6px; }
+    .phone-screen .ps-line.short { width: 72px; }
+    .phone-screen .ps-badge { margin-top: 16px; font-size: 0.55rem; font-weight: 800; padding: 5px 11px; border-radius: 99px; background: var(--aqua); color: var(--deep); }
+    .slide.on .phone { animation: phone-drift 4.5s ease-in-out infinite; }
+    @keyframes phone-drift { 50% { transform: translateY(-7px) rotate(-1deg); } }
+
+    .field-tag {
+      position: absolute; right: -78px;
+      padding: 7px 11px; border-radius: 8px;
+      font-size: 0.62rem; font-weight: 700;
+      background: var(--deep); color: var(--cream); border: 1px solid rgba(255,255,255,0.1);
+      white-space: nowrap;
+      box-shadow: 0 6px 16px rgba(6, 44, 51, 0.18);
+    }
+    .field-tag.f1 { top: 62px; }
+    .field-tag.f2 { top: 112px; }
+    .field-tag.f3 { top: 162px; }
+    .slide.on .field-tag { animation: tag-in 0.5s ease both; }
+    .slide.on .field-tag.f2 { animation-delay: 0.12s; }
+    .slide.on .field-tag.f3 { animation-delay: 0.24s; }
+    @keyframes tag-in { from { opacity: 0; transform: translateX(-12px); } to { opacity: 1; } }
+
+    /* Scanner */
+    .scan-card {
+      width: min(280px, 84%);
+      padding: 22px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #e8f6f5, #f7f5f0);
+      border: 1px solid var(--line);
+      box-shadow: 0 16px 42px rgba(6, 44, 51, 0.15);
+      display: grid; grid-template-columns: 90px 1fr; gap: 18px;
+      align-items: center; position: relative; overflow: hidden;
+    }
+    .scan-card i { font-size: 4.2rem; color: var(--deep); }
+    .scan-info { text-align: left; }
+    .scan-info strong { display: block; font-size: 0.78rem; color: var(--sea); margin-bottom: 6px; }
+    .scan-info span { font-size: 0.62rem; line-height: 1.55; color: var(--muted); display: block; font-family: "DM Sans", monospace; }
+    .scan-laser {
+      position: absolute; left: 0; width: 100%; height: 2px;
+      background: var(--coral); box-shadow: 0 0 14px var(--coral);
+    }
+    .slide.on .scan-laser { animation: laser 2.2s ease-in-out infinite; }
+    @keyframes laser { 0%, 100% { top: 16px; } 50% { top: calc(100% - 16px); } }
+
+    /* Clock wipe */
+    .wipe-wrap { display: flex; align-items: center; gap: 28px; }
+    .clock {
+      width: 96px; height: 96px; border-radius: 50%;
+      border: 4px solid rgba(224, 122, 95, 0.14);
+      border-top-color: var(--coral);
+      display: grid; place-items: center;
+      box-shadow: 0 0 28px rgba(224, 122, 95, 0.1);
+    }
+    .clock span { font-size: 1.1rem; font-weight: 800; color: var(--coral); }
+    .slide.on .clock { animation: spin 3s linear infinite; }
+    .slide.on .clock span { animation: spin 3s linear infinite reverse; }
+    .wipe-card {
+      padding: 18px 22px; border-radius: 12px;
+      background: rgba(224, 122, 95, 0.08); border: 1px solid rgba(224, 122, 95, 0.25);
+      text-align: center;
+    }
+    .wipe-card i { display: block; font-size: 1.8rem; color: var(--coral); margin-bottom: 8px; }
+    .wipe-card span { font-size: 0.74rem; font-weight: 800; color: var(--coral); }
+
+    /* Printer */
+    .printer { position: relative; width: 260px; height: 190px; }
+    .pr-body {
+      position: absolute; inset: 22px 14px 0;
+      border: 1px solid rgba(15, 76, 92, 0.25); border-radius: 14px 14px 6px 6px;
+      background: var(--cream);
+      box-shadow: 0 18px 40px rgba(6, 44, 51, 0.14);
+    }
+    .pr-top { position: absolute; top: 0; left: 48px; width: 164px; height: 48px; border: 1px solid rgba(15, 76, 92, 0.2); border-radius: 10px 10px 0 0; background: var(--cream); }
+    .pr-screen { position: absolute; top: 54px; left: 48px; width: 80px; height: 18px; border-radius: 4px; background: var(--aqua); }
+    .pr-led { position: absolute; top: 58px; right: 40px; width: 10px; height: 10px; border-radius: 50%; background: var(--coral); box-shadow: 0 0 12px var(--coral); animation: led-blink 1.4s ease-in-out infinite; }
+    @keyframes led-blink { 50% { opacity: 0.35; } }
+    .pr-slot { position: absolute; right: 32px; bottom: 30px; left: 32px; height: 8px; border-radius: 99px; background: var(--sand); }
+    .pr-band {
+      position: absolute; bottom: -8px; left: 56px;
+      width: 148px; height: 34px; border-radius: 5px;
+      background: var(--sun); color: #5c4320;
+      font-size: 0.6rem; font-weight: 800; line-height: 34px; text-align: center;
+      border: 1px solid rgba(92, 67, 32, 0.15);
+    }
+    .slide.on .pr-band { animation: band-out 3.2s ease-in-out infinite; }
+    @keyframes band-out { 0%, 22% { transform: translateY(-18px); opacity: 0; } 42%, 80% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(4px); opacity: 0; } }
+
+    /* Exit panel */
+    .exit-wrap { display: grid; grid-template-columns: 72px 1fr; gap: 36px; align-items: center; width: min(320px, 86%); }
+    .ex-phone {
+      width: 68px; height: 124px; border-radius: 16px;
+      border: 3px solid var(--deep); background: var(--cream);
+      display: grid; place-items: center; color: var(--sea);
+      box-shadow: 0 0 0 7px rgba(21, 122, 140, 0.06);
+    }
+    .ex-phone i { font-size: 1.5rem; }
+    .ex-phone small { margin-top: -24px; font-size: 0.42rem; font-family: "DM Sans", monospace; color: var(--muted); }
+    .ex-panel {
+      padding: 18px; border-radius: 12px;
+      background: var(--cream); border: 1px solid var(--line);
+      box-shadow: 0 14px 36px rgba(6, 44, 51, 0.12);
+    }
+    .ex-panel strong { display: block; font-size: 0.6rem; color: var(--teal); letter-spacing: 0.08em; margin-bottom: 12px; }
+    .ex-name {
+      padding: 12px; border-radius: 8px;
+      background: var(--sun); color: #4a3617;
+      font-size: 0.82rem; font-weight: 800; text-align: center;
+    }
+    .slide.on .ex-name { animation: name-flash 1.7s ease-in-out infinite; }
+    @keyframes name-flash { 50% { box-shadow: 0 0 24px rgba(242, 204, 143, 0.7); } }
+    .ex-arrow { position: absolute; top: 50%; left: 92px; width: 60px; height: 1px; background: var(--coral); }
+    .ex-arrow::after { content: ""; position: absolute; top: -4px; right: -1px; border-left: 6px solid var(--coral); border-top: 4px solid transparent; border-bottom: 4px solid transparent; }
+    .ex-dot { position: absolute; top: calc(50% - 5px); left: 104px; width: 10px; height: 10px; border-radius: 50%; background: var(--coral); }
+    .slide.on .ex-dot { animation: dot-fly 2s ease-in-out infinite; }
+    @keyframes dot-fly { 0% { opacity: 0; transform: translateX(0); } 20% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; transform: translateX(50px); } }
+
+    /* Account path */
+    .acc-path { display: grid; grid-template-columns: 1fr 30px 1fr 30px 1fr; align-items: center; width: min(330px, 88%); }
+    .acc-card {
+      min-height: 120px; padding: 14px 8px;
+      border: 1px solid var(--line); border-radius: 12px;
+      background: rgba(255, 255, 255, 0.6);
+      display: grid; place-items: center;
+      font-size: 0.64rem; font-weight: 800; color: var(--muted); text-align: center;
+      transition: transform 0.2s;
+    }
+    .acc-card i { display: block; font-size: 1.5rem; color: var(--teal); margin-bottom: 9px; }
+    .acc-link { height: 2px; background: var(--line); border-radius: 2px; }
+    .slide.on .acc-link { animation: link-glow 2.6s ease-in-out infinite; }
+    .slide.on .acc-link:nth-of-type(2) { animation-delay: 0.5s; }
+    @keyframes link-glow { 50% { background: var(--sun); box-shadow: 0 0 10px var(--sun); } }
+
+    /* Password mock */
+    .pw-card {
+      width: min(270px, 80%);
+      padding: 22px; border-radius: 14px;
+      background: var(--cream); border: 1px solid var(--line);
+      box-shadow: 0 14px 36px rgba(6, 44, 51, 0.1);
+      display: flex; flex-direction: column; gap: 12px;
+    }
+    .pw-card .pw-label { font-size: 0.64rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+    .pw-card .pw-input {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 13px; border: 1px solid var(--line); border-radius: 8px;
+      background: var(--silk); font-size: 0.8rem; color: var(--muted);
+    }
+    .pw-card .pw-input i { color: var(--teal); }
+    .pw-card .pw-btn {
+      padding: 11px; border-radius: 8px; border: none;
+      background: linear-gradient(90deg, var(--teal), var(--aqua));
+      color: #fff; font-size: 0.78rem; font-weight: 800;
+    }
+
+    /* ── Caption dock ─────────────────────── */
+    .cc-dock {
+      position: relative; z-index: 10;
+      display: flex; justify-content: center;
+      padding: 10px clamp(16px, 4vw, 42px) 14px;
+      transition: opacity 0.25s ease, max-height 0.25s ease, padding 0.25s ease;
+      overflow: hidden; max-height: 140px;
+    }
+    .cc-dock.off { opacity: 0; max-height: 0; padding: 0 clamp(16px, 4vw, 42px); pointer-events: none; }
+    .cc-box {
+      width: min(920px, 100%);
+      min-height: 54px;
+      padding: 14px 24px;
+      border: 1px solid var(--line); border-radius: 14px;
+      background: rgba(255, 253, 247, 0.92);
+      box-shadow: 0 4px 18px rgba(6, 44, 51, 0.06);
+      font-size: clamp(0.86rem, 1.35vw, 0.98rem);
+      line-height: 1.6; color: var(--ink); text-align: center;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── Control bar ──────────────────────── */
+    .bar {
+      position: relative; z-index: 10;
+      display: grid;
+      grid-template-columns: 1fr minmax(260px, 520px) 1fr;
+      gap: 14px; align-items: center;
+      padding: 12px clamp(16px, 4vw, 42px);
+      border-top: 1px solid var(--line);
+      background: rgba(247, 245, 240, 0.88);
+      backdrop-filter: blur(14px);
+    }
+    .bar-grp { display: flex; align-items: center; gap: 8px; }
+    .bar-grp.end { justify-content: flex-end; }
+
+    .bnav {
+      display: inline-flex; align-items: center; gap: 7px;
+      height: 38px; padding: 0 14px;
+      border: 1px solid var(--line); border-radius: 10px;
+      background: rgba(255, 255, 255, 0.6);
+      color: var(--muted); font-size: 0.76rem; font-weight: 700;
+      transition: all 0.18s ease;
+    }
+    .bnav:hover { border-color: var(--teal); color: var(--sea); background: rgba(21, 122, 140, 0.08); }
+    .bnav:disabled { opacity: 0.32; cursor: not-allowed; }
+
+    .transport { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center; }
+    .bplay {
+      display: inline-flex; align-items: center; gap: 8px;
+      height: 42px; padding: 0 20px;
+      border-radius: 10px; border: none;
+      background: linear-gradient(135deg, var(--sea) 0%, var(--teal) 100%);
+      color: #fff; font-size: 0.8rem; font-weight: 800;
+      box-shadow: 0 8px 22px rgba(15, 76, 92, 0.28);
+      transition: all 0.18s ease;
+    }
+    .bplay:hover { transform: translateY(-1px); box-shadow: 0 10px 28px rgba(15, 76, 92, 0.34); }
+
+    .progress { height: 5px; border-radius: 99px; background: rgba(15, 76, 92, 0.1); overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--teal), var(--aqua), var(--coral)); background-size: 200% 100%; animation: shimmer 2.5s linear infinite; transition: width 0.3s ease; }
+    @keyframes shimmer { to { background-position: 200% 0; } }
+    .count { font-size: 0.74rem; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+    /* ── Responsive ───────────────────────── */
+    @media (max-width: 800px) {
+      body { grid-template-rows: 56px minmax(0, 1fr) auto auto; }
+      .top { min-height: 56px; }
+      .brand small { display: none; }
+      .slide { grid-template-columns: 1fr; min-height: 0; gap: 22px; }
+      .copy { text-align: center; }
+      .slide h2 { margin: 0 auto 18px; }
+      .lead { margin: 0 auto; }
+      .tags { justify-content: center; }
+      .art { min-height: 260px; order: -1; }
+      .bar { grid-template-columns: 1fr; gap: 8px; }
+      .bar-grp { justify-content: space-between; }
+      .bar-grp.end { display: none; }
+      .field-tag { right: -62px; font-size: 0.55rem; padding: 5px 8px; }
+      .phone { transform: scale(0.88) rotate(-3deg); }
+      .acc-path { grid-template-columns: 1fr; gap: 10px; width: 86%; }
+      .acc-card { min-height: 80px; grid-template-columns: auto 1fr; text-align: left; padding: 12px 16px; }
+      .acc-link { display: none; }
+    }
+
+    @media (max-width: 380px) {
+      .slide h2 { font-size: 1.7rem; }
+      .art { min-height: 230px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="ambient"></canvas>
+
+<header class="top">
+  <div class="brand">
+    <div class="brand-mark"><i class="fas fa-child-reaching"></i></div>
+    <span>EBI</span><small>Apresentação V6</small>
+  </div>
+  <div class="top-actions">
+    <button class="tbtn" id="btnVoice"><i class="fas fa-sliders-h"></i><span>Voz</span></button>
+    <button class="tbtn icon-only" id="btnCC" title="Legendas"><i class="fas fa-closed-captioning"></i></button>
+    <button class="tbtn icon-only" id="btnClose" title="Fechar"><i class="fas fa-times"></i></button>
+  </div>
+</header>
+
+<div class="voice-pop" id="voicePop">
+  <h3><i class="fas fa-microphone-lines"></i>Configurações de voz</h3>
+  <label class="vlabel" for="selVoice">Voz em português</label>
+  <select id="selVoice" class="vselect"></select>
+  <div class="vrow">
+    <label class="vlabel" for="inpRate" style="margin:0">Ritmo</label>
+    <input id="inpRate" class="vrange" type="range" min="0.82" max="1.12" step="0.01" value="0.94">
+    <span class="vval" id="valRate">0.94x</span>
+  </div>
+  <div class="vhint"><i class="fas fa-lightbulb"></i>Chrome e Edge costumam ter as vozes mais naturais. Escolha a que soar mais próxima de uma pessoa de verdade no seu dispositivo.</div>
+</div>
+
+<main>
+  <div class="deck" id="deck">
+
+    <!-- 1 -->
+    <section class="slide on" data-narr="Olá! Seja bem-vindo. Eu vou te mostrar, de um jeito simples, como funciona o nosso sistema de controle de entrada e saída do EBI, o Ensino Bíblico Infantil. Ele nasceu para ajudar a equipe a organizar a chegada e a saída das crianças com mais segurança e tranquilidade.">
+      <div class="copy">
+        <div class="eyebrow">Ensino Bíblico Infantil</div>
+        <h2>Sistema de controle de entrada e saída</h2>
+        <p class="lead">Uma ferramenta pensada para dar <strong>mais organização à equipe</strong>, <span class="hl">agilidade na recepção</span> e <span class="hl2">tranquilidade às famílias</span> durante o EBI.</p>
+        <div class="tags">
+          <span class="tag"><i class="fas fa-shield-halved"></i>LGPD</span>
+          <span class="tag"><i class="fas fa-qrcode"></i>QR Code</span>
+          <span class="tag"><i class="fas fa-users"></i>Self-service</span>
+        </div>
+      </div>
+      <div class="art">
+        <span class="ring r1"></span><span class="ring r2"></span><span class="ring r3"></span>
+        <div class="hero-orb"><i class="fas fa-book-open-reader"></i></div>
+        <span class="float-chip c1"><i class="fas fa-door-open"></i>Entrada</span>
+        <span class="float-chip c2"><i class="fas fa-person-walking"></i>Saída</span>
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section class="slide" data-narr="A primeira coisa que você precisa saber é sobre a proteção dos dados. O sistema foi feito em conformidade com a LGPD. Os dados das crianças e dos responsáveis não ficam guardados em lugar nenhum de forma permanente. Eles ficam dentro de um cartão QR Code, que cada responsável guarda no próprio celular.">
+      <div class="copy">
+        <div class="eyebrow">Privacidade & LGPD</div>
+        <h2>Os dados ficam com a família.</h2>
+        <p class="lead">Não existe um cadastro central com nomes e telefones. Cada família guarda seu próprio <span class="hl">cartão QR Code</span> e o sistema <strong>nunca retém dados pessoais</strong> depois do evento.</p>
+        <div class="tags">
+          <span class="tag"><i class="fas fa-lock"></i>Sem cadastro central</span>
+          <span class="tag"><i class="fas fa-id-card-clip"></i>Cartão individual</span>
+        </div>
+      </div>
+      <div class="art">
+        <span class="ring r2"></span><span class="ring r3"></span>
+        <div class="shield-wrap">
+          <i class="fas fa-user-shield"></i>
+          <span>Conformidade LGPD</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3 -->
+    <section class="slide" data-narr="Então, como começa? Antes do dia do EBI, o responsável entra no site qrcode.ccbcampinas.org.br e faz um cadastro rápido. Nome da criança ou das crianças, nome do responsável, comum, telefone e idade. Pronto. Cada responsável tem o seu cartão individual, porque é ele quem entrega a criança.">
+      <div class="copy">
+        <div class="eyebrow">Passo 1 — Cadastro</div>
+        <h2>Os pais criam o cartão QR Code.</h2>
+        <p class="lead">No site <span class="hl">qrcode.ccbcampinas.org.br</span>, o responsável preenche nome das crianças, seu nome, comum, telefone e idade. <strong>Cada responsável tem o seu cartão individual</strong>, porque é ele quem entrega a criança.</p>
+        <div class="tags">
+          <span class="tag"><i class="fas fa-child"></i>Criança</span>
+          <span class="tag"><i class="fas fa-phone"></i>Telefone</span>
+          <span class="tag"><i class="fas fa-place-of-worship"></i>Comum</span>
+        </div>
+      </div>
+      <div class="art">
+        <span class="ring r1"></span><span class="ring r3"></span>
+        <div class="phone">
+          <div class="phone-screen">
+            <span class="ps-title">Cartão EBI</span>
+            <div class="ps-qr"><i class="fas fa-qrcode"></i></div>
+            <span class="ps-line"></span><span class="ps-line short"></span>
+            <span class="ps-badge">PRONTINHO</span>
+          </div>
+          <span class="field-tag f1">Nome</span>
+          <span class="field-tag f2">Comum</span>
+          <span class="field-tag f3">Idade</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4 -->
+    <section class="slide" data-narr="No dia do evento, na hora da chegada, o responsável mostra o QR Code na porta. A equipe lê com um leitor, com a câmera do celular, ou, se precisar, digita os dados na hora. Em poucos segundos, as informações já estão no sistema.">
+      <div class="copy">
+        <div class="eyebrow">Passo 2 — Entrada</div>
+        <h2>Na porta, o QR Code agiliza tudo.</h2>
+        <p class="lead">A leitura transfere as informações do cartão em poucos segundos. E, se precisar, a equipe pode usar a <strong>digitação manual</strong>, para que o fluxo continue mesmo sem leitor disponível.</p>
+        <div class="tags">
+          <span class="tag"><i class="fas fa-barcode"></i>Leitor QR</span>
+          <span class="tag"><i class="fas fa-keyboard"></i>Manual</span>
+          <span class="tag"><i class="fas fa-bolt"></i>Rápido</span>
+        </div>
+      </div>
+      <div class="art">
+        <span class="ring r1"></span><span class="ring r2"></span>
+        <div class="scan-card">
+          <i class="fas fa-qrcode"></i>
+          <div class="scan-info">
+            <strong>Cartão reconhecido</strong>
+            <span>CRIANÇAS: 02<br>COMUM: BONFIM<br>STATUS: ENTRADA</span>
+          </div>
+          <span class="scan-laser"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5 -->
+    <section class="slide" data-narr="Aqui vai um ponto muito importante: os dados pessoais ficam no sistema só durante o evento, no máximo três horas. Depois disso, tudo é apagado automaticamente. O que sobra são apenas estatísticas, como quantidade de crianças, faixa etária, portaria, cidade e comum. Nenhum nome fica guardado.">
+      <div class="copy">
+        <div class="eyebrow">Dados temporários</div>
+        <h2>Apagamento total depois do evento.</h2>
+        <p class="lead">As informações pessoais ficam disponíveis por <strong>no máximo 3 horas</strong>. Depois, são removidas automaticamente. Sobram apenas <span class="hl">estatísticas anônimas</span>, sem nenhum nome.</p>
+        <div class="tags">
+          <span class="tag"><i class="fas fa-hourglass-half"></i>3 horas</span>
+          <span class="tag"><i class="fas fa-chart-pie"></i>Dados anônimos</span>
+        </div>
+      </div>
+      <div class="art">
+        <span class="ring r2"></span><span class="ring r3"></span>
+        <div class="wipe-wrap">
+          <div class="clock"><span>3h</span></div>
+          <div class="wipe-card"><i class="fas fa-fire-flame-curved"></i><span>Dados apagados</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6 -->
+    <section class="slide" data-narr="Se a igreja quiser, pode usar uma impressora de pulseiras para agilizar ainda mais a entrada. O modelo que funciona hoje é a Elgin Bematech L42DT, com pulseira de tamanho específico. Para instalar e usar, é só seguir o passo a passo dentro do sistema, no menu Impressora.">
+      <div class="copy">
+        <div class="eyebrow">Opcional — Pulseiras</div>
+        <h2>Pulseira impressa na hora.</h2>
+        <p class="lead">A impressão de pulseiras é opcional e deixa a entrada ainda mais rápida. Modelo compatível: <strong>Elgin / Bematech L42DT</strong>. O passo a passo completo está em <span class="hl2">Menu → Impressora</span>.</p>
+        <div class="tags">
+          <span class="tag"><i class="fas fa-print"></i>Elgin L42DT</span>
+          <span class="tag"><i class="fas fa-tag"></i>Pulseira padrão</span>
+        </div>
+      </div>
+      <div class="art">
+        <span class="ring r1"></span><span class="ring r3"></span>
+        <div class="printer">
+          <div class="pr-top"></div>
+          <div class="pr-body"><span class="pr-screen"></span><span class="pr-led"></span><span class="pr-slot"></span></div>
+          <div class="pr-band">EBI | CÓDIGO DE SAÍDA</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7 -->
+    <section class="slide" data-narr="Na hora da saída, os coordenadores usam o próprio celular. Eles acessam a tela de saída, leem o código da pulseira e, na mesma hora, o nome da criança aparece no Painel de Saída. Com isso, dá para ter uma pessoa na porta chamando e outra equipe dentro do EBI vendo os nomes na tela.">
+      <div class="copy">
+        <div class="eyebrow">Passo 3 — Saída</div>
+        <h2>O celular chama. O painel orienta.</h2>
+        <p class="lead">O coordenador registra a saída pelo smartphone. O <strong>Painel de Saída</strong> mostra o nome da criança em tempo real, para que a equipe saiba <span class="hl">exatamente quem encaminhar</span> à porta.</p>
+        <div class="tags">
+          <span class="tag"><i class="fas fa-mobile-screen-button"></i>Smartphone</span>
+          <span class="tag"><i class="fas fa-tv"></i>Painel</span>
+          <span class="tag"><i class="fas fa-door-open"></i>Porta</span>
+        </div>
+      </div>
+      <div class="art">
+        <span class="ring r1"></span><span class="ring r2"></span>
+        <div class="exit-wrap">
+          <div class="ex-phone"><i class="fas fa-qrcode"></i><small>LEITURA</small></div>
+          <span class="ex-arrow"></span><span class="ex-dot"></span>
+          <div class="ex-panel"><strong>PAINEL DE SAÍDA</strong><div class="ex-name">GABRIEL S.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8 -->
+    <section class="slide" data-narr="Por fim, o sistema foi pensado para ser self-service. Cada igreja cria sua conta com e-mail e senha e reutiliza em todos os dias de EBI. As estatísticas vão se acumulando. E se alguém esquecer a senha, é só pedir o reset pelo e-mail que o sistema envia um link para criar uma nova senha. Fácil, seguro e prático.">
+      <div class="copy">
+        <div class="eyebrow">Passo 4 — Conta</div>
+        <h2>Uma conta para todos os dias de EBI.</h2>
+        <p class="lead">Cada igreja cria sua conta com <strong>e-mail e senha</strong>. A mesma conta serve para todos os eventos, mantendo o <span class="hl">histórico estatístico</span>. Esqueceu a senha? É só pedir o <span class="hl2">reset por e-mail</span>.</p>
+        <div class="tags">
+          <span class="tag"><i class="fas fa-envelope"></i>E-mail</span>
+          <span class="tag"><i class="fas fa-chart-line"></i>Histórico</span>
+          <span class="tag"><i class="fas fa-key"></i>Reset</span>
+        </div>
+      </div>
+      <div class="art">
+        <span class="ring r2"></span><span class="ring r3"></span>
+        <div class="acc-path">
+          <div class="acc-card"><i class="fas fa-user-plus"></i>Criar<br>conta</div><span class="acc-link"></span>
+          <div class="acc-card"><i class="fas fa-calendar-check"></i>Usar nos<br>EBIs</div><span class="acc-link"></span>
+          <div class="acc-card"><i class="fas fa-chart-column"></i>Ver<br>estatísticas</div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<div class="cc-dock" id="ccDock">
+  <div class="cc-box" id="ccBox">Clique em <strong>▶ Reproduzir</strong> para ouvir a apresentação com narração.</div>
+</div>
+
+<footer class="bar">
+  <div class="bar-grp">
+    <button class="bnav" id="btnPrev" disabled><i class="fas fa-arrow-left"></i>Anterior</button>
+  </div>
+  <div class="transport">
+    <button class="bplay" id="btnPlay"><i class="fas fa-play" id="playIco"></i><span id="playLbl">Reproduzir</span></button>
+    <div class="progress"><div class="progress-fill" id="barFill" style="width:12.5%"></div></div>
+    <span class="count" id="barCount">01 / 08</span>
+  </div>
+  <div class="bar-grp end">
+    <button class="bnav" id="btnNext">Próximo<i class="fas fa-arrow-right"></i></button>
+  </div>
+</footer>
+
+<script>
+const slides = Array.from(document.querySelectorAll('.slide'));
+const ccBox = document.getElementById('ccBox');
+const ccDock = document.getElementById('ccDock');
+const btnCC = document.getElementById('btnCC');
+const btnPrev = document.getElementById('btnPrev');
+const btnNext = document.getElementById('btnNext');
+const btnPlay = document.getElementById('btnPlay');
+const playIco = document.getElementById('playIco');
+const playLbl = document.getElementById('playLbl');
+const barFill = document.getElementById('barFill');
+const barCount = document.getElementById('barCount');
+const btnVoice = document.getElementById('btnVoice');
+const voicePop = document.getElementById('voicePop');
+const selVoice = document.getElementById('selVoice');
+const inpRate = document.getElementById('inpRate');
+const valRate = document.getElementById('valRate');
+const btnClose = document.getElementById('btnClose');
+const synth = 'speechSynthesis' in window ? window.speechSynthesis : null;
+const total = slides.length;
+
+let cur = 0, playing = false, ccOn = localStorage.getItem('ebi-v6-cc') !== 'off';
+let voiceUri = localStorage.getItem('ebi-v6-voice') || '';
+let rate = Number(localStorage.getItem('ebi-v6-rate')) || 0.94;
+let voices = [], timer = null, seq = 0;
+
+function pad(n) { return String(n).padStart(2, '0'); }
+
+function show(idx) {
+  slides[cur].classList.remove('on');
+  cur = Math.max(0, Math.min(idx, total - 1));
+  slides[cur].classList.add('on');
+  btnPrev.disabled = cur === 0;
+  btnNext.disabled = cur === total - 1;
+  barFill.style.width = ((cur + 1) / total * 100) + '%';
+  barCount.textContent = pad(cur + 1) + ' / ' + pad(total);
+  if (!playing) ccBox.textContent = slides[cur].dataset.narr;
+}
+
+function stopSpeak() {
+  clearTimeout(timer);
+  seq++;
+  if (synth) synth.cancel();
+}
+
+function estimatedMs(text) {
+  // rough estimate: ~150 words per minute in pt-BR at rate 1.0
+  const words = text.trim().split(/\s+/).length;
+  return Math.max(4500, (words / 150) * 60 * 1000 / rate);
+}
+
+function speak() {
+  stopSpeak();
+  const text = slides[cur].dataset.narr;
+  ccBox.textContent = text;
+
+  if (!synth || !voices.length) {
+    timer = setTimeout(() => { if (playing) advance(); }, estimatedMs(text));
+    return;
+  }
+
+  const run = ++seq;
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'pt-BR';
+  u.rate = rate;
+  u.pitch = 1.0;
+  const v = voices.find(x => x.voiceURI === voiceUri);
+  if (v) u.voice = v;
+
+  u.onend = () => { if (playing && run === seq) timer = setTimeout(() => { if (playing) advance(); }, 1400); };
+  u.onerror = () => { if (playing && run === seq) timer = setTimeout(() => { if (playing) advance(); }, estimatedMs(text)); };
+  synth.speak(u);
+}
+
+function advance() {
+  if (cur >= total - 1) { playing = false; updPlay(); return; }
+  show(cur + 1);
+  speak();
+}
+
+function updPlay() {
+  playIco.className = playing ? 'fas fa-pause' : 'fas fa-play';
+  playLbl.textContent = playing ? 'Pausar' : 'Reproduzir';
+}
+
+function nav(dir) { const cont = playing; stopSpeak(); show(cur + dir); if (cont) speak(); }
+
+function scoreVoice(v) {
+  const n = v.name.toLowerCase();
+  let s = v.lang === 'pt-BR' ? 10 : (v.lang.toLowerCase().startsWith('pt') ? 5 : 0);
+  if (n.includes('neural')) s += 40;
+  if (n.includes('natural')) s += 36;
+  if (n.includes('premium')) s += 34;
+  if (n.includes('google')) s += 30;
+  if (n.includes('microsoft')) s += 26;
+  if (n.includes('siri')) s += 24;
+  if (n.includes('luciana') || n.includes('francisca') || n.includes('fábio') || n.includes('antonio') || n.includes('maria')) s += 8;
+  if (v.localService) s += 2;
+  return s;
+}
+
+function loadVoices() {
+  if (!synth) { selVoice.innerHTML = '<option>Navegador sem suporte</option>'; selVoice.disabled = true; return; }
+  voices = synth.getVoices().filter(v => v.lang.toLowerCase().startsWith('pt'));
+  voices.sort((a, b) => scoreVoice(b) - scoreVoice(a));
+  selVoice.innerHTML = '';
+  if (!voices.length) { selVoice.innerHTML = '<option>Nenhuma voz em português</option>'; selVoice.disabled = true; return; }
+  selVoice.disabled = false;
+  voices.forEach(v => {
+    const o = document.createElement('option');
+    o.value = v.voiceURI;
+    o.textContent = v.name + ' (' + v.lang + ')';
+    selVoice.appendChild(o);
+  });
+  if (!voices.some(v => v.voiceURI === voiceUri)) voiceUri = voices[0].voiceURI;
+  selVoice.value = voiceUri;
+}
+
+function save() {
+  localStorage.setItem('ebi-v6-voice', voiceUri);
+  localStorage.setItem('ebi-v6-rate', String(rate));
+  localStorage.setItem('ebi-v6-cc', ccOn ? 'on' : 'off');
+}
+
+function syncCC() {
+  ccDock.classList.toggle('off', !ccOn);
+  btnCC.classList.toggle('on', ccOn);
+}
+
+btnPrev.onclick = () => { if (cur > 0) nav(-1); };
+btnNext.onclick = () => { if (cur < total - 1) nav(1); };
+btnPlay.onclick = () => { playing = !playing; updPlay(); if (playing) speak(); else stopSpeak(); };
+btnCC.onclick = () => { ccOn = !ccOn; syncCC(); save(); };
+
+btnVoice.onclick = e => { e.stopPropagation(); voicePop.classList.toggle('open'); };
+document.addEventListener('click', e => { if (!voicePop.contains(e.target) && !btnVoice.contains(e.target)) voicePop.classList.remove('open'); });
+
+selVoice.onchange = () => { voiceUri = selVoice.value; save(); if (playing) speak(); };
+inpRate.value = rate;
+valRate.textContent = rate.toFixed(2) + 'x';
+inpRate.oninput = () => { rate = Number(inpRate.value); valRate.textContent = rate.toFixed(2) + 'x'; save(); };
+inpRate.onchange = () => { if (playing) speak(); };
+
+btnClose.onclick = () => { stopSpeak(); history.length > 1 ? history.back() : location.href = 'selfservice.php'; };
+
+document.addEventListener('keydown', e => {
+  if (e.target.matches('select, input')) return;
+  if (e.key === 'ArrowRight') btnNext.click();
+  if (e.key === 'ArrowLeft') btnPrev.click();
+  if (e.key === ' ') { e.preventDefault(); btnPlay.click(); }
+  if (e.key === 'Escape') btnClose.click();
+});
+
+if (synth) { synth.onvoiceschanged = loadVoices; loadVoices(); } else loadVoices();
+syncCC();
+show(0);
+
+/* ── Ambient canvas particles ─────────── */
+(function() {
+  const cvs = document.getElementById('ambient');
+  const ctx = cvs.getContext('2d');
+  let w, h, parts = [];
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (prefersReducedMotion) return;
+
+  function resize() {
+    w = cvs.width = window.innerWidth;
+    h = cvs.height = window.innerHeight;
+  }
+  function init() {
+    parts = [];
+    const count = Math.min(40, Math.floor((w * h) / 25000));
+    for (let i = 0; i < count; i++) {
+      parts.push({
+        x: Math.random() * w, y: Math.random() * h,
+        r: Math.random() * 2.5 + 1,
+        dx: (Math.random() - 0.5) * 0.25,
+        dy: (Math.random() - 0.5) * 0.25,
+        o: Math.random() * 0.25 + 0.08
+      });
+    }
+  }
+  function draw() {
+    ctx.clearRect(0, 0, w, h);
+    parts.forEach(p => {
+      p.x += p.dx; p.y += p.dy;
+      if (p.x < 0) p.x = w; if (p.x > w) p.x = 0;
+      if (p.y < 0) p.y = h; if (p.y > h) p.y = 0;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(15, 76, 92, ' + p.o + ')';
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize', () => { resize(); init(); });
+  resize(); init(); draw();
+})();
+</script>
+</body>
+</html>

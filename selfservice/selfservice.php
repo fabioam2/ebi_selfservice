@@ -918,8 +918,8 @@ if (isset($_SESSION['instancia_existente'])) {
 
             <!-- Botões apresentação -->
             <div class="text-center mb-3">
-                <a href="apresentacao-5.html" class="btn btn-sm" style="border:1px solid rgba(14,116,144,.5);color:#0e7490;border-radius:50px;padding:8px 22px;font-size:.9rem;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:8px;background:rgba(14,116,144,.1);transition:background .2s,transform .2s" onmouseover="this.style.background='rgba(14,116,144,.18)';this.style.transform='translateY(-1px)'" onmouseout="this.style.background='rgba(14,116,144,.1)';this.style.transform='translateY(0)'">
-                    <i class="fas fa-circle-play"></i> O que é o sistema?
+                <a href="apresentacao-6.html" class="btn btn-sm" style="border:1px solid rgba(14,116,144,.5);color:#0e7490;border-radius:50px;padding:8px 22px;font-size:.9rem;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:8px;background:rgba(14,116,144,.1);transition:background .2s,transform .2s" onmouseover="this.style.background='rgba(14,116,144,.18)';this.style.transform='translateY(-1px)'" onmouseout="this.style.background='rgba(14,116,144,.1)';this.style.transform='translateY(0)'">
+                    <i class="fas fa-play-circle"></i> O que é o sistema?
                 </a>
             </div>
             <div class="text-center mb-3" style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap">
@@ -938,8 +938,8 @@ if (isset($_SESSION['instancia_existente'])) {
                 <a href="apresentacao-5.html" class="btn btn-sm" style="border:1px solid rgba(96,165,250,.45);color:#3b82f6;border-radius:50px;padding:6px 18px;font-size:.82rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:7px;background:rgba(96,165,250,.08);transition:background .2s" onmouseover="this.style.background='rgba(96,165,250,.16)'" onmouseout="this.style.background='rgba(96,165,250,.08)'">
                     <i class="fas fa-star"></i> V5
                 </a>
-                <a href="apresentacao-6.html" class="btn btn-sm" style="border:1px solid rgba(15,76,92,.5);color:#0f4c5c;border-radius:50px;padding:6px 18px;font-size:.82rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:7px;background:rgba(15,76,92,.1);transition:background .2s" onmouseover="this.style.background='rgba(15,76,92,.18)'" onmouseout="this.style.background='rgba(15,76,92,.1)'">                    
-                    <i class="fas fa-clapperboard"></i> V6
+                <a href="apresentacao-6.html" class="btn btn-sm" style="border:1px solid rgba(15,76,92,.5);color:#0f4c5c;border-radius:50px;padding:6px 18px;font-size:.82rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:7px;background:rgba(15,76,92,.1);transition:background .2s" onmouseover="this.style.background='rgba(15,76,92,.18)'" onmouseout="this.style.background='rgba(15,76,92,.1)'">
+                    <i class="fas fa-star"></i> V6
                 </a>
             </div>
             
