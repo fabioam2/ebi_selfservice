@@ -927,6 +927,9 @@ if (isset($_SESSION['instancia_existente'])) {
                 <a href="apresentacao-3.html" class="btn btn-sm" style="border:1px solid rgba(109,40,217,.4);color:#7c3aed;border-radius:50px;padding:6px 18px;font-size:.82rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:7px;background:rgba(109,40,217,.07);transition:background .2s" onmouseover="this.style.background='rgba(109,40,217,.15)'" onmouseout="this.style.background='rgba(109,40,217,.07)'">
                     <i class="fas fa-rocket"></i> V3
                 </a>
+                <a href="apresentacao-4.html" class="btn btn-sm" style="border:1px solid rgba(16,185,129,.45);color:#059669;border-radius:50px;padding:6px 18px;font-size:.82rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:7px;background:rgba(16,185,129,.08);transition:background .2s" onmouseover="this.style.background='rgba(16,185,129,.16)'" onmouseout="this.style.background='rgba(16,185,129,.08)'">
+                    <i class="fas fa-magic"></i> V4
+                </a>
             </div>
             
             <?php if ($mensagem): ?>
