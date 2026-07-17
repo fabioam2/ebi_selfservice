@@ -1062,13 +1062,13 @@ if (isset($_SESSION['instancia_existente'])) {
     </div>
 
     <div class="test-links">
-        <span class="test-links-label"><i class="fas fa-flask mr-1"></i>Área de testes (conceito v2)</span>
+        <span class="test-links-label"><i class="fas fa-flask mr-1"></i>DEV</span>
         <div class="test-links-buttons">
             <a href="../ebi/template/ebi.test.php" class="btn btn-sm test-link-btn" target="_blank">
-                <i class="fas fa-child mr-1"></i>Cadastro EBI (teste)
+                <i class="fas fa-child mr-1"></i>EBI (teste)
             </a>
             <a href="../qrcode/qrcode.2.php" class="btn btn-sm test-link-btn" target="_blank">
-                <i class="fas fa-qrcode mr-1"></i>QR Code v2 (nascimento)
+                <i class="fas fa-qrcode mr-1"></i>QR Code (teste)
             </a>
         </div>
     </div>
