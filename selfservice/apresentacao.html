@@ -3,33 +3,39 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>O que é o Sistema EBI? — Apresentação</title>
+  <title>Apresentação Interativa — EBI Sistema de Controle</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   <style>
     :root {
-      --bg:        #0b1c2d;
-      --surface:   #102d45;
-      --accent:    #00c9a7;
-      --accent2:   #3d8ef0;
-      --text:      #e8f0fe;
-      --muted:     #8aa0b8;
-      --danger:    #ff6b6b;
-      --success:   #34d399;
-      --border:    rgba(0,201,167,.25);
+      --bg: #060913;
+      --bg-gradient: radial-gradient(circle at 50% 50%, #111a2f 0%, #04060d 100%);
+      --surface: #0f1626;
+      --surface-hover: #17243c;
+      --accent: #22d3ee; /* Cyan-400 */
+      --accent-rgb: 34, 211, 238;
+      --accent2: #818cf8; /* Indigo-400 */
+      --accent2-rgb: 129, 140, 248;
+      --text: #f1f5f9; /* Slate-100 */
+      --muted: #94a3b8; /* Slate-400 */
+      --danger: #f87171; /* Red-400 */
+      --success: #34d399; /* Emerald-400 */
+      --border: rgba(34, 211, 238, 0.15);
+      --font-ui: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: 'Segoe UI', system-ui, sans-serif;
+      font-family: var(--font-ui);
       background: var(--bg);
+      background-image: var(--bg-gradient);
       color: var(--text);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
-      overflow: hidden;
+      justify-content: space-between;
+      overflow-x: hidden;
     }
 
     /* ── Header ─────────────────────────────────── */
@@ -38,38 +44,124 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 24px;
-      background: rgba(16,45,69,.85);
+      padding: 14px 24px;
+      background: rgba(4, 6, 13, 0.85);
       border-bottom: 1px solid var(--border);
-      backdrop-filter: blur(8px);
+      backdrop-filter: blur(12px);
       position: fixed;
       top: 0;
       z-index: 100;
     }
-    .hdr-logo { font-size: 1.1rem; font-weight: 700; color: var(--accent); letter-spacing: .04em; }
-    .hdr-logo span { color: var(--text); }
+    .hdr-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .hdr-logo {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--accent);
+      letter-spacing: .02em;
+      text-transform: uppercase;
+    }
+    .hdr-logo span { color: var(--text); font-weight: 400; text-transform: none; }
+    
+    .hdr-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* Settings Control */
+    .settings-trigger {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: .88rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all .2s;
+    }
+    .settings-trigger:hover { color: var(--accent); border-color: var(--accent); background: rgba(34, 211, 238, 0.05); }
+
     .hdr-close {
       background: none;
       border: none;
       color: var(--muted);
-      font-size: 1.3rem;
+      font-size: 1.4rem;
       cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       transition: color .2s;
     }
     .hdr-close:hover { color: var(--danger); }
 
+    /* ── Settings Panel (Dropdown) ──────────────── */
+    .settings-panel {
+      position: absolute;
+      top: 64px;
+      right: 24px;
+      background: var(--surface);
+      border: 1px solid var(--accent);
+      border-radius: 12px;
+      width: 320px;
+      padding: 16px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6);
+      display: none;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 150;
+      animation: slideIn .2s ease-out;
+    }
+    .settings-panel.open { display: flex; }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .setting-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .setting-label {
+      font-size: .75rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+    .setting-select, .setting-slider {
+      background: rgba(4, 6, 13, 0.6);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px;
+      border-radius: 6px;
+      font-size: .82rem;
+      outline: none;
+    }
+    .setting-select option { background: var(--bg); }
+    .setting-slider-container { display: flex; align-items: center; gap: 10px; }
+    .setting-slider { flex: 1; padding: 0; height: 6px; -webkit-appearance: none; border-radius: 5px; cursor: pointer; }
+    .setting-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: var(--accent); }
+
     /* ── Stage ──────────────────────────────────── */
     .stage {
       width: 100%;
-      max-width: 900px;
-      margin-top: 60px;
-      padding: 0 16px;
+      max-width: 960px;
+      margin-top: 70px;
+      margin-bottom: 160px; /* Space for fixed bottom components */
+      padding: 24px 16px;
       flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: calc(100vh - 60px);
     }
 
     /* ── Slide ──────────────────────────────────── */
@@ -79,52 +171,71 @@
       flex-direction: column;
       align-items: center;
       text-align: center;
-      animation: fadeIn .55s ease;
     }
     .slide.active { display: flex; }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(22px); }
-      to   { opacity: 1; transform: translateY(0); }
+    .slide-icon-wrapper {
+      position: relative;
+      width: 110px;
+      height: 110px;
+      background: rgba(34, 211, 238, 0.05);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      border: 1px solid rgba(34, 211, 238, 0.15);
+      box-shadow: 0 0 30px rgba(34, 211, 238, 0.05);
     }
-
     .slide-icon {
-      font-size: 3.8rem;
-      margin-bottom: 20px;
+      font-size: 3.2rem;
     }
 
     .slide-tag {
-      font-size: .72rem;
-      letter-spacing: .12em;
+      font-size: .75rem;
+      font-weight: 700;
+      letter-spacing: .15em;
       text-transform: uppercase;
       color: var(--accent);
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
 
     .slide-title {
-      font-size: clamp(1.4rem, 4vw, 2.1rem);
-      font-weight: 700;
-      line-height: 1.2;
-      margin-bottom: 16px;
+      font-size: clamp(1.6rem, 5vw, 2.4rem);
+      font-weight: 800;
+      line-height: 1.15;
+      margin-bottom: 18px;
       color: #fff;
+      letter-spacing: -0.01em;
     }
 
     .slide-body {
-      font-size: clamp(.92rem, 2.2vw, 1.08rem);
+      font-size: clamp(.95rem, 2.4vw, 1.15rem);
       line-height: 1.7;
       color: var(--muted);
-      max-width: 680px;
+      max-width: 720px;
+    }
+    .slide-body strong { color: #fff; font-weight: 600; }
+    .slide-body .highlight { color: var(--accent); font-weight: 600; text-shadow: 0 0 10px rgba(34, 211, 238, 0.15); }
+    .slide-body .warn { color: var(--danger); font-weight: 600; }
+
+    /* ── Visual Assets ─────────────────────────── */
+    .slide-visual {
+      width: 100%;
+      max-width: 600px;
+      margin: 24px 0;
+      min-height: 140px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
     }
 
-    .slide-body strong { color: var(--text); }
-    .slide-body .highlight { color: var(--accent); font-weight: 600; }
-    .slide-body .warn     { color: var(--danger);  font-weight: 600; }
-
+    /* Grids & Cards */
     .card-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-      gap: 14px;
-      margin-top: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 16px;
       width: 100%;
       max-width: 680px;
     }
@@ -132,34 +243,175 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 12px;
-      padding: 16px 12px;
+      padding: 18px 12px;
       text-align: center;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     }
-    .card-item i { font-size: 1.8rem; margin-bottom: 8px; display: block; color: var(--accent); }
-    .card-item span { font-size: .82rem; color: var(--muted); }
+    .card-item i { font-size: 2rem; margin-bottom: 10px; display: block; color: var(--accent); }
+    .card-item span { font-size: .85rem; color: var(--muted); font-weight: 500; }
 
-    /* ── Legenda ────────────────────────────────── */
-    .legendas {
-      position: fixed;
-      bottom: 90px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 90%;
-      max-width: 720px;
-      background: rgba(0,0,0,.75);
-      backdrop-filter: blur(6px);
-      border-radius: 10px;
-      padding: 10px 18px;
-      font-size: clamp(.82rem, 2vw, .95rem);
-      color: #ffe;
-      text-align: center;
-      line-height: 1.5;
-      min-height: 48px;
+    /* ── Dedicated CSS Animations ───────────────── */
+    /* Fade fadeInUp */
+    .active .anim-1 { animation: slideInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both; }
+    .active .anim-2 { animation: slideInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.25s both; }
+    .active .anim-3 { animation: slideInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both; }
+    .active .anim-4 { animation: slideInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.55s both; }
+
+    /* Pop entrance for Icon wrapper */
+    .active .slide-icon-wrapper {
+      animation: popIn 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+    .active .slide-icon {
+      animation: pulseGlowIcon 3s ease-in-out infinite 0.6s;
+    }
+
+    @keyframes slideInUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes popIn {
+      from { transform: scale(0.65); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    @keyframes pulseGlowIcon {
+      0%, 100% { transform: scale(1); filter: drop-shadow(0 0 0px rgba(34, 211, 238, 0)); }
+      50% { transform: scale(1.05); filter: drop-shadow(0 0 12px rgba(34, 211, 238, 0.5)); }
+    }
+
+    /* Custom Widget: QR Scanner Visual */
+    .scanner-mock {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      max-width: 280px;
+    }
+    .scanner-qr {
+      font-size: 3.5rem;
+      color: var(--text);
+      position: relative;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: opacity .3s;
+    }
+    .scanner-line {
+      position: absolute;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+      animation: scan 2s linear infinite;
+    }
+    @keyframes scan {
+      0%, 100% { top: 0%; }
+      50% { top: 100%; }
+    }
+
+    /* Custom Widget: 3-Hour Wipe Clock Visual */
+    .timer-mock {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .timer-ring {
+      width: 72px;
+      height: 72px;
+      border: 4px solid rgba(248, 113, 113, 0.1);
+      border-top-color: var(--danger);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: spin 3s linear infinite;
+    }
+    .timer-inner {
+      font-size: .88rem;
+      font-weight: 700;
+      color: var(--danger);
+      animation: spinReverse 3s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes spinReverse { to { transform: rotate(-360deg); } }
+
+    /* Custom Widget: Smart Out Panel */
+    .output-panel-mock {
+      background: #020617;
+      border: 1px solid rgba(129, 140, 248, 0.3);
+      border-radius: 8px;
+      padding: 12px;
+      width: 100%;
+      max-width:320px;
+      text-align: left;
+      font-family: monospace;
+      font-size: .8rem;
+    }
+    .panel-header {
+      border-bottom: 1px solid rgba(129, 140, 248, 0.2);
+      padding-bottom: 6px;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      color: var(--accent2);
+    }
+    .panel-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+      color: var(--text);
+    }
+    .panel-row.active {
+      background: rgba(52, 211, 153, 0.15);
+      color: var(--success);
+      font-weight: bold;
+      animation: blink 1.5s infinite;
+      padding: 4px 6px;
+      border-radius: 4px;
+    }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+    /* ── Legenda (Independent Panel) ───────────── */
+    .legendas-container {
+      position: fixed;
+      bottom: 84px; /* Placed cleanly above controls */
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      padding: 0 16px;
       z-index: 90;
+      transition: opacity .3s, transform .3s;
+    }
+    .legendas-container.hidden {
+      opacity: 0;
+      transform: translateY(15px);
+      pointer-events: none;
+    }
+    .legendas {
+      width: 100%;
+      max-width: 800px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(34, 211, 238, 0.25);
+      box-shadow: 0 -4px 20px -2px rgba(0,0,0,0.5);
+      backdrop-filter: blur(12px);
+      border-radius: 12px;
+      padding: 14px 24px;
+      font-size: clamp(.88rem, 2.2vw, 1.05rem);
+      color: #f8fafc;
+      text-align: center;
+      line-height: 1.6;
+      min-height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     /* ── Controles ──────────────────────────────── */
@@ -170,60 +422,100 @@
       right: 0;
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 12px;
-      padding: 12px 20px;
-      background: rgba(11,28,45,.9);
-      border-top: 1px solid var(--border);
-      backdrop-filter: blur(8px);
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 24px;
+      background: rgba(4, 6, 13, 0.95);
+      border-top: 1px solid rgba(34, 211, 238, 0.1);
+      backdrop-filter: blur(12px);
       z-index: 100;
+    }
+
+    .ctrl-grp {
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
 
     .ctrl-btn {
       background: var(--surface);
       border: 1px solid var(--border);
       color: var(--text);
-      border-radius: 50px;
-      padding: 8px 20px;
+      border-radius: 8px;
+      padding: 8px 16px;
       font-size: .88rem;
+      font-weight: 600;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 7px;
-      transition: background .2s, color .2s;
+      gap: 8px;
+      transition: all .2s;
     }
-    .ctrl-btn:hover    { background: rgba(0,201,167,.15); color: var(--accent); }
-    .ctrl-btn:disabled { opacity: .35; cursor: not-allowed; }
-    .ctrl-btn.play     { background: var(--accent); color: #0b1c2d; border-color: var(--accent); font-weight: 700; }
-    .ctrl-btn.play:hover { background: #00b394; }
+    .ctrl-btn:hover { background: var(--surface-hover); color: var(--accent); border-color: var(--accent); }
+    .ctrl-btn:disabled { opacity: .25; cursor: not-allowed; }
+    
+    .ctrl-btn.play {
+      background: var(--accent);
+      color: var(--bg);
+      border-color: var(--accent);
+      box-shadow: 0 0 15px rgba(34, 211, 238, 0.25);
+    }
+    .ctrl-btn.play:hover {
+      background: #06b6d4;
+      box-shadow: 0 0 20px rgba(34, 211, 238, 0.4);
+    }
 
+    .ctrl-btn.cc-active {
+      color: var(--accent);
+      border-color: var(--accent);
+      background: rgba(34, 211, 238, 0.05);
+    }
+
+    .progress-bar-container {
+      flex: 1;
+      max-width: 320px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
     .progress-bar {
       flex: 1;
-      max-width: 260px;
-      height: 4px;
-      background: rgba(255,255,255,.12);
+      height: 6px;
+      background: rgba(255, 255, 255, 0.08);
       border-radius: 999px;
       overflow: hidden;
+      position: relative;
     }
     .progress-fill {
       height: 100%;
-      background: var(--accent);
+      background: linear-gradient(90deg, var(--accent) 0%, var(--accent2) 100%);
       border-radius: 999px;
-      transition: width .4s linear;
+      width: 0%;
+      transition: width 0.3s ease;
     }
 
     .slide-counter {
-      font-size: .78rem;
+      font-size: .82rem;
+      font-weight: 700;
       color: var(--muted);
-      min-width: 54px;
+      min-width: 58px;
       text-align: center;
     }
 
     /* ── Responsive ─────────────────────────────── */
-    @media (max-width: 560px) {
-      .slide-icon { font-size: 2.6rem; }
-      .card-grid  { grid-template-columns: repeat(2, 1fr); }
-      .progress-bar { max-width: 120px; }
+    @media (max-width: 680px) {
+      .hdr { padding: 10px 16px; }
+      .settings-panel { right: 16px; width: calc(100vw - 32px); }
+      .stage { margin-bottom: 220px; padding: 16px 12px; }
+      .legendas-container { bottom: 130px; }
+      .controls {
+        flex-direction: column;
+        padding: 16px;
+        gap: 12px;
+      }
+      .controls .ctrl-grp { width: 100%; justify-content: space-between; }
+      .progress-bar-container { width: 100%; max-width: none; }
+      .card-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
     }
   </style>
 </head>
@@ -231,276 +523,628 @@
 
 <!-- Header -->
 <header class="hdr">
-  <div class="hdr-logo">EBI <span>Sistema de Controle</span></div>
-  <button class="hdr-close" onclick="history.back()" title="Fechar apresentação">
-    <i class="fas fa-times"></i>
-  </button>
+  <div class="hdr-brand">
+    <div class="hdr-logo">EBI <span>Controle de Acesso</span></div>
+  </div>
+  <div class="hdr-actions">
+    <button class="settings-trigger" onclick="toggleSettings()" title="Configurações de Áudio">
+      <i class="fas fa-cog"></i> Voz & Áudio
+    </button>
+    <button class="hdr-close" onclick="fecharApresentacao()" title="Fechar">
+      <i class="fas fa-times"></i>
+    </button>
+  </div>
 </header>
+
+<!-- Settings Dropdown -->
+<div class="settings-panel" id="settingsPanel">
+  <div class="setting-group">
+    <div class="setting-label">Escolher Voz (PT-BR)</div>
+    <select class="setting-select" id="voiceSelect" onchange="changeVoice()">
+      <option value="">Carregando vozes...</option>
+    </select>
+  </div>
+  
+  <div class="setting-group">
+    <div class="setting-label">Velocidade da Voz</div>
+    <div class="setting-slider-container">
+      <i class="fas fa-running" style="font-size:.75rem;color:var(--muted)"></i>
+      <input type="range" class="setting-slider" id="rateRange" min="0.7" max="1.3" step="0.05" value="0.95" onchange="saveSpeechSettings()">
+      <span id="rateValue" style="font-size:.75rem;min-width:24px;text-align:right">0.95x</span>
+    </div>
+  </div>
+
+  <div class="setting-group" style="border-top:1px solid rgba(255,255,255,0.06);padding-top:10px;margin-top:4px;">
+    <div style="font-size:.7rem;color:var(--muted);line-height:1.4">
+      <i class="fas fa-info-circle"></i> Navegadores modernos como Chrome e Edge oferecem vozes neurais ("Google" ou "Natural") de altíssima fidelidade.
+    </div>
+  </div>
+</div>
 
 <!-- Stage -->
 <div class="stage">
 
   <!-- Slide 1 — Título -->
-  <div class="slide active" data-narr="Bem-vindo! Esta apresentação explica o que é o sistema de controle de entrada e saída do E B I — Ensino Bíblico Infantil.">
-    <div class="slide-icon">📖</div>
-    <div class="slide-tag">EBI — Ensino Bíblico Infantil</div>
-    <h1 class="slide-title">Sistema de Controle<br>de Entrada e Saída</h1>
-    <p class="slide-body">
-      Uma solução desenvolvida para <strong>facilitar e tornar mais seguro</strong> o atendimento às crianças no EBI, com total conformidade com a <span class="highlight">LGPD</span>.
-    </p>
-  </div>
-
-  <!-- Slide 2 — O que é -->
-  <div class="slide" data-narr="O sistema é uma ferramenta digital para controlar a entrada e a saída das crianças no E B I. Ele foi desenvolvido pensando na segurança e na privacidade das famílias.">
-    <div class="slide-icon">🏫</div>
-    <div class="slide-tag">O que é</div>
-    <h2 class="slide-title">Controle Digital<br>de Crianças no EBI</h2>
-    <p class="slide-body">
-      Ferramenta para as congregações gerenciarem com <strong>agilidade e segurança</strong> a entrada e saída de crianças durante o Ensino Bíblico Infantil.
-    </p>
-  </div>
-
-  <!-- Slide 3 — LGPD -->
-  <div class="slide" data-narr="Os dados das crianças e dos responsáveis nunca ficam armazenados no sistema. Tudo é pensado em conformidade com a L G P D — Lei Geral de Proteção de Dados. Os dados ficam apenas nos cartões Q R Code que os próprios pais guardam.">
-    <div class="slide-icon">🔒</div>
-    <div class="slide-tag">Privacidade & LGPD</div>
-    <h2 class="slide-title">Seus dados ficam<br>com você</h2>
-    <p class="slide-body">
-      Não há cadastro permanente de crianças ou pais no sistema.<br><br>
-      Os dados pessoais ficam <strong>somente nos cartões QR Code</strong> que os próprios responsáveis guardam consigo — em total conformidade com a <span class="highlight">LGPD</span>.
-    </p>
-  </div>
-
-  <!-- Slide 4 — QR Code Cadastro -->
-  <div class="slide" data-narr="Antes do E B I, os responsáveis acessam o site Q R Code ponto C C B Campinas ponto O R G ponto B R para gerar seu cartão com os dados: nome da criança, nome do responsável, telefone, congregação e idade. Cada responsável tem seu próprio cartão.">
-    <div class="slide-icon">📲</div>
-    <div class="slide-tag">Passo 1 — Antes do EBI</div>
-    <h2 class="slide-title">Os pais geram<br>seu cartão QR Code</h2>
-    <p class="slide-body">
-      Acesse <span class="highlight">qrcode.ccbcampinas.org.br</span> e informe:<br><br>
-      <strong>Nome(s) da(s) criança(s)</strong> · <strong>Nome do responsável</strong><br>
-      <strong>Telefone</strong> · <strong>Congregação</strong> · <strong>Idade(s)</strong><br><br>
-      Cada responsável tem seu <strong>cartão individual</strong>, pois é ele quem entrega a criança no EBI.
-    </p>
-  </div>
-
-  <!-- Slide 5 — Entrada -->
-  <div class="slide" data-narr="Na entrada do E B I, o responsável apresenta seu Q R Code. O sistema lê o código com um leitor ou os dados podem ser digitados manualmente. Os dados são registrados de forma segura apenas para aquele evento.">
-    <div class="slide-icon">🚪</div>
-    <div class="slide-tag">Passo 2 — Na chegada</div>
-    <h2 class="slide-title">Entrada rápida<br>e segura</h2>
-    <div class="card-grid">
-      <div class="card-item">
-        <i class="fas fa-qrcode"></i>
-        <span>Leitor de<br>QR Code</span>
-      </div>
-      <div class="card-item">
-        <i class="fas fa-keyboard"></i>
-        <span>Digitação<br>manual</span>
-      </div>
-      <div class="card-item">
-        <i class="fas fa-shield-alt"></i>
-        <span>Dados<br>temporários</span>
+  <div class="slide active" data-narr="Bem-vindo! Esta apresentação mostra o sistema E B I — Ensino Bíblico Infantil, uma plataforma inovadora desenvolvida para organizar o controle de entrada e saída das crianças com máxima segurança e em total conformidade com a L G P D.">
+    <div class="slide-icon-wrapper">
+      <div class="slide-icon">📖</div>
+    </div>
+    <div class="slide-tag anim-1">EBI — Ensino Bíblico Infantil</div>
+    <h1 class="slide-title anim-2">Apresentação do<br>Sistema de Controle</h1>
+    
+    <div class="slide-visual anim-3">
+      <div class="card-grid">
+        <div class="card-item" style="border-color: rgba(34, 211, 238, 0.4)">
+          <i class="fas fa-shield-alt"></i>
+          <span>Dados Protegidos</span>
+        </div>
+        <div class="card-item" style="border-color: rgba(129, 140, 248, 0.4)">
+          <i class="fas fa-running"></i>
+          <span>Entrada Rápida</span>
+        </div>
+        <div class="card-item" style="border-color: rgba(52, 211, 153, 0.4)">
+          <i class="fas fa-chart-bar"></i>
+          <span>Estatísticas de Presença</span>
+        </div>
       </div>
     </div>
-    <p class="slide-body" style="margin-top:16px">
-      Os dados são transferidos do cartão para o sistema e <strong>ficam armazenados somente durante o evento</strong> — máximo 3 horas.
+
+    <p class="slide-body anim-4">
+      Uma solução que traz <strong>organização para a igreja, controle ágil para os coordenadores</strong> e <span class="highlight">tranquilidade absoluta para os pais</span>.
     </p>
   </div>
 
-  <!-- Slide 6 — Dados Temporários -->
-  <div class="slide" data-narr="Após o evento, o sistema apaga automaticamente todos os dados pessoais. Ficam armazenadas apenas estatísticas agregadas, como quantidade de crianças, faixa etária, portaria, cidade e congregação — sem nenhum dado pessoal.">
-    <div class="slide-icon">⏱️</div>
-    <div class="slide-tag">Segurança dos dados</div>
-    <h2 class="slide-title">Dados apagados<br>após o evento</h2>
-    <p class="slide-body">
-      Após o término do EBI, <strong>todos os dados pessoais são removidos</strong>.<br><br>
-      Ficam apenas <span class="highlight">estatísticas anônimas</span>: quantidade de crianças, faixa etária, portaria, cidade, congregação e histórico por dia — <span class="warn">sem nome ou dado pessoal</span>.
-    </p>
-  </div>
-
-  <!-- Slide 7 — Pulseira -->
-  <div class="slide" data-narr="Opcionalmente, o sistema pode ser usado com uma impressora de pulseiras. Assim que a criança é cadastrada, o sistema imprime uma pulseira com os dados da criança e um Q R Code de identificação. Isso acelera muito a entrada. O modelo suportado é a Elgin Bematech L 42 D T.">
-    <div class="slide-icon">🖨️</div>
-    <div class="slide-tag">Opcional — Pulseiras</div>
-    <h2 class="slide-title">Impressão de pulseiras<br>na entrada</h2>
-    <p class="slide-body">
-      O sistema suporta impressora de pulseiras para <strong>agilizar a entrada</strong>.<br><br>
-      Modelo suportado: <span class="highlight">Elgin / Bematech L42DT</span>.<br><br>
-      O procedimento completo de instalação e configuração está disponível em <strong>Menu → Impressora</strong> dentro do sistema.
-    </p>
-  </div>
-
-  <!-- Slide 8 — Saída -->
-  <div class="slide" data-narr="O controle de saída é feito pelos coordenadores diretamente no smartphone. O responsável apresenta o Q R Code da pulseira ou informa o código. O sistema exibe o nome da criança no painel, visível por todos os coordenadores do E B I.">
-    <div class="slide-icon">👨‍👧</div>
-    <div class="slide-tag">Passo 3 — Na saída</div>
-    <h2 class="slide-title">Saída controlada<br>e segura</h2>
-    <p class="slide-body">
-      O responsável apresenta o <strong>QR Code da pulseira</strong>.<br>
-      O coordenador registra a saída pelo <strong>smartphone</strong>.<br><br>
-      O <span class="highlight">Painel de Saída</span> exibe o nome da criança em tempo real — visível para todos os coordenadores dentro do EBI e na porta de saída.
-    </p>
-  </div>
-
-  <!-- Slide 9 — SelfService -->
-  <div class="slide" data-narr="O sistema é S E L F S E R V I C E. Cada congregação cria a sua própria conta com um e-mail e uma senha. A conta dá acesso ao sistema todos os dias de E B I, mantendo as estatísticas de presença ao longo do tempo. Se esquecer a senha, é só pedir o reset pelo e-mail.">
-    <div class="slide-icon">🏛️</div>
-    <div class="slide-tag">SelfService — Cada congregação</div>
-    <h2 class="slide-title">Uma conta por<br>congregação</h2>
-    <p class="slide-body">
-      Crie sua conta com um <strong>e-mail</strong> e <strong>senha</strong>.<br>
-      Reutilize nos próximos EBIs — as <span class="highlight">estatísticas acumulam</span> automaticamente.<br><br>
-      Esqueceu a senha? Solicite o <strong>reset pelo e-mail</strong> e receba o link de acesso.
-    </p>
-  </div>
-
-  <!-- Slide 10 — Estatísticas -->
-  <div class="slide" data-narr="Com o tempo, você terá um histórico completo de presença no E B I: total de crianças, faixa etária, portaria de entrada, cidade e congregação de origem — tudo em gráficos e tabelas para acompanhamento.">
-    <div class="slide-icon">📊</div>
-    <div class="slide-tag">Histórico & Estatísticas</div>
-    <h2 class="slide-title">Acompanhe a presença<br>ao longo do tempo</h2>
-    <div class="card-grid">
-      <div class="card-item">
-        <i class="fas fa-baby"></i>
-        <span>Crianças<br>por dia</span>
-      </div>
-      <div class="card-item">
-        <i class="fas fa-birthday-cake"></i>
-        <span>Faixa<br>etária</span>
-      </div>
-      <div class="card-item">
-        <i class="fas fa-door-open"></i>
-        <span>Por<br>portaria</span>
-      </div>
-      <div class="card-item">
-        <i class="fas fa-church"></i>
-        <span>Por<br>congregação</span>
+  <!-- Slide 2 — LGPD e Sem Cadastro -->
+  <div class="slide" data-narr="O grande diferencial do sistema é que ele foi estruturado de acordo com a Lei Geral de Proteção de Dados. Não há cadastro de pessoas, como crianças ou pais, no banco de dados. Os dados pessoais das famílias ficam armazenados exclusivamente em cartões Q R Code que os próprios pais guardam consigo.">
+    <div class="slide-icon-wrapper" style="border-color: rgba(52, 211, 153, 0.2)">
+      <div class="slide-icon">🔒</div>
+    </div>
+    <div class="slide-tag anim-1">Privacidade Garantida</div>
+    <h2 class="slide-title anim-2">Total Conformidade<br>com a LGPD</h2>
+    
+    <div class="slide-visual anim-3">
+      <div class="card-item" style="max-width: 320px; border-color: var(--success); background: rgba(52, 211, 153, 0.04)">
+        <i class="fas fa-user-shield" style="color: var(--success); font-size: 2.5rem;"></i>
+        <div style="font-weight: 700; margin-top: 10px; margin-bottom: 6px; color: #fff;">Sem Cadastro Central</div>
+        <p style="font-size: .8rem; color: var(--muted); line-height: 1.4">Nenhum dado pessoal de crianças ou de responsáveis é armazenado permanentemente nos servidores do sistema.</p>
       </div>
     </div>
+
+    <p class="slide-body anim-4">
+      Não há banco de dados central com nomes das crianças ou telefones. Todos os dados da família ficam armazenados <span class="highlight">exclusivamente no cartão QR Code</span> em posse dos próprios pais — privacidade em primeiro lugar.
+    </p>
   </div>
 
-  <!-- Slide 11 — CTA -->
-  <div class="slide" data-narr="Pronto! Agora você já conhece o sistema E B I. Para criar sua conta, basta clicar em Criar minha Conta e seguir as instruções. O sistema foi desenvolvido para ser simples, seguro e fácil de usar. Boa prática do E B I!">
-    <div class="slide-icon">🚀</div>
-    <div class="slide-tag">Comece agora</div>
-    <h2 class="slide-title">Simples, seguro<br>e pronto para o EBI!</h2>
-    <p class="slide-body" style="margin-bottom:28px">
-      Crie a conta da sua congregação e comece a usar.<br>
-      Qualquer dúvida, o menu <strong>Como Usar</strong> dentro do sistema tem o passo a passo completo.
+  <!-- Slide 3 — Cadastro Prévio dos Pais -->
+  <div class="slide" data-narr="Para começar, os responsáveis realizam um cadastro simples e rápido pelo smartphone, acessando o site qrcode ponto c c b campinas ponto o r g ponto b r. Ali, informam os dados básicos: nome das crianças, congregação comum, telefone de contato e idade de cada criança.">
+    <div class="slide-icon-wrapper">
+      <div class="slide-icon">📲</div>
+    </div>
+    <div class="slide-tag anim-1">Passo 1 — Cadastro</div>
+    <h2 class="slide-title anim-2">Os Pais Cadastram<br>seus Dados</h2>
+    
+    <div class="slide-visual anim-3" style="flex-direction: column; gap:10px;">
+      <div style="background: rgba(34, 211, 238, 0.08); border: 1px dashed var(--accent); padding: 10px 20px; border-radius: 8px; font-weight: bold; font-family: monospace; font-size: min(1rem, 4vw); color: var(--accent);">
+        https://qrcode.ccbcampinas.org.br/
+      </div>
+      <div style="font-size: .78rem; color: var(--muted); margin-top: 6px;">
+        <i class="fas fa-info-circle"></i> Celular, Computador ou Tablet
+      </div>
+    </div>
+
+    <p class="slide-body anim-4">
+      Cada responsável terá seu <strong>cartão individual</strong> com seu respectivo QR Code, pois no sistema o controle é atrelado especificamente ao responsável que de fato <span class="highlight">entrega e retira a criança no EBI</span>.
     </p>
-    <a href="selfservice.php" style="
-        display:inline-flex;align-items:center;gap:10px;
-        background:var(--accent);color:#0b1c2d;font-weight:700;
-        padding:13px 28px;border-radius:50px;text-decoration:none;
-        font-size:1rem;transition:background .2s">
-      <i class="fas fa-user-plus"></i> Criar minha conta
-    </a>
+  </div>
+
+  <!-- Slide 4 — Transferência de Dados na Entrada -->
+  <div class="slide" data-narr="No momento de deixar as crianças no E B I, os responsáveis apresentam o Q R Code. O sistema do E B I lê esse código usando a câmera ou um leitor manual e transfere os dados instantaneamente para a tela do computador, sem precisar digitar nada.">
+    <div class="slide-icon-wrapper" style="border-color: rgba(129, 140, 248, 0.2)">
+      <div class="slide-icon">🚪</div>
+    </div>
+    <div class="slide-tag anim-1">Passo 2 — Na Recepção</div>
+    <h2 class="slide-title anim-2">Entrada Rápida na Porta</h2>
+    
+    <div class="slide-visual anim-3">
+      <div class="scanner-mock">
+        <div class="scanner-qr">
+          <i class="fas fa-qrcode"></i>
+          <div class="scanner-line"></div>
+        </div>
+        <div style="text-align: left;">
+          <div style="font-weight:700;color:#fff;font-size:.85rem;margin-bottom:4px;">QR Code Lido!</div>
+          <div style="font-size:.72rem;color:var(--success);font-weight:600;"><i class="fas fa-check-circle"></i> Sucesso</div>
+          <div style="font-size:.65rem;color:var(--muted);margin-top:6px;font-family:monospace;">Enzo, Lucas · Comum: Bonfim</div>
+        </div>
+      </div>
+    </div>
+
+    <p class="slide-body anim-4">
+      Os dados contidos no QR Code do responsável são enviados instantaneamente para o sistema. Se houver algum problema de leitura, o operador também pode <span class="highlight">digitar as informações manualmente</span> em poucos segundos.
+    </p>
+  </div>
+
+  <!-- Slide 5 — Temporário de 3 horas -->
+  <div class="slide" data-narr="Como medida importante de segurança, esses dados ficam na memória do sistema apenas durante o período máximo de 3 horas, tempo de duração do culto ou evento. Após esse tempo, o sistema apaga permanentemente todos os nomes das crianças e dos pais.">
+    <div class="slide-icon-wrapper" style="border-color: var(--danger)">
+      <div class="slide-icon">⏱️</div>
+    </div>
+    <div class="slide-tag anim-1">Apagamento Automático</div>
+    <h2 class="slide-title anim-2">Exclusão dos Dados<br>Após o Culto</h2>
+    
+    <div class="slide-visual anim-3">
+      <div style="display:flex; align-items:center; gap:28px;">
+        <div class="timer-mock">
+          <div class="timer-ring">
+            <div class="timer-inner">3h</div>
+          </div>
+          <span style="font-size:.75rem;color:var(--danger);font-weight:600;">Máximo</span>
+        </div>
+        <div style="font-size:2rem;color:var(--muted);">➔</div>
+        <div class="card-item" style="border-color: rgba(248, 113, 113, 0.3); background: rgba(248, 113, 113, 0.05); text-align: center; max-width: 140px;">
+          <i class="fas fa-dumpster-fire" style="color:var(--danger)"></i>
+          <span style="font-size:.78rem;font-weight:bold;">Wipe Geral</span>
+        </div>
+      </div>
+    </div>
+
+    <p class="slide-body anim-4">
+      Depois de apagados, restam apenas <span class="highlight">estatísticas agregadas e anônimas</span> necessárias para relatórios da coordenação, como contagem de crianças por faixa etária, comum congregação, portaria, cidade e data, <span class="warn">sem identificar nenhuma criança</span>.
+    </p>
+  </div>
+
+  <!-- Slide 6 — Pulseiras Opcionais -->
+  <div class="slide" data-narr="Para agilizar ainda mais a entrada, o sistema pode ser utilizado opcionalmente em conjunto com uma impressora térmica de pulseiras. No momento da leitura do Q R Code, a pulseira é impressa e colocada no braço da criança. Atualmente, o sistema suporta o modelo Elgin Bematech L 42 D T, com tamanho de pulseira padrão.">
+    <div class="slide-icon-wrapper">
+      <div class="slide-icon">🖨️</div>
+    </div>
+    <div class="slide-tag anim-1">Opcional Eficiente</div>
+    <h2 class="slide-title anim-2">Pulseiras Automáticas<br>Elgin Bematech L42DT</h2>
+    
+    <div class="slide-visual anim-3">
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px 20px; width: 100%; max-width: 320px; display:flex; flex-direction:column; gap:8px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-weight:bold;font-size:.85rem;"><i class="fas fa-print" style="color:var(--accent)"></i> Impressora Detectada</span>
+          <span style="font-size:.7rem; background:rgba(52, 211, 153, 0.15); color:var(--success); padding:2px 8px; border-radius:12px;">OK</span>
+        </div>
+        <div style="font-size:.75rem; color:var(--muted); text-align:left; border-top:1px solid rgba(255,255,255,0.06); padding-top:6px;">
+          Modelo homologado de fábrica: <strong>Elgin/Bematech L42DT</strong> com tamanho de pulseira padrão. O manual detalhado de configuração está no <strong>Menu → Impressora</strong>.
+        </div>
+      </div>
+    </div>
+
+    <p class="slide-body anim-4">
+      A pulseira impressa contém os nomes, o telefone do pai e um <span class="highlight">QR Code individual de saída</span>, permitindo que os operadores escaneiem o código na saída para liberar a criança com rapidez enorme.
+    </p>
+  </div>
+
+  <!-- Slide 7 — Controle de Saída e Notificações no Painel -->
+  <div class="slide" data-narr="O controle de saída foi desenhado para ser prático e tecnológico. Os coordenadores de portaria usam seus próprios smartphones para escanear a pulseira da criança ou informar o código de identificação. O sistema processa o pedido e aciona o Painel de Saída.">
+    <div class="slide-icon-wrapper" style="border-color: rgba(129, 140, 248, 0.2)">
+      <div class="slide-icon">👨‍👧</div>
+    </div>
+    <div class="slide-tag anim-1">Passo 3 — Saída</div>
+    <h2 class="slide-title anim-2">Controle de Saída<br>Pelo Smartphone</h2>
+    
+    <div class="slide-visual anim-3">
+      <div class="card-item" style="max-width: 280px; border-color: var(--accent2); background: rgba(129, 140, 248, 0.03)">
+        <i class="fas fa-mobile-alt" style="color: var(--accent2)"></i>
+        <div style="font-weight:bold;margin-bottom:4px;color:#fff;">Coordenadores na Sala</div>
+        <p style="font-size:.72rem;color:var(--muted);line-height:1.4">Lêem o QR Code no smartphone para organizar o fluxo e ordenar as saídas no painel.</p>
+      </div>
+    </div>
+
+    <p class="slide-body anim-4">
+      Esta ferramenta otimiza o trabalho, permitindo que a coordenação solicite a liberação da criança direto da biblioteca ou sala enquanto os pais <span class="highlight">aguardam na porta externa</span>.
+    </p>
+  </div>
+
+  <!-- Slide 8 — Funcionamento da Devolução Integrada -->
+  <div class="slide" data-narr="Ao ler o código na saída, o nome da criança passa a piscar no grande painel colocado na porta. Assim, o coordenador que está do lado de fora identifica qual criança deve buscar, e quem está dentro do E B I localiza a criança e a envia com segurança para o responsável correto.">
+    <div class="slide-icon-wrapper" style="border-color: rgba(52, 211, 153, 0.2)">
+      <div class="slide-icon">📺</div>
+    </div>
+    <div class="slide-tag anim-1">Devolução Integrada</div>
+    <h2 class="slide-title anim-2">Painel de Saída Eletrônico</h2>
+    
+    <div class="slide-visual anim-3">
+      <div class="output-panel-mock">
+        <div class="panel-header">
+          <span>PAINEL DE SAÍDA EBI</span>
+          <span>ONLINE</span>
+        </div>
+        <div class="panel-row">
+          <span>002 . CLARA RIBEIRO</span>
+          <span style="color:var(--success)">ENTREGUE</span>
+        </div>
+        <div class="panel-row active">
+          <span>005 . ENZO COSTA</span>
+          <span>CHAMANDO</span>
+        </div>
+        <div class="panel-row">
+          <span>006 . GABRIEL SOUZA</span>
+          <span style="color:var(--muted)">AGUARDANDO</span>
+        </div>
+      </div>
+    </div>
+
+    <p class="slide-body anim-4">
+      Sem correria de nomes no microfone ou desorganização na porta. A saída ocorre em <span class="highlight">silêncio e de forma visual</span>, mantendo o ambiente do culto e do EBI em perfeita paz.
+    </p>
+  </div>
+
+  <!-- Slide 9 — Conceito SelfService e Estatísticas por Congregação -->
+  <div class="slide" data-narr="O sistema foi desenvolvido sob o conceito Self Service. Isso significa que ele é independente e gratuito. Cada congregação de qualquer cidade pode criar a sua própria conta com e-mail e senha. Uma vez criada, ela pode reutilizar esse ambiente em todos os seus eventos, gerando um histórico consolidado.">
+    <div class="slide-icon-wrapper">
+      <div class="slide-icon">🏛️</div>
+    </div>
+    <div class="slide-tag anim-1">Conceito Inteligente</div>
+    <h2 class="slide-title anim-2">Cada Congregação é<br>Dona da sua Conta</h2>
+    
+    <div class="slide-visual anim-3">
+      <div class="card-grid" style="max-width: 520px;">
+        <div class="card-item" style="border-color: rgba(255,255,255,0.06);">
+          <i class="fas fa-plus-circle" style="color:var(--accent)"></i>
+          <span>Crie sua conta</span>
+        </div>
+        <div class="card-item" style="border-color: rgba(255,255,255,0.06);">
+          <i class="fas fa-calendar-check" style="color:var(--accent)"></i>
+          <span>Use nos cultos</span>
+        </div>
+        <div class="card-item" style="border-color: rgba(255,255,255,0.06);">
+          <i class="fas fa-heart" style="color:var(--accent)"></i>
+          <span>Autonomia total</span>
+        </div>
+      </div>
+    </div>
+
+    <p class="slide-body anim-4">
+      Isso elimina a necessidade de equipe técnica especializada local. A própria congregação gerencia seus logins, <span class="highlight">acumula estatísticas de presença</span> e analisa o engajamento ao longo dos meses.
+    </p>
+  </div>
+
+  <!-- Slide 10 — Reset de Senha Inteligente -->
+  <div class="slide" data-narr="Se a coordenação de alguma igreja esquecer os dados de acesso, não há complicação. O sistema possui um botão de redefinição automática. O usuário informa o e-mail da conta, e o sistema envia imediatamente um link seguro de reset para cadastrar uma nova senha.">
+    <div class="slide-icon-wrapper">
+      <div class="slide-icon">🔑</div>
+    </div>
+    <div class="slide-tag anim-1">Segurança de Acesso</div>
+    <h2 class="slide-title anim-2">Esqueceu a Senha?<br>Redefinição Simples</h2>
+    
+    <div class="slide-visual anim-3">
+      <div style="background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; width: 100%; max-width: 290px; text-align: left; display:flex; flex-direction:column; gap:8px;">
+        <span style="font-size:.7rem; color:var(--muted); font-weight:700; text-transform:uppercase;">Recuperar Acesso</span>
+        <div style="background:#090e1a; border: 1px solid rgba(255,255,255,0.08); border-radius:6px; padding:8px 12px; font-size:.8rem; color: var(--muted); display:flex; justify-content:space-between; align-items:center;">
+          <span>seu_email@igreja.com</span>
+          <i class="fas fa-envelope" style="color:var(--accent)"></i>
+        </div>
+        <button style="background:var(--accent); color:var(--bg); border:none; padding:8px; border-radius:6px; font-weight:bold; font-size:.8rem; cursor:default; outline:none; text-align:center;">
+          <i class="fas fa-paper-plane"></i> Enviar Link de Recuperação
+        </button>
+      </div>
+    </div>
+
+    <p class="slide-body anim-4">
+      Com este fluxo automático de reset integrado ao seu e-mail cadastrado, você <span class="highlight">garante a autonomia da congregação</span> sem depender de intervenções manuais de terceiros.
+    </p>
+  </div>
+
+  <!-- Slide 11 — Conclusão / CTA -->
+  <div class="slide" data-narr="Em resumo, o sistema E B I combina facilidade, segurança, conformidade legal e agilidade em um único local e totalmente gratuito. Pronto para elevar o nível de segurança do seu Ensino Bíblico Infantil? Toque em Criar Minha Conta para começar agora mesmo! Boa aula e bom trabalho!">
+    <div class="slide-icon-wrapper" style="border-color: var(--accent); background:rgba(34, 211, 238, 0.08);">
+      <div class="slide-icon">🚀</div>
+    </div>
+    <div class="slide-tag anim-1">Pronto para Iniciar</div>
+    <h2 class="slide-title anim-2">Sua Congregação Organizada<br>e Segura!</h2>
+    
+    <div class="slide-visual anim-3">
+      <a href="selfservice.php" class="ctrl-btn play" style="padding: 12px 28px; text-decoration: none; border-radius: 50px; font-size:1.05rem;">
+        <i class="fas fa-user-plus"></i> Criar Minha Conta
+      </a>
+    </div>
+
+    <p class="slide-body anim-4">
+      Cadastre gratuitamente a sua congregação e utilize no próximo EBI. Trazendo mais <span class="highlight">segurança e inovação tecnológica</span> para a obra de Deus!
+    </p>
   </div>
 
 </div><!-- /stage -->
 
-<!-- Legenda -->
-<div class="legendas" id="legendas">Clique em <strong>▶ Reproduzir</strong> para iniciar com narração, ou avance os slides manualmente.</div>
+<!-- Legenda (Independente e posicionada mais abaixo, acima dos controles) -->
+<div class="legendas-container" id="legendasContainer">
+  <div class="legendas" id="legendas">Clique em <strong>▶ Reproduzir</strong> nas configurações abaixo para iniciar a apresentação guiada com áudio.</div>
+</div>
 
-<!-- Controles -->
+<!-- Controles Fixos no Rodapé -->
 <div class="controls">
-  <button class="ctrl-btn" id="btnPrev" onclick="anterior()" disabled>
-    <i class="fas fa-chevron-left"></i> Anterior
-  </button>
-
-  <button class="ctrl-btn play" id="btnPlay" onclick="togglePlay()">
-    <i class="fas fa-play" id="playIcon"></i> <span id="playLabel">Reproduzir</span>
-  </button>
-
-  <div class="progress-bar">
-    <div class="progress-fill" id="progressFill" style="width:0%"></div>
+  <div class="ctrl-grp">
+    <button class="ctrl-btn" id="btnPrev" onclick="anterior()" disabled>
+      <i class="fas fa-chevron-left"></i> Anterior
+    </button>
+    <button class="ctrl-btn" id="btnCC" onclick="toggleCC()" title="Ligar/Desligar Legendas">
+      <i class="fas fa-closed-captioning"></i> Legenda: <span id="ccLabel">ON</span>
+    </button>
   </div>
 
-  <div class="slide-counter" id="counter">1 / 11</div>
+  <div class="progress-bar-container">
+    <button class="ctrl-btn play" id="btnPlay" onclick="togglePlay()" style="min-width: 126px;">
+      <i class="fas fa-play" id="playIcon"></i> <span id="playLabel">Reproduzir</span>
+    </button>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+    </div>
+    <div class="slide-counter" id="counter">1 / 11</div>
+  </div>
 
-  <button class="ctrl-btn" id="btnNext" onclick="proximo()">
-    Próximo <i class="fas fa-chevron-right"></i>
-  </button>
+  <div class="ctrl-grp">
+    <button class="ctrl-btn" id="btnNext" onclick="proximo()">
+      Próximo <i class="fas fa-chevron-right"></i>
+    </button>
+  </div>
 </div>
 
 <script>
-const slides    = document.querySelectorAll('.slide');
-const legendas  = document.getElementById('legendas');
-const counter   = document.getElementById('counter');
-const fill      = document.getElementById('progressFill');
-const btnPrev   = document.getElementById('btnPrev');
-const btnNext   = document.getElementById('btnNext');
-const playIcon  = document.getElementById('playIcon');
+const slides = document.querySelectorAll('.slide');
+const legendas = document.getElementById('legendas');
+const legendasContainer = document.getElementById('legendasContainer');
+const ccLabel = document.getElementById('ccLabel');
+const counter = document.getElementById('counter');
+const fill = document.getElementById('progressFill');
+const btnPrev = document.getElementById('btnPrev');
+const btnNext = document.getElementById('btnNext');
+const playIcon = document.getElementById('playIcon');
 const playLabel = document.getElementById('playLabel');
-const total     = slides.length;
+const voiceSelect = document.getElementById('voiceSelect');
+const rateRange = document.getElementById('rateRange');
+const rateValue = document.getElementById('rateValue');
+const settingsPanel = document.getElementById('settingsPanel');
+const total = slides.length;
 
-let current   = 0;
-let playing   = false;
+let current = 0;
+let playing = false;
+let ccEnabled = true;
 let utterance = null;
 let autoTimer = null;
+let voicesList = [];
+
+// Speech Settings State
+let selectedVoiceURI = '';
+let speechRate = 0.95;
 
 /* ── Navegação ────────────────────── */
 function goTo(idx) {
+  // Remove active do atual
   slides[current].classList.remove('active');
+  
+  // Atualiza index
   current = Math.max(0, Math.min(idx, total - 1));
+  
+  // Adiciona active no novo (re-triggerando animações internas)
   slides[current].classList.add('active');
 
-  const pct = ((current + 1) / total * 100).toFixed(1);
+  // Atualiza progresso e botões
+  const pct = (((current + 1) / total) * 100).toFixed(1);
   fill.style.width = pct + '%';
   counter.textContent = (current + 1) + ' / ' + total;
   btnPrev.disabled = current === 0;
   btnNext.disabled = current === total - 1;
+
+  // Atualiza legenda se não estiver jogando áudio
+  if (!playing) {
+    if (current === 0) {
+      legendas.innerHTML = "Clique em <strong>▶ Reproduzir</strong> para iniciar a narrativa assistida por voz ou use as setas.";
+    } else {
+      const text = slides[current].dataset.narr || '';
+      legendas.innerHTML = formatLegendaText(text);
+    }
+  }
 }
 
-function proximo()  { if (current < total - 1) { stopSpeech(); goTo(current + 1); if (playing) speakCurrent(); } }
-function anterior() { if (current > 0)          { stopSpeech(); goTo(current - 1); if (playing) speakCurrent(); } }
+function proximo() {
+  if (current < total - 1) {
+    stopSpeech();
+    goTo(current + 1);
+    if (playing) speakCurrent();
+  }
+}
 
-/* ── Narração ─────────────────────── */
-const synth  = window.speechSynthesis;
+function anterior() {
+  if (current > 0) {
+    stopSpeech();
+    goTo(current - 1);
+    if (playing) speakCurrent();
+  }
+}
+
+/* ── Formatar Legenda (Negrito Estilizado) ── */
+function formatLegendaText(text) {
+  return text
+    .replace(/Q R Code/g, '<span style="color:var(--accent);font-weight:700;">QR Code</span>')
+    .replace(/E B I/g, '<strong style="color:var(--accent)">EBI</strong>')
+    .replace(/L G P D/g, '<strong style="color:var(--accent2)">LGPD</strong>')
+    .replace(/Elgin Bematech L 42 D T/g, '<strong>Elgin Bematech L42DT</strong>')
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+}
+
+/* ── Toggle Legendas (CC) ──────────────────── */
+function toggleCC() {
+  ccEnabled = !ccEnabled;
+  if (ccEnabled) {
+    legendasContainer.classList.remove('hidden');
+    ccLabel.textContent = "ON";
+    document.getElementById('btnCC').classList.add('cc-active');
+    localStorage.setItem('ebi_cc_enabled', '1');
+  } else {
+    legendasContainer.classList.add('hidden');
+    ccLabel.textContent = "OFF";
+    document.getElementById('btnCC').classList.remove('cc-active');
+    localStorage.setItem('ebi_cc_enabled', '0');
+  }
+}
+
+/* ── Configurações de Áudio (Settings) ───────── */
+function toggleSettings() {
+  settingsPanel.classList.toggle('open');
+}
+
+// Fechar settings se clicar fora
+document.addEventListener('click', e => {
+  if (!settingsPanel.contains(e.target) && !e.target.closest('.settings-trigger')) {
+    settingsPanel.classList.remove('open');
+  }
+});
+
+/* Carregar Vozes do Sistema de Alta Qualidade */
+const synth = window.speechSynthesis;
 const hasVoice = !!synth;
 
+function loadVoices() {
+  if (!hasVoice) return;
+  voicesList = synth.getVoices();
+  
+  // Limpar select
+  voiceSelect.innerHTML = '';
+
+  // Filtrar de preferência por português (pt-BR e pt-PT)
+  let ptVoices = voicesList.filter(v => v.lang.toLowerCase().includes('pt'));
+  
+  // Se não encontrar nenhuma em português, mostrar todas as disponíveis
+  if (ptVoices.length === 0) {
+    ptVoices = voicesList;
+  }
+
+  // Ordenar para colocar vozes "Google", "Natural" ou "Microsoft" de alta qualidade no topo
+  ptVoices.sort((a, b) => {
+    const score = (v) => {
+      let s = 0;
+      const n = v.name.toLowerCase();
+      if (n.includes('natural')) s += 10;
+      if (n.includes('google')) s += 8;
+      if (n.includes('neural')) s += 7;
+      if (n.includes('microsoft')) s += 5;
+      if (v.localService) s += 2;
+      return s;
+    };
+    return score(b) - score(a);
+  });
+
+  ptVoices.forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v.voiceURI;
+    
+    let label = v.name;
+    if (v.name.includes('Google')) label = 'Google BR (Neural - Qualidade Máxima)';
+    else if (v.name.includes('Maria')) label = 'Microsoft Maria (Premium)';
+    else if (v.name.includes('Daniel')) label = 'Microsoft Daniel';
+    else if (v.name.includes('Felipe')) label = 'Apple Felipe (Natural)';
+    else if (v.name.includes('Luciana')) label = 'Luciana (Nativa BR)';
+    
+    opt.textContent = `${label} [${v.lang.split('-')[0].toUpperCase()}]`;
+    if (v.voiceURI === selectedVoiceURI) opt.selected = true;
+    voiceSelect.appendChild(opt);
+  });
+
+  // Se não houver voz selecionada salva, pegar a primeira
+  if (!selectedVoiceURI && ptVoices.length > 0) {
+    selectedVoiceURI = ptVoices[0].voiceURI;
+    saveSpeechSettings();
+  }
+}
+
+function changeVoice() {
+  selectedVoiceURI = voiceSelect.value;
+  saveSpeechSettings();
+  // Se estiver tocando, recomeça o slide atual com a nova voz
+  if (playing) {
+    speakCurrent();
+  }
+}
+
+function saveSpeechSettings() {
+  speechRate = parseFloat(rateRange.value);
+  rateValue.textContent = speechRate.toFixed(2) + 'x';
+  localStorage.setItem('ebi_selected_voice', selectedVoiceURI || '');
+  localStorage.setItem('ebi_speech_rate', speechRate.toString());
+}
+
+function loadSavedSettings() {
+  const savedVoice = localStorage.getItem('ebi_selected_voice');
+  const savedRate = localStorage.getItem('ebi_speech_rate');
+  const savedCC = localStorage.getItem('ebi_cc_enabled');
+
+  if (savedVoice) selectedVoiceURI = savedVoice;
+  if (savedRate) {
+    speechRate = parseFloat(savedRate);
+    rateRange.value = speechRate;
+    rateValue.textContent = speechRate.toFixed(2) + 'x';
+  }
+  if (savedCC === '0') {
+    toggleCC(); // Desliga se estava salvo desligado
+  } else {
+    document.getElementById('btnCC').classList.add('cc-active'); // Estiliza ativo por padrão
+  }
+}
+
+/* ── Narração e Speech Synthesis ──────────── */
 function speakCurrent() {
-  if (!hasVoice) { autoAdvance(); return; }
+  if (!hasVoice) { autoAdvanceText(); return; }
   stopSpeech();
 
   const text = slides[current].dataset.narr || '';
-  legendas.innerHTML = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  legendas.innerHTML = formatLegendaText(text);
 
   utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = 'pt-BR';
-  utterance.rate = 0.92;
-  utterance.pitch = 1.05;
+  utterance.rate = speechRate;
+  utterance.pitch = 1.0;
 
-  /* Preferir voz em português se disponível */
-  const voices = synth.getVoices();
-  const ptVoice = voices.find(v => v.lang.startsWith('pt')) || null;
-  if (ptVoice) utterance.voice = ptVoice;
+  // Aplicar voz selecionada
+  if (selectedVoiceURI) {
+    const activeVoice = voicesList.find(v => v.voiceURI === selectedVoiceURI);
+    if (activeVoice) utterance.voice = activeVoice;
+  } else {
+    // Fallback padrão pt-BR
+    const ptVoice = voicesList.find(v => v.lang.startsWith('pt')) || null;
+    if (ptVoice) utterance.voice = ptVoice;
+  }
 
   utterance.onend = () => {
     if (!playing) return;
     autoTimer = setTimeout(() => {
-      if (current < total - 1) { goTo(current + 1); speakCurrent(); }
-      else stopPlay();
-    }, 1200);
+      if (current < total - 1) {
+        goTo(current + 1);
+        speakCurrent();
+      } else {
+        stopPlay();
+      }
+    }, 1500); // 1.5s delay entre slides para respiração
   };
 
-  utterance.onerror = () => { autoAdvance(); };
+  utterance.onerror = (e) => {
+    console.error('Speech synthesis error', e);
+    if (playing) autoAdvanceText();
+  };
 
   synth.speak(utterance);
 }
 
-function autoAdvance() {
-  const durMs = Math.max(4000, (slides[current].dataset.narr || '').length * 60);
+function autoAdvanceText() {
+  const durMs = Math.max(5000, (slides[current].dataset.narr || '').length * 62);
   autoTimer = setTimeout(() => {
-    if (current < total - 1) { goTo(current + 1); if (playing) speakCurrent(); }
-    else stopPlay();
+    if (current < total - 1) {
+      goTo(current + 1);
+      if (playing) speakCurrent();
+    } else {
+      stopPlay();
+    }
   }, durMs);
 }
 
 function stopSpeech() {
   clearTimeout(autoTimer);
-  if (synth && synth.speaking) synth.cancel();
+  if (synth && synth.speaking) {
+    synth.cancel();
+  }
 }
 
 /* ── Play / Pause ─────────────────── */
@@ -510,33 +1154,47 @@ function togglePlay() {
 
 function startPlay() {
   playing = true;
-  playIcon.className  = 'fas fa-pause';
+  playIcon.className = 'fas fa-pause';
   playLabel.textContent = 'Pausar';
-  legendas.textContent  = '';
   speakCurrent();
 }
 
 function stopPlay() {
   playing = false;
   stopSpeech();
-  playIcon.className  = 'fas fa-play';
+  playIcon.className = 'fas fa-play';
   playLabel.textContent = 'Reproduzir';
+}
+
+function fecharApresentacao() {
+  stopSpeech();
+  history.back();
 }
 
 /* ── Teclado ──────────────────────── */
 document.addEventListener('keydown', e => {
   if (e.key === 'ArrowRight') proximo();
   if (e.key === 'ArrowLeft')  anterior();
-  if (e.key === ' ')          { e.preventDefault(); togglePlay(); }
-  if (e.key === 'Escape')     history.back();
+  if (e.key === ' ') {
+    e.preventDefault();
+    togglePlay();
+  }
+  if (e.key === 'Escape') fecharApresentacao();
 });
 
-/* ── Vozes podem carregar async ────── */
+/* ── Init ─────────────────────────── */
 if (hasVoice) {
-  if (synth.onvoiceschanged !== undefined) synth.onvoiceschanged = () => {};
+  // Ajuste especial para Chrome que carrega vozes de forma assíncrona
+  if (synth.onvoiceschanged !== undefined) {
+    synth.onvoiceschanged = () => {
+      loadVoices();
+    };
+  }
+  loadVoices();
 }
 
-/* ── Init ─────────────────────────── */
+// Iniciar configurações salvas
+loadSavedSettings();
 goTo(0);
 </script>
 </body>
