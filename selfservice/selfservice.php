@@ -916,31 +916,22 @@ if (isset($_SESSION['instancia_existente'])) {
                 <p>Cadastre-se e receba acesso ao Sistema de Cadastro de Crianças</p>
             </div>
 
-            <!-- Botões apresentação -->
+            <!-- Botão vídeo apresentação -->
             <div class="text-center mb-3">
-                <a href="apresentacao-7.html" class="btn btn-sm" style="border:1px solid rgba(14,116,144,.5);color:#0e7490;border-radius:50px;padding:8px 22px;font-size:.9rem;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:8px;background:rgba(14,116,144,.1);transition:background .2s,transform .2s" onmouseover="this.style.background='rgba(14,116,144,.18)';this.style.transform='translateY(-1px)'" onmouseout="this.style.background='rgba(14,116,144,.1)';this.style.transform='translateY(0)'">
+                <a href="#" onclick="document.getElementById('modalVideo').style.display='flex';document.getElementById('videoApresentacao').play();return false;" class="btn btn-sm" style="border:1px solid rgba(14,116,144,.5);color:#0e7490;border-radius:50px;padding:8px 22px;font-size:.9rem;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:8px;background:rgba(14,116,144,.1);transition:background .2s,transform .2s" onmouseover="this.style.background='rgba(14,116,144,.18)';this.style.transform='translateY(-1px)'" onmouseout="this.style.background='rgba(14,116,144,.1)';this.style.transform='translateY(0)'">
                     <i class="fas fa-play-circle"></i> O que é o sistema?
                 </a>
             </div>
-            <div class="text-center mb-3" style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap">
-                <a href="apresentacao.html" class="btn btn-sm" style="border:1px solid rgba(14,116,144,.4);color:#0e7490;border-radius:50px;padding:6px 18px;font-size:.82rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:7px;background:rgba(14,116,144,.07);transition:background .2s" onmouseover="this.style.background='rgba(14,116,144,.15)'" onmouseout="this.style.background='rgba(14,116,144,.07)'">
-                    <i class="fas fa-play-circle"></i> V1
-                </a>
-                <a href="apresentacao-2.html" class="btn btn-sm" style="border:1px solid rgba(15,118,110,.45);color:#0f766e;border-radius:50px;padding:6px 18px;font-size:.82rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:7px;background:rgba(15,118,110,.08);transition:background .2s" onmouseover="this.style.background='rgba(15,118,110,.16)'" onmouseout="this.style.background='rgba(15,118,110,.08)'">
-                    <i class="fas fa-film"></i> V2
-                </a>
-                <a href="apresentacao-3.html" class="btn btn-sm" style="border:1px solid rgba(109,40,217,.4);color:#7c3aed;border-radius:50px;padding:6px 18px;font-size:.82rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:7px;background:rgba(109,40,217,.07);transition:background .2s" onmouseover="this.style.background='rgba(109,40,217,.15)'" onmouseout="this.style.background='rgba(109,40,217,.07)'">
-                    <i class="fas fa-rocket"></i> V3
-                </a>
-                <a href="apresentacao-4.html" class="btn btn-sm" style="border:1px solid rgba(16,185,129,.45);color:#059669;border-radius:50px;padding:6px 18px;font-size:.82rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:7px;background:rgba(16,185,129,.08);transition:background .2s" onmouseover="this.style.background='rgba(16,185,129,.16)'" onmouseout="this.style.background='rgba(16,185,129,.08)'">
-                    <i class="fas fa-magic"></i> V4
-                </a>
-                <a href="apresentacao-5.html" class="btn btn-sm" style="border:1px solid rgba(96,165,250,.45);color:#3b82f6;border-radius:50px;padding:6px 18px;font-size:.82rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:7px;background:rgba(96,165,250,.08);transition:background .2s" onmouseover="this.style.background='rgba(96,165,250,.16)'" onmouseout="this.style.background='rgba(96,165,250,.08)'">
-                    <i class="fas fa-star"></i> V5
-                </a>
-                <a href="apresentacao-6.html" class="btn btn-sm" style="border:1px solid rgba(15,76,92,.5);color:#0f4c5c;border-radius:50px;padding:6px 18px;font-size:.82rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:7px;background:rgba(15,76,92,.1);transition:background .2s" onmouseover="this.style.background='rgba(15,76,92,.18)'" onmouseout="this.style.background='rgba(15,76,92,.1)'">
-                    <i class="fas fa-star"></i> V6
-                </a>
+
+            <!-- Modal de vídeo -->
+            <div id="modalVideo" onclick="if(event.target===this){this.style.display='none';document.getElementById('videoApresentacao').pause();}" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);z-index:9999;justify-content:center;align-items:center">
+                <div style="position:relative;width:90%;max-width:800px">
+                    <button onclick="document.getElementById('modalVideo').style.display='none';document.getElementById('videoApresentacao').pause();" style="position:absolute;top:-40px;right:0;background:none;border:none;color:#fff;font-size:2rem;cursor:pointer;z-index:10000">&times;</button>
+                    <video id="videoApresentacao" controls playsinline style="width:100%;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.5)">
+                        <source src="video/apresentacao-ebi.mp4" type="video/mp4">
+                        Seu navegador não suporta vídeo HTML5.
+                    </video>
+                </div>
             </div>
             
             <?php if ($mensagem): ?>
