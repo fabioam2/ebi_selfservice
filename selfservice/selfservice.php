@@ -918,7 +918,7 @@ if (isset($_SESSION['instancia_existente'])) {
 
             <!-- Botões apresentação -->
             <div class="text-center mb-3">
-                <a href="apresentacao-6.html" class="btn btn-sm" style="border:1px solid rgba(14,116,144,.5);color:#0e7490;border-radius:50px;padding:8px 22px;font-size:.9rem;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:8px;background:rgba(14,116,144,.1);transition:background .2s,transform .2s" onmouseover="this.style.background='rgba(14,116,144,.18)';this.style.transform='translateY(-1px)'" onmouseout="this.style.background='rgba(14,116,144,.1)';this.style.transform='translateY(0)'">
+                <a href="apresentacao-7.html" class="btn btn-sm" style="border:1px solid rgba(14,116,144,.5);color:#0e7490;border-radius:50px;padding:8px 22px;font-size:.9rem;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:8px;background:rgba(14,116,144,.1);transition:background .2s,transform .2s" onmouseover="this.style.background='rgba(14,116,144,.18)';this.style.transform='translateY(-1px)'" onmouseout="this.style.background='rgba(14,116,144,.1)';this.style.transform='translateY(0)'">
                     <i class="fas fa-play-circle"></i> O que é o sistema?
                 </a>
             </div>
