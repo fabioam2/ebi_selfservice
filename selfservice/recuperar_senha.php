@@ -39,8 +39,10 @@ require_once __DIR__ . '/criar_instancia.php';
 require_once __DIR__ . '/inc/email_manager.php';
 
 // Rate limit — mais apertado neste endpoint: 5 tentativas / 5 min por IP.
+// Respeita o mesmo toggle RATE_LIMIT_ENABLED usado no restante do sistema.
+$rateLimitEnabled = filter_var($_ENV['RATE_LIMIT_ENABLED'] ?? 'true', FILTER_VALIDATE_BOOLEAN);
 $clientIP = getClientIP();
-if (!checkRateLimit($clientIP, 5, 300)) {
+if ($rateLimitEnabled && !checkRateLimit($clientIP, 5, 300)) {
     http_response_code(429);
     $status = getRateLimitStatus($clientIP, 5, 300);
     showRateLimitError($status['reset_in']);

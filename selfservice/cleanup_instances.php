@@ -17,6 +17,14 @@
  *   0 * * * * php /caminho/para/cleanup_instances.php --force >> /var/log/cleanup_instances.log 2>&1
  */
 
+// Carregar .env (para respeitar CLEANUP_INACTIVE_HOURS configurado no painel admin)
+if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
+    require __DIR__ . '/../vendor/autoload.php';
+    if (class_exists('Dotenv\Dotenv') && file_exists(__DIR__ . '/../.env')) {
+        Dotenv\Dotenv::createImmutable(__DIR__ . '/..')->safeLoad();
+    }
+}
+
 // Load paths configuration
 require_once __DIR__ . '/inc/paths.php';
 
@@ -59,7 +67,10 @@ if (!isset($config['LIMPEZA_AUTOMATICA'])) {
 
 $limpezaConfig = $config['LIMPEZA_AUTOMATICA'];
 $habilitado = $limpezaConfig['HABILITAR_LIMPEZA'] ?? true;
-$horasInatividade = $limpezaConfig['HORAS_INATIVIDADE'] ?? 6;
+// CLEANUP_INACTIVE_HOURS (.env, configurável via painel admin) tem prioridade sobre o config.ini estático
+$horasInatividade = isset($_ENV['CLEANUP_INACTIVE_HOURS'])
+    ? (int)$_ENV['CLEANUP_INACTIVE_HOURS']
+    : ($limpezaConfig['HORAS_INATIVIDADE'] ?? 6);
 $fazerBackup = $limpezaConfig['BACKUP_ANTES_REMOVER'] ?? true;
 $dirBackup = $limpezaConfig['DIRETORIO_BACKUP'] ?? '/../../backups_removed/';
 $manterLogs = $limpezaConfig['MANTER_LOGS'] ?? false;

@@ -22,11 +22,12 @@ if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
 require_once __DIR__ . '/inc/rate_limit.php';
 
 // Verificar rate limit antes de processar qualquer requisição
+$rateLimitEnabled = filter_var($_ENV['RATE_LIMIT_ENABLED'] ?? 'true', FILTER_VALIDATE_BOOLEAN); // Ler do .env
 $clientIP = getClientIP();
 $maxRequests = (int)($_ENV['RATE_LIMIT_MAX_REQUESTS'] ?? 60); // Ler do .env
 $timeWindow = (int)($_ENV['RATE_LIMIT_TIME_WINDOW'] ?? 60); // Ler do .env
 
-if (!checkRateLimit($clientIP, $maxRequests, $timeWindow)) {
+if ($rateLimitEnabled && !checkRateLimit($clientIP, $maxRequests, $timeWindow)) {
     $status = getRateLimitStatus($clientIP, $maxRequests, $timeWindow);
     showRateLimitError($status['reset_in']);
     // showRateLimitError() faz exit, código não continua
@@ -286,10 +287,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['cadastrar'])) {
     }
     
     // Verificar se já existe instância com esse email
+    // (a menos que o admin tenha habilitado ALLOW_MULTIPLE_INSTANCES no .env)
+    $allowMultipleInstances = filter_var($_ENV['ALLOW_MULTIPLE_INSTANCES'] ?? 'false', FILTER_VALIDATE_BOOLEAN);
     $instanciaExistente = null;
     $user_id_existente = null;
 
-    if (empty($erros)) {
+    if (empty($erros) && !$allowMultipleInstances) {
         $usuarioExistente = db_buscar_usuario_por_email($email);
         if ($usuarioExistente !== null) {
             $user_id_existente = $usuarioExistente['user_id'];

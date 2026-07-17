@@ -161,16 +161,30 @@ function exibirAlerta($mensagem, $tipo = 'info') {
 // ============================================================================
 
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['login'])) {
-    if (!$adminHashValido) {
+    // Bloqueio de força bruta (por sessão) — mesmo padrão do login do EBI (auth.php)
+    $maxTentativas = (int)($_ENV['MAX_TENTATIVAS_LOGIN'] ?? 5);
+    $tempoBloqueio = (int)($_ENV['TEMPO_BLOQUEIO'] ?? 300);
+
+    if (!empty($_SESSION['admin_bloqueado_ate']) && time() < $_SESSION['admin_bloqueado_ate']) {
+        $restante = $_SESSION['admin_bloqueado_ate'] - time();
+        $erro_login = "Muitas tentativas. Aguarde {$restante} segundos.";
+    } elseif (!$adminHashValido) {
         $erro_login = "Configuração inválida: defina ADMIN_PASSWORD_HASH no arquivo .env.";
     } elseif (admin_csrf_validate() && password_verify($_POST['senha_admin'] ?? '', SENHA_ADMIN_HASH)) {
         session_regenerate_id(true);
         $_SESSION['admin_logado'] = true;
         $_SESSION['admin_login_time'] = time();
+        unset($_SESSION['admin_tentativas_login'], $_SESSION['admin_bloqueado_ate']);
         header("Location: admin.php");
         exit;
     } else {
-        $erro_login = "Senha incorreta!";
+        $_SESSION['admin_tentativas_login'] = ($_SESSION['admin_tentativas_login'] ?? 0) + 1;
+        if ($_SESSION['admin_tentativas_login'] >= $maxTentativas) {
+            $_SESSION['admin_bloqueado_ate'] = time() + $tempoBloqueio;
+            $erro_login = "Muitas tentativas. Aguarde {$tempoBloqueio} segundos.";
+        } else {
+            $erro_login = "Senha incorreta!";
+        }
     }
 }
 
