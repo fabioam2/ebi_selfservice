@@ -916,10 +916,16 @@ if (isset($_SESSION['instancia_existente'])) {
                 <p>Cadastre-se e receba acesso ao Sistema de Cadastro de Crianças</p>
             </div>
 
-            <!-- Botão apresentação -->
-            <div class="text-center mb-3">
+            <!-- Botões apresentação -->
+            <div class="text-center mb-3" style="display:flex;justify-content:center;gap:8px;flex-wrap:wrap">
                 <a href="apresentacao.html" class="btn btn-sm" style="border:1px solid rgba(14,116,144,.4);color:#0e7490;border-radius:50px;padding:6px 18px;font-size:.82rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:7px;background:rgba(14,116,144,.07);transition:background .2s" onmouseover="this.style.background='rgba(14,116,144,.15)'" onmouseout="this.style.background='rgba(14,116,144,.07)'">
-                    <i class="fas fa-play-circle"></i> O que é o sistema?
+                    <i class="fas fa-play-circle"></i> V1
+                </a>
+                <a href="apresentacao-2.html" class="btn btn-sm" style="border:1px solid rgba(15,118,110,.45);color:#0f766e;border-radius:50px;padding:6px 18px;font-size:.82rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:7px;background:rgba(15,118,110,.08);transition:background .2s" onmouseover="this.style.background='rgba(15,118,110,.16)'" onmouseout="this.style.background='rgba(15,118,110,.08)'">
+                    <i class="fas fa-film"></i> V2
+                </a>
+                <a href="apresentacao-3.html" class="btn btn-sm" style="border:1px solid rgba(109,40,217,.4);color:#7c3aed;border-radius:50px;padding:6px 18px;font-size:.82rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:7px;background:rgba(109,40,217,.07);transition:background .2s" onmouseover="this.style.background='rgba(109,40,217,.15)'" onmouseout="this.style.background='rgba(109,40,217,.07)'">
+                    <i class="fas fa-rocket"></i> V3
                 </a>
             </div>
             
