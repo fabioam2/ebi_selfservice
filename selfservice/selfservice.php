@@ -22,11 +22,12 @@ if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
 require_once __DIR__ . '/inc/rate_limit.php';
 
 // Verificar rate limit antes de processar qualquer requisição
+$rateLimitEnabled = filter_var($_ENV['RATE_LIMIT_ENABLED'] ?? 'true', FILTER_VALIDATE_BOOLEAN); // Ler do .env
 $clientIP = getClientIP();
 $maxRequests = (int)($_ENV['RATE_LIMIT_MAX_REQUESTS'] ?? 60); // Ler do .env
 $timeWindow = (int)($_ENV['RATE_LIMIT_TIME_WINDOW'] ?? 60); // Ler do .env
 
-if (!checkRateLimit($clientIP, $maxRequests, $timeWindow)) {
+if ($rateLimitEnabled && !checkRateLimit($clientIP, $maxRequests, $timeWindow)) {
     $status = getRateLimitStatus($clientIP, $maxRequests, $timeWindow);
     showRateLimitError($status['reset_in']);
     // showRateLimitError() faz exit, código não continua
@@ -286,10 +287,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['cadastrar'])) {
     }
     
     // Verificar se já existe instância com esse email
+    // (a menos que o admin tenha habilitado ALLOW_MULTIPLE_INSTANCES no .env)
+    $allowMultipleInstances = filter_var($_ENV['ALLOW_MULTIPLE_INSTANCES'] ?? 'false', FILTER_VALIDATE_BOOLEAN);
     $instanciaExistente = null;
     $user_id_existente = null;
 
-    if (empty($erros)) {
+    if (empty($erros) && !$allowMultipleInstances) {
         $usuarioExistente = db_buscar_usuario_por_email($email);
         if ($usuarioExistente !== null) {
             $user_id_existente = $usuarioExistente['user_id'];
@@ -763,6 +766,49 @@ if (isset($_SESSION['instancia_existente'])) {
             background: rgba(255, 255, 255, 0.18);
         }
 
+        .test-links {
+            position: relative;
+            z-index: 1;
+            max-width: 720px;
+            margin: 0 auto 24px;
+            padding: 12px 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .test-links .test-links-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.65);
+        }
+
+        .test-links-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .test-link-btn {
+            border: 1px dashed rgba(255, 255, 255, 0.45);
+            color: rgba(255, 255, 255, 0.85);
+            border-radius: 999px;
+            background: transparent;
+            font-weight: 600;
+            font-size: 0.82rem;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        .test-link-btn:hover {
+            color: #fff;
+            transform: translateY(-1px);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
         @media (max-width: 768px) {
             body {
                 padding: 14px;
@@ -970,7 +1016,7 @@ if (isset($_SESSION['instancia_existente'])) {
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="comum"><i class="fas fa-church"></i> Comum</label>
+                            <label for="comum"><i class="fas fa-users"></i> Comum</label>
                             <input type="text" class="form-control" id="comum" name="comum" 
                                    placeholder="Nome do comum" required
                                    value="<?php echo htmlspecialchars($_POST['comum'] ?? ''); ?>">
@@ -1016,6 +1062,18 @@ if (isset($_SESSION['instancia_existente'])) {
         <a href="../qrcode/default.php" class="btn btn-sm quick-link-btn">
             <i class="fas fa-qrcode mr-1"></i>QR Code
         </a>
+    </div>
+
+    <div class="test-links">
+        <span class="test-links-label"><i class="fas fa-flask mr-1"></i>DEV</span>
+        <div class="test-links-buttons">
+            <a href="../ebi/template/ebi.test.php" class="btn btn-sm test-link-btn" target="_blank">
+                <i class="fas fa-child mr-1"></i>EBI (teste)
+            </a>
+            <a href="../qrcode/qrcode.2.php" class="btn btn-sm test-link-btn" target="_blank">
+                <i class="fas fa-qrcode mr-1"></i>QR Code (teste)
+            </a>
+        </div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
