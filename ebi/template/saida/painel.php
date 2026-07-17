@@ -74,152 +74,215 @@ try {
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
     <meta http-equiv="refresh" content="<?php echo $refresh_rate; ?>">
     <title>Painel de Saídas</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-1: #0f766e;
+            --bg-2: #0b4f8a;
+            --surface-border: rgba(15, 23, 42, 0.08);
+            --text-main: #10273b;
+            --text-soft: #4b647c;
+            --brand: #0e7490;
+            --brand-strong: #0b5f76;
+            --brand-soft: rgba(14, 116, 144, 0.14);
+            --danger: #b91c1c;
+            --portaria-m-bg: #e3f2fd;
+            --portaria-m-border: #1565c0;
+            --portaria-f-bg: #fce4ec;
+            --portaria-f-border: #ad1457;
+        }
+        * { box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f0f2f5;
+            background: radial-gradient(circle at 8% 8%, rgba(245, 158, 11, 0.28) 0%, rgba(245, 158, 11, 0) 35%),
+                        radial-gradient(circle at 94% 16%, rgba(20, 184, 166, 0.32) 0%, rgba(20, 184, 166, 0) 40%),
+                        linear-gradient(130deg, var(--bg-1) 0%, var(--bg-2) 58%, #083358 100%);
+            min-height: 100vh;
             margin: 0;
-            padding: 20px;
+            font-family: 'Manrope', sans-serif;
+            padding: 20px 14px 30px;
         }
         .container {
-            max-width: 900px;
+            max-width: 720px;
             margin: 0 auto;
-            background-color: white;
-            padding: 25px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.97));
+            padding: 24px 22px;
+            border-radius: 22px;
+            border: 1px solid var(--surface-border);
+            box-shadow: 0 18px 48px rgba(1, 27, 49, 0.33);
+            transition: max-width 0.3s ease, padding 0.3s ease;
         }
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 18px;
+            gap: 10px;
+            flex-wrap: wrap;
         }
         .header h1 {
             margin: 0;
-            font-size: 1.8rem;
-            color: #333;
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
-        .logout-link {
-            background-color: #dc3545;
-            color: white;
-            padding: 8px 12px;
+        .header h1 i { color: var(--brand); }
+        .header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .btn-pill {
+            border: none;
+            border-radius: 999px;
+            padding: 8px 14px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            cursor: pointer;
             text-decoration: none;
-            border-radius: 5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: transform 0.2s ease;
+        }
+        .btn-pill:hover { transform: translateY(-1px); }
+        .logout-link { background: var(--danger); color: #fff; }
+        .logout-link:hover { color: #fff; }
+        #tv-toggle-btn { background: var(--brand-soft); color: var(--brand-strong); }
+        .empty-state {
+            text-align: center;
+            font-weight: 700;
+            color: var(--text-soft);
+            padding: 30px 10px;
+        }
+        .saida-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 18px;
+        }
+        .saida-item {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 14px 16px;
+            border-radius: 14px;
+            border-left: 5px solid var(--brand);
+            background: #f8fafc;
+        }
+        .saida-item.portaria-m { background: var(--portaria-m-bg); border-left-color: var(--portaria-m-border); }
+        .saida-item.portaria-f { background: var(--portaria-f-bg); border-left-color: var(--portaria-f-border); }
+        .saida-time {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-soft);
+            white-space: nowrap;
+        }
+        .saida-criancas {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--text-main);
+            flex: 1 1 auto;
+        }
+        .saida-responsavel {
             font-size: 0.9rem;
-        }
-        .logout-link:hover {
-            background-color: #b22222;
-        }
-        table {
+            color: var(--text-soft);
             width: 100%;
-            border-collapse: collapse;
-            font-size: 1.1rem;
-            margin-bottom: 20px;
         }
-        th, td {
-            padding: 15px;
-            border: 1px solid #ddd;
-            text-align: left;
-        }
-        th {
-            background-color: #4a5568;
-            color: white;
-        }
+        .saida-responsavel strong { color: var(--text-main); }
         .footer-controls {
             display: flex;
             flex-wrap: wrap;
             justify-content: space-between;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
+            padding-top: 14px;
+            border-top: 1px solid var(--surface-border);
         }
-        .refresh-selector label, .view-all-link, .link-inserir {
-            font-weight: bold;
+        .footer-controls a {
+            color: var(--brand-strong);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.88rem;
         }
+        .footer-controls a:hover { text-decoration: underline; }
+        .refresh-selector { font-size: 0.88rem; font-weight: 700; color: var(--text-soft); }
         .refresh-selector select {
             padding: 5px 8px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
+            border-radius: 8px;
+            border: 1px solid #ced9e4;
+            margin-left: 4px;
         }
         #zerar-btn {
-            padding: 8px 12px;
-            background-color: #dc3545;
-            color: white;
-            border: none;
-            border-radius: 5px;
+            padding: 7px 13px;
+            background: #fff;
+            color: var(--danger);
+            border: 1px solid var(--danger);
+            border-radius: 999px;
             cursor: pointer;
-            font-weight: bold;
+            font-weight: 700;
+            font-size: 0.85rem;
         }
-        #zerar-btn:hover {
-            background-color: #b22222;
+        .error-message { color: var(--danger); font-weight: 700; margin-top: 8px; font-size: 0.85rem; }
+
+        /* Adaptação automática para telas grandes (TV / monitor) */
+        @media (min-width: 1100px) {
+            .container { max-width: 1100px; padding: 40px 48px; }
+            .header h1 { font-size: 2rem; }
+            .saida-item { padding: 20px 26px; border-radius: 18px; }
+            .saida-time { font-size: 1.1rem; }
+            .saida-criancas { font-size: 1.7rem; }
+            .saida-responsavel { font-size: 1.15rem; }
         }
-        .error-message {
-            color: #dc3545;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-        .portaria-m {
-            background-color: #e3f2fd;
-        }
-        .portaria-f {
-            background-color: #fce4ec;
-        }
-        .portaria-default {
-            background-color: #f7fafc;
-        }
-        .link-inserir a {
-            color: #007bff;
-            text-decoration: none;
-        }
-        .link-inserir a:hover {
-            text-decoration: underline;
-        }
-        .view-all-link a {
-            color: #007bff;
-            text-decoration: none;
-        }
-        .view-all-link a:hover {
-            text-decoration: underline;
-        }
+
+        /* Modo TV: acionado manualmente, maximiza legibilidade a distância */
+        body.tv-mode { padding: 30px; }
+        body.tv-mode .container { max-width: 1500px; padding: 40px 56px; box-shadow: none; }
+        body.tv-mode .header h1 { font-size: 2.6rem; }
+        body.tv-mode .saida-list { gap: 18px; }
+        body.tv-mode .saida-item { padding: 26px 32px; border-radius: 20px; border-left-width: 8px; }
+        body.tv-mode .saida-time { font-size: 1.4rem; }
+        body.tv-mode .saida-criancas { font-size: 2.6rem; }
+        body.tv-mode .saida-responsavel { font-size: 1.5rem; }
+        body.tv-mode .footer-controls,
+        body.tv-mode .logout-link { display: none; }
+        body.tv-mode #tv-toggle-btn { display: inline-flex; }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>Painel de Saídas</h1>
-            <a href="index.php?acao=logout" class="logout-link">Sair</a>
+            <h1><i class="fas fa-tv"></i> Painel de Saídas</h1>
+            <div class="header-actions">
+                <button type="button" id="tv-toggle-btn" class="btn-pill"><i class="fas fa-expand"></i> Modo TV</button>
+                <a href="index.php?acao=logout" class="btn-pill logout-link">Sair</a>
+            </div>
         </div>
 
         <?php if (empty($entradas_agrupadas) && !$mostrar_todos): ?>
-            <p style="text-align:center; font-weight:bold;">Nenhuma saída registrada ainda.</p>
+            <p class="empty-state">Nenhuma saída registrada ainda.</p>
         <?php else: ?>
-            <table>
-                <thead>
-                    <tr><th>Saída (Crianças / Responsável)</th></tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($entradas_agrupadas as $codigo_qr => $entrada): ?>
-                        <?php
-                            $cor_classe = 'portaria-default';
-                            if ($entrada['portaria'] === 'M') {
-                                $cor_classe = 'portaria-m';
-                            } elseif ($entrada['portaria'] === 'F') {
-                                $cor_classe = 'portaria-f';
-                            }
-                        ?>
-                        <tr class="<?php echo $cor_classe; ?>">
-                            <td>
-                                <?php echo date('H:i', strtotime($entrada['timestamp'])); ?> -
-                                <?php echo !empty($entrada['criancas']) ? implode('; ', $entrada['criancas']) : '—'; ?> -
-                                <strong><?php echo $entrada['responsavel']; ?></strong>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+            <div class="saida-list">
+                <?php foreach ($entradas_agrupadas as $codigo_qr => $entrada): ?>
+                    <?php
+                        $cor_classe = '';
+                        if ($entrada['portaria'] === 'M') {
+                            $cor_classe = 'portaria-m';
+                        } elseif ($entrada['portaria'] === 'F') {
+                            $cor_classe = 'portaria-f';
+                        }
+                    ?>
+                    <div class="saida-item <?php echo $cor_classe; ?>">
+                        <span class="saida-time"><?php echo date('H:i', strtotime($entrada['timestamp'])); ?></span>
+                        <span class="saida-criancas"><?php echo !empty($entrada['criancas']) ? implode(', ', $entrada['criancas']) : '—'; ?></span>
+                        <span class="saida-responsavel">Responsável: <strong><?php echo $entrada['responsavel']; ?></strong></span>
+                    </div>
+                <?php endforeach; ?>
+            </div>
         <?php endif; ?>
 
         <div class="footer-controls">
@@ -254,6 +317,7 @@ try {
         document.addEventListener('DOMContentLoaded', function() {
             const refreshSelect = document.getElementById('refresh-rate');
             const zerarBtn = document.getElementById('zerar-btn');
+            const tvToggleBtn = document.getElementById('tv-toggle-btn');
             const urlParams = new URLSearchParams(window.location.search);
             const currentRate = urlParams.get('refresh') || '5';
 
@@ -292,6 +356,26 @@ try {
                     document.body.appendChild(form);
                     form.submit();
                 }
+            });
+
+            // --- Modo TV ---
+            // Como a página recarrega via <meta refresh>, a preferência é
+            // guardada no localStorage e reaplicada a cada atualização.
+            const TV_MODE_KEY = 'painelModoTV';
+
+            function aplicarModoTV(ativo) {
+                document.body.classList.toggle('tv-mode', ativo);
+                tvToggleBtn.innerHTML = ativo
+                    ? '<i class="fas fa-compress"></i> Sair do Modo TV'
+                    : '<i class="fas fa-expand"></i> Modo TV';
+            }
+
+            aplicarModoTV(localStorage.getItem(TV_MODE_KEY) === '1');
+
+            tvToggleBtn.addEventListener('click', function() {
+                const novoEstado = !document.body.classList.contains('tv-mode');
+                localStorage.setItem(TV_MODE_KEY, novoEstado ? '1' : '0');
+                aplicarModoTV(novoEstado);
             });
         });
     </script>

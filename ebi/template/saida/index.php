@@ -71,70 +71,113 @@ if (!isset($_SESSION['logado_saida']) || $_SESSION['logado_saida'] !== true) {
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
     <title>Login - Saída de Crianças</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-1: #0f766e;
+            --bg-2: #0b4f8a;
+            --brand: #0e7490;
+            --brand-strong: #0b5f76;
+            --brand-soft: rgba(14, 116, 144, 0.14);
+            --danger: #b91c1c;
+            --success-border: #1f9d61;
+            --text-main: #10273b;
+            --text-soft: #4b647c;
+        }
+        * { box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f0f2f5;
+            background: radial-gradient(circle at 8% 8%, rgba(245, 158, 11, 0.32) 0%, rgba(245, 158, 11, 0) 35%),
+                        radial-gradient(circle at 94% 16%, rgba(20, 184, 166, 0.38) 0%, rgba(20, 184, 166, 0) 40%),
+                        linear-gradient(130deg, var(--bg-1) 0%, var(--bg-2) 58%, #083358 100%);
+            min-height: 100vh;
             margin: 0;
-            padding: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
+            font-family: 'Manrope', sans-serif;
+            padding: 20px;
         }
         .login-container {
-            background-color: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.97));
+            padding: 34px 28px;
+            border-radius: 22px;
+            box-shadow: 0 18px 48px rgba(1, 27, 49, 0.33);
             text-align: center;
             width: 100%;
-            max-width: 300px;
+            max-width: 320px;
+            animation: slideIn 0.5s ease-out;
         }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-18px) scale(0.985); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .login-container .icon-header { font-size: 2.4rem; color: var(--brand); margin-bottom: 8px; }
         .login-container h2 {
-            margin-top: 0;
-            color: #333;
+            margin: 0 0 22px;
+            color: var(--text-main);
+            font-weight: 800;
+            font-size: 1.25rem;
+            letter-spacing: -0.01em;
+        }
+        .login-container label {
+            display: block;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #173146;
+            margin-bottom: 6px;
         }
         .login-container input[type="password"] {
             width: 100%;
-            padding: 10px;
-            margin-top: 10px;
-            margin-bottom: 20px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-sizing: border-box;
+            padding: 11px 13px;
+            margin-bottom: 18px;
+            border: 1px solid #ced9e4;
+            border-radius: 11px;
             font-size: 1rem;
+            background: #fbfdff;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .login-container input[type="password"]:focus {
+            outline: none;
+            border-color: var(--brand);
+            box-shadow: 0 0 0 0.19rem var(--brand-soft);
         }
         .login-container button {
             width: 100%;
             padding: 12px;
             font-size: 1rem;
+            font-weight: 700;
             color: white;
-            background-color: #007bff;
+            background: linear-gradient(135deg, var(--brand), var(--brand-strong));
             border: none;
-            border-radius: 5px;
+            border-radius: 999px;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
         .login-container button:hover {
-            background-color: #0056b3;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 18px var(--brand-soft);
         }
         .error {
-            color: #dc3545;
-            font-weight: bold;
-            margin-top: 10px;
+            color: var(--danger);
+            font-weight: 700;
+            font-size: 0.85rem;
+            margin-top: 12px;
         }
         .success {
-            color: #28a745;
-            font-weight: bold;
+            color: var(--success-border);
+            font-weight: 700;
+            font-size: 0.85rem;
             margin-bottom: 15px;
         }
     </style>
 </head>
 <body>
     <div class="login-container">
+        <div class="icon-header"><i class="fas fa-door-open"></i></div>
         <h2>Acesso - Saída de Crianças</h2>
         <?php if (!empty($loginPageMensagemSucesso)): ?>
             <p class="success"><?php echo sanitize_for_html($loginPageMensagemSucesso); ?></p>
@@ -143,7 +186,7 @@ if (!isset($_SESSION['logado_saida']) || $_SESSION['logado_saida'] !== true) {
             <?php echo csrf_field(); ?>
             <label for="senha_login">Senha:</label>
             <input type="password" id="senha_login" name="senha_login" required autofocus>
-            <button type="submit" name="tentativa_login" value="1">Entrar</button>
+            <button type="submit" name="tentativa_login" value="1"><i class="fas fa-sign-in-alt mr-1"></i> Entrar</button>
             <?php if (!empty($mensagemLoginErro)): ?>
                 <p class="error"><?php echo sanitize_for_html($mensagemLoginErro); ?></p>
             <?php endif; ?>
@@ -161,22 +204,51 @@ if (!isset($_SESSION['logado_saida']) || $_SESSION['logado_saida'] !== true) {
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
     <title>Registrar Saída de Crianças</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg-1: #0f766e;
+            --bg-2: #0b4f8a;
+            --surface-border: rgba(15, 23, 42, 0.08);
+            --text-main: #10273b;
+            --text-soft: #4b647c;
+            --brand: #0e7490;
+            --brand-strong: #0b5f76;
+            --brand-soft: rgba(14, 116, 144, 0.14);
+            --success-bg: #dff8ea;
+            --success-border: #1f9d61;
+            --danger: #b91c1c;
+        }
+        * { box-sizing: border-box; }
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f0f2f5;
+            background: radial-gradient(circle at 8% 8%, rgba(245, 158, 11, 0.32) 0%, rgba(245, 158, 11, 0) 35%),
+                        radial-gradient(circle at 94% 16%, rgba(20, 184, 166, 0.38) 0%, rgba(20, 184, 166, 0) 40%),
+                        linear-gradient(130deg, var(--bg-1) 0%, var(--bg-2) 58%, #083358 100%);
+            min-height: 100vh;
             margin: 0;
-            padding: 20px;
+            display: flex;
+            justify-content: center;
+            font-family: 'Manrope', sans-serif;
+            padding: 20px 14px 40px;
         }
         .container {
-            max-width: 450px;
-            margin: 0 auto;
-            background-color: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 460px;
+            height: fit-content;
+            margin: 20px auto 0;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.97));
+            padding: 28px 24px;
+            border-radius: 22px;
+            border: 1px solid var(--surface-border);
+            box-shadow: 0 18px 48px rgba(1, 27, 49, 0.33);
+            animation: slideIn 0.5s ease-out;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-18px) scale(0.985); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
         .header {
             display: flex;
@@ -186,60 +258,78 @@ if (!isset($_SESSION['logado_saida']) || $_SESSION['logado_saida'] !== true) {
         }
         .header h1 {
             margin: 0;
-            font-size: 1.5rem;
-            color: #333;
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--text-main);
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
+        .header h1 i { color: var(--brand); }
         .logout-link {
-            background-color: #dc3545;
+            background: var(--danger);
             color: white;
-            padding: 8px 12px;
+            padding: 8px 14px;
             text-decoration: none;
-            border-radius: 5px;
-            font-size: 0.9rem;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            transition: transform 0.2s ease;
         }
         .logout-link:hover {
-            background-color: #b22222;
+            color: white;
+            transform: translateY(-1px);
         }
-        .entry-section {
-            margin-bottom: 20px;
-        }
+        .entry-section { margin-bottom: 18px; }
         label {
-            font-weight: bold;
-            margin-bottom: 5px;
+            font-weight: 600;
+            margin-bottom: 6px;
             display: block;
             text-align: left;
-            color: #333;
+            color: #173146;
+            font-size: 0.88rem;
         }
         input[type="number"], select {
-            padding: 10px;
+            padding: 12px 13px;
             font-size: 1.1rem;
-            border-radius: 5px;
-            border: 1px solid #ccc;
+            border-radius: 11px;
+            border: 1px solid #ced9e4;
             width: 100%;
-            box-sizing: border-box;
+            background: #fbfdff;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        input[type="number"]:focus, select:focus {
+            outline: none;
+            border-color: var(--brand);
+            box-shadow: 0 0 0 0.19rem var(--brand-soft);
         }
         #lookup-btn {
-            margin-top: 10px;
-            padding: 10px;
+            margin-top: 12px;
+            padding: 12px;
             width: 100%;
             font-size: 1rem;
+            font-weight: 700;
             color: white;
-            background-color: #007bff;
+            background: linear-gradient(135deg, var(--brand), var(--brand-strong));
             border: none;
-            border-radius: 5px;
+            border-radius: 999px;
             cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
         #lookup-btn:hover {
-            background-color: #0056b3;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 18px var(--brand-soft);
         }
         .link-painel {
-            font-size: 1.1em;
-            margin-top: 25px;
+            font-size: 0.95rem;
+            margin-top: 22px;
             text-align: center;
         }
         .link-painel a {
-            color: #007bff;
+            color: var(--brand-strong);
             text-decoration: none;
+            font-weight: 700;
         }
         .link-painel a:hover {
             text-decoration: underline;
@@ -247,18 +337,20 @@ if (!isset($_SESSION['logado_saida']) || $_SESSION['logado_saida'] !== true) {
         #confirmation-area {
             display: none;
             margin-top: 20px;
-            border: 1px solid #ddd;
-            padding: 15px;
-            border-radius: 8px;
-            background-color: #f8f9fa;
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid var(--brand);
+            padding: 16px;
+            border-radius: 12px;
+            background: #f8fafc;
         }
         #confirmation-data {
             text-align: left;
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
         #confirmation-data p {
             margin: 5px 0;
-            color: #333;
+            color: var(--text-main);
+            font-size: 0.98rem;
         }
         .confirmation-buttons {
             display: flex;
@@ -266,26 +358,23 @@ if (!isset($_SESSION['logado_saida']) || $_SESSION['logado_saida'] !== true) {
         }
         .confirmation-buttons button {
             flex: 1;
-            padding: 10px;
-            font-size: 1rem;
-            border-radius: 5px;
+            padding: 12px;
+            font-size: 0.95rem;
+            border-radius: 999px;
             cursor: pointer;
             border: none;
-            font-weight: bold;
+            font-weight: 700;
+            transition: transform 0.2s ease;
         }
+        .confirmation-buttons button:hover { transform: translateY(-1px); }
         #confirm-register-btn {
-            background-color: #28a745;
+            background: var(--success-border);
             color: white;
-        }
-        #confirm-register-btn:hover {
-            background-color: #218838;
         }
         #cancel-register-btn {
-            background-color: #dc3545;
-            color: white;
-        }
-        #cancel-register-btn:hover {
-            background-color: #b22222;
+            background: #fff;
+            color: var(--danger);
+            border: 1px solid var(--danger) !important;
         }
         #modal-overlay {
             position: fixed;
@@ -293,7 +382,7 @@ if (!isset($_SESSION['logado_saida']) || $_SESSION['logado_saida'] !== true) {
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
+            background-color: rgba(10, 25, 41, 0.55);
             display: none;
             justify-content: center;
             align-items: center;
@@ -303,22 +392,23 @@ if (!isset($_SESSION['logado_saida']) || $_SESSION['logado_saida'] !== true) {
         #modal-box {
             background-color: white;
             padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            border-radius: 16px;
+            box-shadow: 0 18px 48px rgba(1, 27, 49, 0.33);
             text-align: center;
-            max-width: 80%;
+            max-width: 85%;
         }
         #modal-message {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             margin: 0;
-            color: #333;
+            font-weight: 600;
+            color: var(--text-main);
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>Saída de Crianças</h1>
+            <h1><i class="fas fa-child"></i> Saída de Crianças</h1>
             <a href="?acao=logout" class="logout-link">Sair</a>
         </div>
 
@@ -326,7 +416,7 @@ if (!isset($_SESSION['logado_saida']) || $_SESSION['logado_saida'] !== true) {
             <div class="entry-section">
                 <label for="codigo-resp-input">Código do Responsável:</label>
                 <input type="number" id="codigo-resp-input" inputmode="numeric" pattern="[0-9]*" placeholder="Digite o código" autofocus>
-                <button id="lookup-btn">Consultar</button>
+                <button id="lookup-btn"><i class="fas fa-search mr-1"></i> Consultar</button>
             </div>
         </div>
 
@@ -341,12 +431,12 @@ if (!isset($_SESSION['logado_saida']) || $_SESSION['logado_saida'] !== true) {
                 </select>
             </div>
             <div class="confirmation-buttons">
-                <button id="confirm-register-btn">Registrar Saída</button>
-                <button id="cancel-register-btn">Cancelar</button>
+                <button id="confirm-register-btn"><i class="fas fa-check mr-1"></i> Registrar Saída</button>
+                <button id="cancel-register-btn"><i class="fas fa-times mr-1"></i> Cancelar</button>
             </div>
         </div>
 
-        <div class="link-painel"><a href="painel.php">Ver Painel de Saídas</a></div>
+        <div class="link-painel"><a href="painel.php"><i class="fas fa-tv mr-1"></i>Ver Painel de Saídas</a></div>
     </div>
 
     <div id="modal-overlay"><div id="modal-box"><p id="modal-message"></p></div></div>
