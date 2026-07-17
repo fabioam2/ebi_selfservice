@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#143b36">
+    <title>EBI | O que é o sistema</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Fraunces:opsz,wght@9..144,600;9..144,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        :root {
+            --ink: #1d2b2a;
+            --paper: #f6f2e9;
+            --paper-deep: #e9e2d4;
+            --evergreen: #143b36;
+            --forest: #20564e;
+            --leaf: #8dc993;
+            --sun: #efb645;
+            --coral: #e5795e;
+            --blue: #6faab5;
+            --line: rgba(29, 43, 42, 0.17);
+            --white: #fffdf8;
+            --stage-height: min(620px, calc(100vh - 240px));
+        }
+
+        * { box-sizing: border-box; }
+        html { background: var(--paper); }
+        body {
+            min-height: 100vh;
+            margin: 0;
+            color: var(--ink);
+            font-family: "DM Sans", sans-serif;
+            background-color: var(--paper);
+            background-image: linear-gradient(rgba(29, 43, 42, 0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(29, 43, 42, 0.035) 1px, transparent 1px);
+            background-size: 26px 26px;
+            display: grid;
+            grid-template-rows: auto minmax(0, 1fr) auto auto;
+        }
+
+        button { font: inherit; }
+        button:focus-visible, a:focus-visible { outline: 3px solid var(--sun); outline-offset: 3px; }
+        .masthead {
+            min-height: 68px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 12px clamp(18px, 4vw, 54px);
+            color: var(--white);
+            background: var(--evergreen);
+            border-bottom: 4px solid var(--sun);
+        }
+        .brand { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+        .brand strong { font-family: "Fraunces", serif; font-size: 1.45rem; line-height: 1; }
+        .brand span { font-family: "DM Mono", monospace; font-size: .7rem; letter-spacing: .08em; text-transform: uppercase; color: #b7d7b9; white-space: nowrap; }
+        .header-actions { display: flex; align-items: center; gap: 8px; }
+        .icon-button {
+            width: 38px;
+            height: 38px;
+            border: 1px solid rgba(255, 253, 248, .36);
+            border-radius: 7px;
+            color: var(--white);
+            background: transparent;
+            cursor: pointer;
+            transition: background .2s ease, color .2s ease, transform .2s ease;
+        }
+        .icon-button:hover { color: var(--evergreen); background: var(--sun); transform: translateY(-1px); }
+        .icon-button[aria-pressed="true"] { color: var(--evergreen); background: var(--leaf); border-color: var(--leaf); }
+
+        main { min-height: 0; display: grid; place-items: center; padding: clamp(18px, 3.5vw, 44px) clamp(18px, 4vw, 64px) 16px; }
+        .presentation { width: min(1280px, 100%); }
+        .progress-row { display: flex; align-items: center; gap: 13px; margin: 0 0 13px; }
+        .progress-label { font-family: "DM Mono", monospace; font-size: .68rem; letter-spacing: .06em; color: #4f625f; white-space: nowrap; }
+        .progress-track { position: relative; flex: 1; height: 2px; background: var(--paper-deep); overflow: hidden; }
+        .progress-fill { width: 12.5%; height: 100%; background: var(--coral); transition: width .35s ease; }
+
+        .stage {
+            position: relative;
+            min-height: var(--stage-height);
+            overflow: hidden;
+            border: 1px solid var(--line);
+            background: var(--white);
+            box-shadow: 10px 10px 0 rgba(32, 86, 78, .15);
+        }
+        .stage::before, .stage::after { content: ""; position: absolute; z-index: 0; pointer-events: none; }
+        .stage::before { top: -8vw; right: -5vw; width: 27vw; height: 27vw; min-width: 230px; min-height: 230px; border: 1px solid rgba(32, 86, 78, .18); border-radius: 50%; }
+        .stage::after { bottom: -10vw; left: -7vw; width: 30vw; height: 30vw; min-width: 270px; min-height: 270px; border-radius: 50%; background: rgba(239, 182, 69, .11); }
+        .scene {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: minmax(260px, .9fr) minmax(320px, 1.1fr);
+            align-items: center;
+            gap: clamp(26px, 6vw, 100px);
+            padding: clamp(28px, 6vw, 90px);
+            opacity: 0;
+            pointer-events: none;
+            transform: translateX(22px);
+            transition: opacity .42s ease, transform .42s cubic-bezier(.2, .8, .2, 1);
+        }
+        .scene.active { opacity: 1; pointer-events: auto; transform: translateX(0); }
+        .copy { max-width: 540px; }
+        .eyebrow { margin: 0 0 14px; color: var(--forest); font-family: "DM Mono", monospace; font-size: .72rem; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; }
+        .copy h1, .copy h2 { margin: 0; font-family: "Fraunces", serif; font-size: clamp(2.2rem, 5.3vw, 5.15rem); font-weight: 700; letter-spacing: 0; line-height: .96; }
+        .copy h2 { font-size: clamp(2rem, 4.3vw, 4.35rem); }
+        .copy p:not(.eyebrow) { max-width: 520px; margin: 22px 0 0; font-size: clamp(1rem, 1.3vw, 1.16rem); line-height: 1.62; color: #4a5c58; }
+        .copy strong { color: var(--evergreen); font-weight: 700; }
+        .fact-list { display: flex; flex-wrap: wrap; gap: 8px; margin: 25px 0 0; padding: 0; list-style: none; }
+        .fact-list li { padding: 7px 10px; border: 1px solid var(--line); border-radius: 3px; color: var(--forest); background: rgba(141, 201, 147, .11); font-size: .76rem; font-weight: 700; }
+
+        .visual { position: relative; min-height: min(450px, calc(var(--stage-height) - 90px)); display: grid; place-items: center; }
+        .poster { position: relative; width: min(100%, 620px); padding: 18px; border: 1px solid var(--line); background: #f9f6ee; box-shadow: 12px 13px 0 rgba(29, 43, 42, .13); transform: rotate(1.4deg); }
+        .poster img { display: block; width: 100%; border: 1px solid rgba(29, 43, 42, .12); object-fit: cover; object-position: top center; }
+        .poster-label { position: absolute; right: -10px; bottom: 21px; padding: 9px 12px; color: var(--white); background: var(--coral); font-family: "DM Mono", monospace; font-size: .65rem; letter-spacing: .05em; text-transform: uppercase; transform: rotate(-2deg); }
+        .scene.active .poster { animation: settle .7s cubic-bezier(.2, .8, .2, 1) both; }
+        @keyframes settle { from { opacity: 0; transform: translateY(24px) rotate(4deg); } to { opacity: 1; transform: rotate(1.4deg); } }
+
+        .intro-visual { width: min(100%, 520px); aspect-ratio: 1 / .9; display: grid; place-items: center; overflow: hidden; border: 1px solid var(--evergreen); color: var(--white); background: var(--forest); box-shadow: 12px 13px 0 rgba(29, 43, 42, .15); }
+        .intro-visual::before { content: ""; position: absolute; width: 77%; aspect-ratio: 1; border: 1px solid rgba(255, 253, 248, .35); border-radius: 50%; }
+        .intro-visual::after { content: ""; position: absolute; width: 53%; aspect-ratio: 1; border: 1px dashed rgba(255, 253, 248, .4); border-radius: 50%; animation: turn 22s linear infinite; }
+        .intro-mark { z-index: 1; display: grid; place-items: center; width: 120px; height: 120px; border: 3px solid var(--sun); border-radius: 50%; color: var(--sun); background: var(--evergreen); font-size: 3rem; box-shadow: 0 0 0 12px rgba(239, 182, 69, .13); }
+        .intro-note { position: absolute; z-index: 2; margin: 0; padding: 8px 11px; color: var(--evergreen); background: var(--leaf); font-family: "DM Mono", monospace; font-size: .65rem; font-weight: 500; letter-spacing: .05em; text-transform: uppercase; }
+        .intro-note.one { top: 18%; left: 5%; transform: rotate(-4deg); }
+        .intro-note.two { right: 4%; bottom: 18%; color: var(--white); background: var(--coral); transform: rotate(3deg); }
+        @keyframes turn { to { transform: rotate(360deg); } }
+
+        .qr-frame { width: min(100%, 370px); padding: 12px; border: 1px solid var(--line); background: var(--white); box-shadow: 11px 12px 0 rgba(29, 43, 42, .13); transform: rotate(-2deg); }
+        .qr-frame img { width: 100%; max-height: 430px; object-fit: cover; object-position: top; display: block; border: 1px solid rgba(29, 43, 42, .12); }
+        .qr-card { position: absolute; right: -6%; bottom: 7%; width: 180px; padding: 14px; color: var(--white); background: var(--evergreen); box-shadow: 7px 8px 0 rgba(29, 43, 42, .14); transform: rotate(3deg); }
+        .qr-card i { display: block; margin-bottom: 10px; color: var(--sun); font-size: 1.8rem; }
+        .qr-card strong { display: block; font-size: .84rem; }
+        .qr-card span { display: block; margin-top: 5px; color: #cfe4d0; font-size: .72rem; line-height: 1.35; }
+
+        .print-scene { width: min(100%, 490px); min-height: 370px; position: relative; display: grid; place-items: center; border-bottom: 3px solid var(--evergreen); }
+        .printer { position: relative; z-index: 2; width: 300px; height: 185px; border: 1px solid #163c38; border-radius: 18px 18px 5px 5px; background: #dbe8e2; box-shadow: inset 0 -18px 0 #bfd2c9, 9px 10px 0 rgba(29, 43, 42, .14); }
+        .printer::before { content: ""; position: absolute; top: 17px; left: 30px; width: 115px; height: 15px; border-radius: 3px; background: var(--evergreen); }
+        .printer::after { content: ""; position: absolute; top: 19px; right: 31px; width: 13px; height: 13px; border-radius: 50%; background: var(--sun); box-shadow: 22px 0 0 var(--coral); }
+        .printer-paper { position: absolute; z-index: 1; top: 49px; width: 210px; height: 155px; border: 1px solid var(--line); background: #fffdf8; box-shadow: 7px 6px 0 rgba(29, 43, 42, .1); animation: print-out 3.8s ease-in-out infinite; }
+        .printer-paper b { position: absolute; top: 24px; left: 22px; width: 74px; height: 9px; background: var(--evergreen); }
+        .printer-paper span { position: absolute; left: 22px; right: 22px; height: 7px; background: var(--paper-deep); }
+        .printer-paper span:nth-of-type(1) { top: 50px; }
+        .printer-paper span:nth-of-type(2) { top: 68px; width: 62%; }
+        .printer-paper span:nth-of-type(3) { top: 86px; width: 76%; }
+        .wristband { position: absolute; z-index: 3; bottom: 10px; left: 4%; width: 220px; padding: 10px; border: 1px dashed #72540f; color: #684e13; background: var(--sun); font-family: "DM Mono", monospace; font-size: .7rem; font-weight: 500; letter-spacing: .06em; text-align: center; transform: rotate(-5deg); }
+        @keyframes print-out { 0%, 100% { transform: translateY(-11px); } 55% { transform: translateY(28px); } }
+
+        .exit-flow { width: min(100%, 580px); display: grid; grid-template-columns: 1fr 54px 1.35fr; align-items: center; gap: 14px; }
+        .screen-card { position: relative; overflow: hidden; border: 1px solid var(--line); background: var(--white); box-shadow: 8px 9px 0 rgba(29, 43, 42, .11); }
+        .screen-card img { display: block; width: 100%; height: 255px; object-fit: cover; object-position: top; }
+        .screen-card small { display: block; padding: 8px 10px; font-family: "DM Mono", monospace; font-size: .62rem; letter-spacing: .04em; text-transform: uppercase; }
+        .flow-arrow { position: relative; height: 2px; background: var(--coral); }
+        .flow-arrow::after { content: ""; position: absolute; top: -5px; right: -1px; border-width: 6px 0 6px 10px; border-style: solid; border-color: transparent transparent transparent var(--coral); }
+        .flow-arrow::before { content: ""; position: absolute; top: -4px; left: 30%; width: 10px; height: 10px; border-radius: 50%; background: var(--sun); animation: travel 1.7s ease-in-out infinite; }
+        @keyframes travel { 50% { transform: translateX(35px); } }
+
+        .privacy-diagram { width: min(100%, 530px); display: grid; grid-template-columns: 1fr 46px 1fr; align-items: center; gap: 8px; }
+        .privacy-node { min-height: 190px; padding: 20px; border: 1px solid var(--line); background: var(--white); box-shadow: 7px 8px 0 rgba(29, 43, 42, .1); }
+        .privacy-node i { color: var(--forest); font-size: 2rem; }
+        .privacy-node strong { display: block; margin-top: 16px; font-family: "Fraunces", serif; font-size: 1.22rem; line-height: 1.05; }
+        .privacy-node span { display: block; margin-top: 8px; color: #51635f; font-size: .75rem; line-height: 1.45; }
+        .privacy-node.aggregate { color: var(--white); background: var(--evergreen); }
+        .privacy-node.aggregate i { color: var(--sun); }
+        .privacy-node.aggregate span { color: #d0e2d0; }
+        .privacy-link { height: 2px; background: var(--leaf); }
+        .privacy-link::after { content: ""; display: block; width: 11px; height: 11px; margin: -4px auto 0; border-radius: 50%; background: var(--leaf); box-shadow: 0 0 0 5px rgba(141, 201, 147, .18); }
+        .privacy-note { position: absolute; right: 0; bottom: 2%; padding: 9px 12px; color: var(--evergreen); background: var(--sun); font-size: .73rem; font-weight: 700; transform: rotate(2deg); }
+
+        .account-path { width: min(100%, 520px); position: relative; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .account-step { min-height: 200px; display: flex; flex-direction: column; justify-content: space-between; padding: 18px; border: 1px solid var(--line); background: var(--white); box-shadow: 6px 7px 0 rgba(29, 43, 42, .1); }
+        .account-step:nth-child(2) { margin-top: 32px; color: var(--white); background: var(--forest); }
+        .account-step:nth-child(3) { margin-top: 64px; background: var(--leaf); }
+        .account-step i { font-size: 1.45rem; color: var(--coral); }
+        .account-step:nth-child(2) i { color: var(--sun); }
+        .account-step strong { font-family: "Fraunces", serif; font-size: 1.25rem; line-height: 1; }
+        .account-step span { font-size: .72rem; line-height: 1.35; opacity: .78; }
+
+        .closing-visual { width: min(100%, 500px); padding: clamp(25px, 5vw, 55px); color: var(--white); background: var(--evergreen); box-shadow: 12px 13px 0 rgba(29, 43, 42, .15); text-align: center; }
+        .closing-visual i { color: var(--sun); font-size: 3.4rem; }
+        .closing-visual p { margin: 20px 0 0; font-family: "Fraunces", serif; font-size: clamp(1.65rem, 3vw, 2.65rem); line-height: 1.05; }
+        .closing-visual span { display: inline-block; margin-top: 19px; padding-top: 12px; border-top: 1px solid rgba(255, 253, 248, .25); color: #c8dfca; font-family: "DM Mono", monospace; font-size: .66rem; letter-spacing: .08em; text-transform: uppercase; }
+
+        .captions { width: min(1280px, 100%); min-height: 0; margin: 0 auto; padding: 0 clamp(18px, 4vw, 64px) 15px; }
+        .caption-box { min-height: 70px; display: flex; align-items: center; justify-content: center; padding: 13px 22px; border-left: 4px solid var(--sun); color: #445652; background: rgba(255, 253, 248, .91); font-size: clamp(.88rem, 1.2vw, 1rem); line-height: 1.45; text-align: center; box-shadow: 0 5px 16px rgba(29, 43, 42, .07); transition: opacity .2s ease, transform .2s ease; }
+        .captions.hidden .caption-box { visibility: hidden; opacity: 0; transform: translateY(8px); }
+
+        .controls { min-height: 82px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 14px; padding: 12px clamp(18px, 4vw, 54px); color: var(--white); background: var(--ink); }
+        .nav-button, .play-button { border: 1px solid rgba(255, 253, 248, .28); border-radius: 5px; color: var(--white); background: transparent; cursor: pointer; transition: color .2s ease, background .2s ease, transform .2s ease; }
+        .nav-button { min-height: 38px; padding: 8px 13px; font-size: .79rem; font-weight: 700; }
+        .nav-button.next { justify-self: end; }
+        .nav-button:hover:not(:disabled) { color: var(--ink); background: var(--leaf); transform: translateY(-1px); }
+        .nav-button:disabled { opacity: .34; cursor: not-allowed; }
+        .play-button { min-width: 145px; min-height: 45px; padding: 9px 18px; color: var(--ink); background: var(--sun); border-color: var(--sun); font-weight: 700; }
+        .play-button:hover { color: var(--white); background: var(--coral); border-color: var(--coral); transform: translateY(-1px); }
+        .play-button i { margin-right: 8px; }
+
+        @media (max-width: 780px) {
+            :root { --stage-height: 690px; }
+            .masthead { min-height: 60px; }
+            .brand span { display: none; }
+            main { padding: 15px 15px 10px; }
+            .stage { box-shadow: 6px 7px 0 rgba(32, 86, 78, .15); }
+            .scene { grid-template-columns: 1fr; align-content: space-between; gap: 16px; padding: 26px 23px; }
+            .copy h1, .copy h2 { font-size: clamp(2.05rem, 10vw, 3rem); }
+            .copy p:not(.eyebrow) { margin-top: 14px; font-size: .93rem; line-height: 1.5; }
+            .fact-list { margin-top: 16px; }
+            .visual { min-height: 248px; max-height: 300px; }
+            .poster { width: min(92%, 370px); padding: 8px; box-shadow: 7px 8px 0 rgba(29, 43, 42, .13); }
+            .poster img { height: 245px; }
+            .qr-frame { width: 185px; padding: 7px; }
+            .qr-frame img { max-height: 263px; }
+            .qr-card { right: 1%; bottom: 1%; width: 148px; padding: 10px; }
+            .qr-card i { margin-bottom: 5px; font-size: 1.2rem; }
+            .qr-card span { font-size: .65rem; }
+            .print-scene { min-height: 265px; transform: scale(.77); }
+            .exit-flow { width: 94%; grid-template-columns: 1fr 30px 1.2fr; gap: 5px; }
+            .screen-card img { height: 165px; }
+            .screen-card small { padding: 6px; font-size: .5rem; }
+            .privacy-diagram { grid-template-columns: 1fr 27px 1fr; }
+            .privacy-node { min-height: 147px; padding: 12px; }
+            .privacy-node i { font-size: 1.35rem; }
+            .privacy-node strong { margin-top: 9px; font-size: 1rem; }
+            .privacy-node span { margin-top: 5px; font-size: .65rem; }
+            .privacy-note { bottom: -5px; font-size: .63rem; }
+            .account-path { gap: 7px; }
+            .account-step { min-height: 158px; padding: 11px; }
+            .account-step:nth-child(2) { margin-top: 18px; }
+            .account-step:nth-child(3) { margin-top: 36px; }
+            .account-step strong { font-size: 1rem; }
+            .account-step span { font-size: .62rem; }
+            .caption-box { min-height: 58px; padding: 10px 14px; font-size: .8rem; }
+            .controls { min-height: 70px; gap: 8px; padding: 10px 15px; }
+            .nav-button { width: 40px; min-height: 40px; overflow: hidden; padding: 0; font-size: 0; }
+            .nav-button i { font-size: .9rem; }
+            .play-button { min-width: 128px; min-height: 40px; padding: 8px 12px; font-size: .8rem; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: 1ms !important; }
+        }
+    </style>
+</head>
+<body>
+    <header class="masthead">
+        <div class="brand"><strong>EBI</strong><span>Apresentação do sistema</span></div>
+        <div class="header-actions">
+            <button class="icon-button" id="captionToggle" type="button" aria-pressed="false" aria-label="Ativar legendas" title="Legendas"><i class="fas fa-closed-captioning"></i></button>
+            <button class="icon-button" id="restart" type="button" aria-label="Recomeçar apresentação" title="Recomeçar"><i class="fas fa-redo"></i></button>
+            <button class="icon-button" id="close" type="button" aria-label="Fechar apresentação" title="Fechar"><i class="fas fa-times"></i></button>
+        </div>
+    </header>
+
+    <main>
+        <div class="presentation">
+            <div class="progress-row" aria-label="Progresso da apresentação">
+                <span class="progress-label" id="sceneCount">01 / 08</span>
+                <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+                <span class="progress-label" id="sceneName">Visão geral</span>
+            </div>
+
+            <section class="stage" aria-live="polite">
+                <article class="scene active" data-title="Visão geral" data-audio="assets/apresentacao-v7/01-abertura.wav" data-caption="Este é o EBI: um sistema para organizar a entrada e a saída das crianças no Ensino Bíblico Infantil. Ele ajuda a equipe a receber cada família com mais clareza, ritmo e cuidado.">
+                    <div class="copy">
+                        <p class="eyebrow">Ensino Bíblico Infantil</p>
+                        <h1>Mais cuidado no fluxo de cada encontro.</h1>
+                        <p>O EBI organiza o controle de <strong>entrada e saída das crianças</strong>, apoiando quem recebe as famílias e quem coordena a equipe durante a programação.</p>
+                        <ul class="fact-list"><li>Recepção organizada</li><li>Saída coordenada</li><li>Dados com propósito</li></ul>
+                    </div>
+                    <div class="visual">
+                        <div class="intro-visual">
+                            <div class="intro-mark"><i class="fas fa-hands-helping"></i></div>
+                            <p class="intro-note one">Entrada</p>
+                            <p class="intro-note two">Saída</p>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="scene" data-title="Cartão QR Code" data-audio="assets/apresentacao-v7/02-cartao.wav" data-caption="Tudo começa antes do encontro. O responsável acessa qrcode.ccbcampinas.org.br, informa seus dados e os das crianças, e recebe um cartão QR Code individual para levar consigo.">
+                    <div class="copy">
+                        <p class="eyebrow">01. Antes de chegar</p>
+                        <h2>O cartão fica com quem cuida.</h2>
+                        <p>O responsável cria o QR Code em <strong>qrcode.ccbcampinas.org.br</strong>, com seu nome, telefone, comum e as informações das crianças. Um cartão é gerado para cada responsável.</p>
+                        <ul class="fact-list"><li>Responsável</li><li>Crianças</li><li>Comum</li><li>Telefone</li></ul>
+                    </div>
+                    <div class="visual">
+                        <div class="qr-frame"><img src="assets/apresentacao-v7/qrcode-gerador.png" alt="Tela do gerador de QR Code do Espaço Bíblico Infantil"></div>
+                        <div class="qr-card"><i class="fas fa-qrcode"></i><strong>Cartão individual</strong><span>O responsável guarda e apresenta no encontro.</span></div>
+                    </div>
+                </article>
+
+                <article class="scene" data-title="Entrada" data-audio="assets/apresentacao-v7/03-entrada.wav" data-caption="Na chegada, a equipe lê o QR Code do cartão. Se for preciso, também pode digitar as informações manualmente. Assim, o cadastro operacional fica pronto para aquele encontro, sem atrasar a recepção.">
+                    <div class="copy">
+                        <p class="eyebrow">02. Na recepção</p>
+                        <h2>Uma chegada que não perde o ritmo.</h2>
+                        <p>Na porta, a equipe registra a entrada com a leitura do QR Code. A tela do EBI também permite <strong>digitação manual</strong>, para manter o atendimento funcionando quando necessário.</p>
+                        <ul class="fact-list"><li>Leitura QR Code</li><li>Registro manual</li><li>Portaria</li></ul>
+                    </div>
+                    <div class="visual">
+                        <div class="poster"><img src="assets/apresentacao-v7/ebi-entrada.png" alt="Tela de cadastro de crianças do EBI"><span class="poster-label">Tela de entrada EBI</span></div>
+                    </div>
+                </article>
+
+                <article class="scene" data-title="Pulseira" data-audio="assets/apresentacao-v7/04-pulseira.wav" data-caption="A impressão de pulseiras é opcional, mas pode deixar a entrada ainda mais rápida. O sistema trabalha com a Elgin ou Bematech L42DT e traz as orientações de instalação no menu de impressora.">
+                    <div class="copy">
+                        <p class="eyebrow">03. Opcional</p>
+                        <h2>Pulseira impressa para acelerar o atendimento.</h2>
+                        <p>A impressão de pulseiras é opcional. Para esse fluxo, o sistema oferece configuração para a <strong>Elgin / Bematech L42DT</strong> e as orientações ficam disponíveis no menu de impressora.</p>
+                        <ul class="fact-list"><li>Pulseira padrão</li><li>Elgin L42DT</li><li>Menu Impressora</li></ul>
+                    </div>
+                    <div class="visual">
+                        <div class="print-scene" aria-label="Ilustração de impressora e pulseira">
+                            <div class="printer-paper"><b></b><span></span><span></span><span></span></div>
+                            <div class="printer"></div>
+                            <div class="wristband">EBI · CÓDIGO DO RESPONSÁVEL</div>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="scene" data-title="Saída e painel" data-audio="assets/apresentacao-v7/05-saida.wav" data-caption="Na hora da saída, um coordenador pode usar o celular para informar o código do responsável. O painel de saída mostra as crianças relacionadas e ajuda a equipe, lá dentro e na porta, a se coordenar.">
+                    <div class="copy">
+                        <p class="eyebrow">04. Na saída</p>
+                        <h2>O celular chama. O painel orienta.</h2>
+                        <p>Com o código do responsável, o coordenador registra a saída no celular. O <strong>Painel de Saídas</strong> mostra as crianças relacionadas, ajudando a equipe interna e a pessoa na porta a agir em sintonia.</p>
+                        <ul class="fact-list"><li>Smartphone</li><li>Painel atualizado</li><li>Equipe coordenada</li></ul>
+                    </div>
+                    <div class="visual">
+                        <div class="exit-flow">
+                            <div class="screen-card"><img src="assets/apresentacao-v7/ebi-saida.png" alt="Tela para registrar saída de crianças"><small>Registrar saída</small></div>
+                            <div class="flow-arrow" aria-hidden="true"></div>
+                            <div class="screen-card"><img src="assets/apresentacao-v7/ebi-painel.png" alt="Tela do painel de saídas"><small>Painel de saídas</small></div>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="scene" data-title="Privacidade" data-audio="assets/apresentacao-v7/06-privacidade.wav" data-caption="O sistema foi pensado para reduzir a exposição de dados. O cartão permanece com a família, e os registros identificáveis servem apenas à operação do encontro. Ao final, a equipe encerra esses registros. Nas estatísticas ficam somente totais, faixas de idade, portaria, comum e data, sem nomes.">
+                    <div class="copy">
+                        <p class="eyebrow">05. Privacidade e LGPD</p>
+                        <h2>Informação pessoal só enquanto ela é necessária.</h2>
+                        <p>O cartão continua com a família. Durante o encontro, os dados identificáveis atendem à operação de entrada e saída. Depois, a equipe encerra os registros. Os relatórios preservam <strong>apenas dados agregados, sem nomes</strong>.</p>
+                        <ul class="fact-list"><li>Sem nomes nos relatórios</li><li>Faixa etária</li><li>Portaria</li><li>Data</li></ul>
+                    </div>
+                    <div class="visual">
+                        <div class="privacy-diagram">
+                            <div class="privacy-node"><i class="fas fa-id-card"></i><strong>Família</strong><span>Guarda o cartão QR Code.</span></div>
+                            <div class="privacy-link" aria-hidden="true"></div>
+                            <div class="privacy-node aggregate"><i class="fas fa-chart-bar"></i><strong>Estatísticas</strong><span>Totais e recortes sem nomes.</span></div>
+                        </div>
+                        <div class="privacy-note">Registros do encontro são encerrados pela equipe</div>
+                    </div>
+                </article>
+
+                <article class="scene" data-title="SelfService" data-audio="assets/apresentacao-v7/07-conta.wav" data-caption="Cada igreja cria uma conta com e-mail e senha, e reutiliza o mesmo acesso nos próximos dias de EBI. As estatísticas ajudam a acompanhar os encontros. Caso a senha seja esquecida, a recuperação é feita pelo e-mail cadastrado.">
+                    <div class="copy">
+                        <p class="eyebrow">06. SelfService</p>
+                        <h2>Uma conta que acompanha a igreja.</h2>
+                        <p>No SelfService, cada igreja cria sua conta com e-mail e senha. O mesmo acesso pode ser reutilizado nos próximos dias de EBI, com <strong>estatísticas de cada encontro</strong> e recuperação de senha pelo e-mail cadastrado.</p>
+                        <ul class="fact-list"><li>E-mail e senha</li><li>Mesmo acesso</li><li>Estatísticas</li></ul>
+                    </div>
+                    <div class="visual">
+                        <div class="account-path" aria-label="Criar conta, usar no EBI e acompanhar estatísticas">
+                            <div class="account-step"><i class="fas fa-user-plus"></i><strong>Criar<br>conta</strong><span>Dados da igreja e acesso.</span></div>
+                            <div class="account-step"><i class="fas fa-calendar-check"></i><strong>Usar no<br>EBI</strong><span>Reutilize nos encontros.</span></div>
+                            <div class="account-step"><i class="fas fa-chart-line"></i><strong>Acompanhar</strong><span>Veja os totais registrados.</span></div>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="scene" data-title="Em cada encontro" data-audio="assets/apresentacao-v7/08-encerramento.wav" data-caption="Mais agilidade na entrada, mais visibilidade na saída e um cuidado maior com as informações das famílias. Este é o EBI: uma ferramenta prática para servir bem em cada encontro.">
+                    <div class="copy">
+                        <p class="eyebrow">Para servir bem</p>
+                        <h2>Menos espera. Mais presença.</h2>
+                        <p>O EBI ajuda a igreja a cuidar do caminho completo: recepção, identificação, saída e informações necessárias para cada encontro.</p>
+                        <ul class="fact-list"><li>Entrada</li><li>Saída</li><li>Organização</li></ul>
+                    </div>
+                    <div class="visual">
+                        <div class="closing-visual"><i class="fas fa-heart"></i><p>Uma ferramenta simples para um cuidado que importa.</p><span>EBI · Ensino Bíblico Infantil</span></div>
+                    </div>
+                </article>
+            </section>
+        </div>
+    </main>
+
+    <section class="captions hidden" id="captionRegion" aria-live="polite" aria-label="Legendas">
+        <div class="caption-box" id="captionText"></div>
+    </section>
+
+    <footer class="controls">
+        <button class="nav-button" id="previous" type="button" disabled><i class="fas fa-arrow-left"></i> <span>Anterior</span></button>
+        <button class="play-button" id="play" type="button"><i class="fas fa-play"></i><span>Ouvir apresentação</span></button>
+        <button class="nav-button next" id="next" type="button"><span>Próximo</span> <i class="fas fa-arrow-right"></i></button>
+    </footer>
+
+    <script>
+        const scenes = Array.from(document.querySelectorAll('.scene'));
+        const captionRegion = document.getElementById('captionRegion');
+        const captionText = document.getElementById('captionText');
+        const captionToggle = document.getElementById('captionToggle');
+        const sceneCount = document.getElementById('sceneCount');
+        const sceneName = document.getElementById('sceneName');
+        const progressFill = document.getElementById('progressFill');
+        const previous = document.getElementById('previous');
+        const next = document.getElementById('next');
+        const play = document.getElementById('play');
+        const restart = document.getElementById('restart');
+        const close = document.getElementById('close');
+        const audio = new Audio();
+
+        let index = 0;
+        let isPlaying = false;
+        let captionsOn = localStorage.getItem('ebi-v7-captions') === 'on';
+
+        function currentScene() { return scenes[index]; }
+
+        function setPlayButton() {
+            play.innerHTML = isPlaying
+                ? '<i class="fas fa-pause"></i><span>Pausar narração</span>'
+                : '<i class="fas fa-play"></i><span>Ouvir apresentação</span>';
+        }
+
+        function setCaptions() {
+            captionRegion.classList.toggle('hidden', !captionsOn);
+            captionToggle.setAttribute('aria-pressed', String(captionsOn));
+            captionToggle.setAttribute('aria-label', captionsOn ? 'Desativar legendas' : 'Ativar legendas');
+            captionText.textContent = currentScene().dataset.caption;
+            localStorage.setItem('ebi-v7-captions', captionsOn ? 'on' : 'off');
+        }
+
+        function render(nextIndex) {
+            scenes[index].classList.remove('active');
+            index = Math.max(0, Math.min(nextIndex, scenes.length - 1));
+            currentScene().classList.add('active');
+            sceneCount.textContent = String(index + 1).padStart(2, '0') + ' / ' + String(scenes.length).padStart(2, '0');
+            sceneName.textContent = currentScene().dataset.title;
+            progressFill.style.width = ((index + 1) / scenes.length * 100) + '%';
+            previous.disabled = index === 0;
+            next.disabled = index === scenes.length - 1;
+            setCaptions();
+        }
+
+        function stopAudio() {
+            audio.pause();
+            audio.currentTime = 0;
+            isPlaying = false;
+            setPlayButton();
+        }
+
+        function startAudio() {
+            audio.src = currentScene().dataset.audio;
+            audio.currentTime = 0;
+            audio.play().then(() => {
+                isPlaying = true;
+                setPlayButton();
+            }).catch(() => {
+                isPlaying = false;
+                setPlayButton();
+            });
+        }
+
+        function navigate(offset) {
+            const shouldContinue = isPlaying;
+            stopAudio();
+            render(index + offset);
+            if (shouldContinue) startAudio();
+        }
+
+        audio.addEventListener('ended', () => {
+            if (index < scenes.length - 1) {
+                render(index + 1);
+                startAudio();
+            } else {
+                isPlaying = false;
+                setPlayButton();
+            }
+        });
+        audio.addEventListener('error', () => { isPlaying = false; setPlayButton(); });
+
+        previous.addEventListener('click', () => navigate(-1));
+        next.addEventListener('click', () => navigate(1));
+        play.addEventListener('click', () => {
+            if (isPlaying) {
+                audio.pause();
+                isPlaying = false;
+                setPlayButton();
+            } else if (audio.src && audio.currentTime > 0 && audio.paused) {
+                audio.play().then(() => { isPlaying = true; setPlayButton(); });
+            } else {
+                startAudio();
+            }
+        });
+        captionToggle.addEventListener('click', () => { captionsOn = !captionsOn; setCaptions(); });
+        restart.addEventListener('click', () => { stopAudio(); render(0); });
+        close.addEventListener('click', () => { stopAudio(); history.length > 1 ? history.back() : location.href = 'selfservice.php'; });
+        document.addEventListener('keydown', event => {
+            if (event.key === 'ArrowRight' && index < scenes.length - 1) navigate(1);
+            if (event.key === 'ArrowLeft' && index > 0) navigate(-1);
+            if (event.key === ' ') { event.preventDefault(); play.click(); }
+            if (event.key === 'Escape') close.click();
+        });
+
+        render(0);
+        setPlayButton();
+    </script>
+</body>
+</html>
