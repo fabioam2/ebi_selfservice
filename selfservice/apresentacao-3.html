@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1a1033">
+  <title>EBI — Apresentação V3</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <style>
+    :root {
+      --bg: #0d0b1a;
+      --bg2: #171330;
+      --card: rgba(28, 24, 56, 0.85);
+      --text: #eaeaff;
+      --dim: #8e8bb0;
+      --cyan: #67e8f9;
+      --cyan-rgb: 103, 232, 249;
+      --violet: #a78bfa;
+      --violet-rgb: 167, 139, 250;
+      --amber: #fbbf24;
+      --green: #6ee7b7;
+      --red: #fca5a5;
+      --line: rgba(167, 139, 250, 0.18);
+      --glass: rgba(13, 11, 26, 0.92);
+      --radius: 14px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { background: var(--bg); }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      color: var(--text);
+      height: 100vh;
+      overflow: hidden;
+      display: grid;
+      grid-template-rows: 56px minmax(0, 1fr) auto auto;
+      background:
+        radial-gradient(ellipse at 25% 0%, rgba(103, 232, 249, 0.08), transparent 50%),
+        radial-gradient(ellipse at 75% 100%, rgba(167, 139, 250, 0.1), transparent 50%),
+        linear-gradient(170deg, var(--bg) 0%, var(--bg2) 100%);
+    }
+
+    button { font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+
+    /* ── Top Bar ───────────────────────────── */
+    .top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 clamp(14px, 3vw, 32px);
+      border-bottom: 1px solid var(--line);
+      background: var(--glass);
+      backdrop-filter: blur(14px);
+      z-index: 10;
+    }
+    .logo { font-weight: 800; font-size: .95rem; color: var(--cyan); letter-spacing: .04em; }
+    .logo small { font-weight: 400; color: var(--dim); font-size: .78rem; margin-left: 6px; }
+    .top-actions { display: flex; gap: 6px; }
+
+    .btn-icon {
+      width: 36px; height: 36px;
+      display: grid; place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--dim);
+      font-size: .88rem;
+      transition: all .15s;
+    }
+    .btn-icon:hover { color: var(--cyan); border-color: rgba(103,232,249,.5); background: rgba(103,232,249,.06); }
+
+    .btn-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      height: 36px; padding: 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--dim);
+      font-size: .74rem; font-weight: 700;
+      transition: all .15s;
+    }
+    .btn-pill:hover { color: var(--cyan); border-color: rgba(103,232,249,.5); background: rgba(103,232,249,.06); }
+    .btn-pill.on { color: var(--cyan); border-color: rgba(103,232,249,.5); background: rgba(103,232,249,.08); }
+
+    /* ── Voice Panel ───────────────────────── */
+    .voice-panel {
+      position: fixed; top: 58px; right: clamp(14px, 3vw, 32px);
+      z-index: 20;
+      width: min(330px, calc(100vw - 28px));
+      padding: 18px;
+      border: 1px solid rgba(103,232,249,.3);
+      border-radius: var(--radius);
+      background: rgba(13, 11, 26, 0.97);
+      box-shadow: 0 16px 48px rgba(0,0,0,.5);
+      display: none;
+    }
+    .voice-panel.open { display: block; animation: vp-in .18s ease both; }
+    @keyframes vp-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; } }
+    .voice-panel h3 { font-size: .88rem; color: var(--text); margin-bottom: 14px; }
+    .vp-label { display: block; font-size: .65rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--dim); margin-bottom: 6px; }
+    .vp-select {
+      width: 100%; padding: 9px 10px; border: 1px solid var(--line);
+      border-radius: 6px; background: var(--bg); color: var(--text);
+      font-size: .78rem; outline: none;
+    }
+    .vp-select:focus { border-color: var(--cyan); }
+    .vp-select option { background: var(--bg); }
+    .vp-range-row { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+    .vp-range { flex: 1; accent-color: var(--violet); }
+    .vp-val { font-size: .72rem; color: var(--violet); min-width: 32px; text-align: right; font-variant-numeric: tabular-nums; }
+    .vp-hint { margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.06); font-size: .68rem; color: var(--dim); line-height: 1.5; }
+
+    /* ── Stage ──────────────────────────────── */
+    .stage {
+      overflow-y: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 28px clamp(14px, 4vw, 48px);
+    }
+
+    .deck { width: min(1080px, 100%); }
+
+    .slide {
+      display: none;
+      width: 100%;
+      gap: clamp(24px, 5vw, 72px);
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      min-height: min(540px, calc(100vh - 260px));
+    }
+    .slide.on { display: grid; }
+
+    .slide.on .s-text { animation: fadeUp .55s cubic-bezier(.16,1,.3,1) .08s both; }
+    .slide.on .s-art  { animation: fadeUp .6s cubic-bezier(.16,1,.3,1) .2s both; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; } }
+
+    .s-step {
+      display: inline-flex; align-items: center; gap: 7px;
+      margin-bottom: 14px;
+      font-size: .68rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+      color: var(--violet);
+    }
+    .s-step::before { content: ''; width: 22px; height: 1px; background: currentColor; }
+
+    .slide h2 {
+      font-size: clamp(1.6rem, 4.4vw, 3rem);
+      font-weight: 800;
+      line-height: 1.06;
+      color: #fff;
+      margin-bottom: 18px;
+    }
+
+    .s-lead {
+      font-size: clamp(.92rem, 1.4vw, 1.06rem);
+      line-height: 1.72;
+      color: var(--dim);
+      max-width: 560px;
+    }
+    .s-lead strong { color: #fff; }
+    .s-lead .hl { color: var(--cyan); font-weight: 700; }
+    .s-lead .am { color: var(--amber); font-weight: 700; }
+    .s-lead .vi { color: var(--violet); font-weight: 700; }
+
+    .tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 20px; }
+    .tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 11px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      font-size: .7rem; font-weight: 700; color: var(--dim);
+      background: rgba(28, 24, 56, 0.5);
+    }
+    .tag i { color: var(--amber); }
+
+    /* ── Art Panels ─────────────────────────── */
+    .s-art {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-height: 320px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background:
+        linear-gradient(135deg, rgba(103,232,249,.05), rgba(167,139,250,.04)),
+        var(--card);
+      box-shadow: 0 20px 50px rgba(0,0,0,.3);
+    }
+    .s-art::after {
+      content: '';
+      position: absolute; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(rgba(167,139,250,.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(167,139,250,.06) 1px, transparent 1px);
+      background-size: 28px 28px;
+      mask-image: linear-gradient(to bottom, rgba(0,0,0,.6), transparent 80%);
+      pointer-events: none;
+    }
+    .s-art > * { position: relative; z-index: 1; }
+
+    /* Art: Hero Orb */
+    .orb {
+      width: 140px; height: 140px;
+      border: 1px solid rgba(103,232,249,.6);
+      border-radius: 50%;
+      display: grid; place-items: center;
+      background: rgba(13,11,26,.7);
+      box-shadow: 0 0 0 16px rgba(103,232,249,.04), 0 0 50px rgba(103,232,249,.12);
+      font-size: 2.8rem; color: var(--cyan);
+    }
+    .orb-ring {
+      position: absolute;
+      border: 1px solid rgba(167,139,250,.25);
+      border-radius: 50%;
+    }
+    .orb-ring.r1 { inset: calc(50% - 100px); border-top-color: transparent; }
+    .orb-ring.r2 { inset: calc(50% - 130px); border-bottom-color: transparent; }
+    .slide.on .orb-ring.r1 { animation: spin 9s linear infinite; }
+    .slide.on .orb-ring.r2 { animation: spin 14s linear infinite reverse; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .slide.on .orb { animation: breathe 3.5s ease-in-out infinite; }
+    @keyframes breathe { 50% { transform: scale(1.04); box-shadow: 0 0 0 16px rgba(103,232,249,.06), 0 0 60px rgba(103,232,249,.2); } }
+
+    .float-tag {
+      position: absolute;
+      padding: 7px 11px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      font-size: .62rem; font-weight: 700; letter-spacing: .04em;
+      background: rgba(13,11,26,.88);
+    }
+    .float-tag.t1 { top: 18%; left: 10%; color: var(--amber); border-color: rgba(251,191,36,.35); }
+    .float-tag.t2 { bottom: 16%; right: 8%; color: var(--cyan); border-color: rgba(103,232,249,.35); }
+    .slide.on .float-tag { animation: bob 3.2s ease-in-out infinite; }
+    .slide.on .float-tag.t2 { animation-delay: .8s; }
+    @keyframes bob { 50% { transform: translateY(-8px); } }
+
+    /* Art: Shield */
+    .shield-wrap { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+    .shield-icon { font-size: 4rem; color: var(--green); filter: drop-shadow(0 0 18px rgba(110,231,183,.3)); }
+    .shield-label { font-size: .7rem; font-weight: 700; color: var(--dim); text-transform: uppercase; letter-spacing: .1em; }
+
+    /* Art: Phone Mock */
+    .phone-m {
+      width: 155px; height: 268px;
+      border: 5px solid #1e1a3a;
+      border-radius: 24px;
+      background: #e6f9f3;
+      padding: 12px 10px;
+      box-shadow: 0 18px 40px rgba(0,0,0,.35);
+      transform: rotate(-5deg);
+      position: relative;
+    }
+    .phone-m::before { content: ''; position: absolute; top: 6px; left: 50%; width: 42px; height: 4px; border-radius: 99px; background: #1e1a3a; transform: translateX(-50%); }
+    .phone-inner { display: flex; flex-direction: column; align-items: center; padding-top: 16px; height: 100%; color: #0d3d34; }
+    .phone-inner .pi-title { font-size: .52rem; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; }
+    .phone-inner .pi-qr { font-size: 4.4rem; margin: 14px 0 8px; color: #0d3d34; }
+    .phone-inner .pi-line { width: 95px; height: 5px; border-radius: 3px; background: rgba(13,61,52,.2); margin-top: 5px; }
+    .phone-inner .pi-line.short { width: 65px; }
+    .phone-inner .pi-badge { margin-top: 12px; font-size: .48rem; font-weight: 800; padding: 4px 8px; border-radius: 99px; background: #6ee7b7; color: #064e3b; }
+    .field-hint {
+      position: absolute; right: -80px;
+      padding: 6px 10px; border-radius: 6px;
+      font-size: .58rem; font-weight: 700;
+      background: rgba(13,11,26,.9);
+      border: 1px solid;
+    }
+    .field-hint.f1 { top: 60px; color: var(--cyan); border-color: rgba(103,232,249,.4); }
+    .field-hint.f2 { top: 105px; color: var(--amber); border-color: rgba(251,191,36,.4); }
+    .field-hint.f3 { top: 150px; color: var(--violet); border-color: rgba(167,139,250,.4); }
+    .slide.on .phone-m { animation: phone-drift 4.2s ease-in-out infinite; }
+    @keyframes phone-drift { 50% { transform: translateY(-7px) rotate(-3deg); } }
+    .slide.on .field-hint { animation: hint-in .5s ease both; }
+    .slide.on .field-hint.f2 { animation-delay: .15s; }
+    .slide.on .field-hint.f3 { animation-delay: .3s; }
+    @keyframes hint-in { from { opacity: 0; transform: translateX(-12px); } to { opacity: 1; } }
+
+    /* Art: Scanner */
+    .scan-box {
+      width: 240px; height: 150px;
+      border: 1px solid rgba(103,232,249,.45);
+      border-radius: 10px;
+      background: #e6f9f3;
+      display: grid; grid-template-columns: 80px 1fr; gap: 14px;
+      align-items: center; padding: 16px;
+      box-shadow: 0 16px 36px rgba(0,0,0,.3);
+      position: relative; overflow: hidden;
+    }
+    .scan-box i.fa-qrcode { font-size: 3.8rem; color: #0d3d34; }
+    .scan-info { text-align: left; color: #0d3d34; }
+    .scan-info strong { display: block; font-size: .68rem; margin-bottom: 6px; }
+    .scan-info span { font-size: .54rem; line-height: 1.5; display: block; color: #27766d; font-family: monospace; }
+    .scan-laser {
+      position: absolute; left: 0; width: 100%; height: 2px;
+      background: var(--amber); box-shadow: 0 0 12px var(--amber);
+    }
+    .slide.on .scan-laser { animation: laser 2.2s ease-in-out infinite; }
+    @keyframes laser { 0%, 100% { top: 12px; } 50% { top: 136px; } }
+
+    /* Art: Clock Wipe */
+    .clock-wrap { display: flex; align-items: center; gap: 24px; }
+    .clock-ring {
+      width: 80px; height: 80px;
+      border: 4px solid rgba(252,165,165,.15);
+      border-top-color: var(--red);
+      border-radius: 50%;
+      display: grid; place-items: center;
+    }
+    .clock-val { font-size: .95rem; font-weight: 800; color: var(--red); }
+    .slide.on .clock-ring { animation: spin 3s linear infinite; }
+    .slide.on .clock-val { animation: spin 3s linear infinite reverse; }
+    .clock-arrow { font-size: 1.4rem; color: var(--dim); }
+    .wipe-card {
+      padding: 12px 16px; border: 1px solid rgba(252,165,165,.35); border-radius: 8px;
+      background: rgba(252,165,165,.05); text-align: center;
+    }
+    .wipe-card i { display: block; font-size: 1.6rem; color: var(--red); margin-bottom: 6px; }
+    .wipe-card span { font-size: .72rem; font-weight: 700; color: var(--red); }
+
+    /* Art: Printer */
+    .printer-box { position: relative; width: 240px; height: 170px; }
+    .pr-body {
+      position: absolute; inset: 16px 8px 0;
+      border: 1px solid rgba(103,232,249,.45);
+      border-radius: 12px 12px 6px 6px;
+      background: #1e1a3a;
+      box-shadow: 0 16px 32px rgba(0,0,0,.3);
+    }
+    .pr-top { position: absolute; top: 0; left: 36px; width: 165px; height: 42px; border: 1px solid rgba(167,139,250,.25); border-radius: 8px 8px 0 0; background: #28234e; }
+    .pr-screen { position: absolute; top: 44px; left: 36px; width: 72px; height: 18px; border-radius: 3px; background: var(--green); }
+    .pr-led { position: absolute; top: 48px; right: 28px; width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 10px var(--green); }
+    .pr-slot { position: absolute; right: 24px; bottom: 24px; left: 24px; height: 8px; border-radius: 99px; background: #0d0b1a; }
+    .pr-band {
+      position: absolute; bottom: -12px; left: 44px;
+      width: 148px; height: 30px;
+      border: 1px solid rgba(251,191,36,.65);
+      border-radius: 4px;
+      background: var(--amber);
+      color: #5e4611;
+      font-size: .56rem; font-weight: 800;
+      line-height: 30px; text-align: center;
+      font-family: monospace;
+    }
+    .slide.on .pr-band { animation: band-out 3.2s ease-in-out infinite; }
+    @keyframes band-out { 0%, 22% { transform: translateY(-20px); opacity: 0; } 42%, 80% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(4px); opacity: 0; } }
+
+    /* Art: Exit Panel */
+    .exit-grid { display: grid; grid-template-columns: 64px 1fr; gap: 28px; align-items: center; width: min(310px, 86%); }
+    .ex-phone {
+      width: 60px; height: 114px;
+      border: 3px solid #28234e;
+      border-radius: 12px;
+      display: grid; place-items: center;
+      background: #1e1a3a;
+      color: var(--cyan);
+      box-shadow: 0 0 0 6px rgba(103,232,249,.04);
+    }
+    .ex-phone i { font-size: 1.3rem; }
+    .ex-phone small { margin-top: -24px; font-size: .4rem; font-family: monospace; color: var(--dim); }
+    .ex-panel {
+      padding: 14px;
+      border: 1px solid rgba(167,139,250,.45);
+      border-radius: 8px;
+      background: rgba(13,11,26,.8);
+      box-shadow: 0 12px 28px rgba(0,0,0,.3);
+    }
+    .ex-panel strong { display: block; font-size: .54rem; color: var(--violet); font-family: monospace; letter-spacing: .08em; margin-bottom: 10px; }
+    .ex-name {
+      padding: 9px; border-radius: 4px;
+      background: var(--amber); color: #3b2e0a;
+      font-size: .72rem; font-weight: 800; text-align: center;
+    }
+    .slide.on .ex-name { animation: name-flash 1.5s ease-in-out infinite; }
+    @keyframes name-flash { 50% { box-shadow: 0 0 20px rgba(251,191,36,.7); } }
+    .ex-arrow {
+      position: absolute; top: 50%; left: 80px;
+      width: 58px; height: 1px;
+      background: var(--amber);
+    }
+    .ex-arrow::after { content: ''; position: absolute; top: -4px; right: -1px; border-left: 6px solid var(--amber); border-top: 4px solid transparent; border-bottom: 4px solid transparent; }
+    .ex-dot {
+      position: absolute; top: calc(50% - 5px); left: 92px;
+      width: 10px; height: 10px;
+      border-radius: 50%; background: var(--amber);
+    }
+    .slide.on .ex-dot { animation: dot-fly 2s ease-in-out infinite; }
+    @keyframes dot-fly { 0% { opacity: 0; transform: translateX(0); } 20% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; transform: translateX(50px); } }
+
+    /* Art: Account Path */
+    .acc-path { display: grid; grid-template-columns: 1fr 28px 1fr 28px 1fr; align-items: center; width: min(320px, 88%); }
+    .acc-card {
+      display: grid; place-items: center; min-height: 108px;
+      padding: 12px 6px;
+      border: 1px solid var(--line); border-radius: 8px;
+      background: rgba(13,11,26,.6);
+      font-size: .6rem; font-weight: 700; color: var(--dim); text-align: center;
+    }
+    .acc-card i { display: block; font-size: 1.3rem; color: var(--cyan); margin-bottom: 8px; }
+    .acc-link { height: 1px; background: rgba(251,191,36,.55); }
+    .slide.on .acc-link { animation: link-glow 2.2s ease-in-out infinite; }
+    .slide.on .acc-link:nth-of-type(2) { animation-delay: .4s; }
+    @keyframes link-glow { 50% { background: var(--amber); box-shadow: 0 0 8px var(--amber); } }
+
+    /* Art: Password */
+    .pw-mock {
+      width: min(270px, 80%);
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(13,11,26,.7);
+      display: flex; flex-direction: column; gap: 9px;
+    }
+    .pw-label { font-size: .62rem; font-weight: 700; color: var(--dim); text-transform: uppercase; letter-spacing: .08em; }
+    .pw-input {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 11px;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 6px;
+      background: var(--bg);
+      font-size: .76rem; color: var(--dim);
+    }
+    .pw-input i { color: var(--cyan); }
+    .pw-btn {
+      padding: 9px; border: none; border-radius: 6px;
+      background: var(--violet); color: #fff;
+      font-size: .76rem; font-weight: 800; text-align: center;
+    }
+
+    /* ── Caption Dock ──────────────────────── */
+    .cc-dock {
+      display: flex;
+      justify-content: center;
+      padding: 6px clamp(14px, 3vw, 32px);
+      transition: opacity .18s, max-height .25s;
+      overflow: hidden;
+      max-height: 120px;
+    }
+    .cc-dock.off { opacity: 0; max-height: 0; padding: 0; pointer-events: none; }
+    .cc-box {
+      width: min(860px, 100%);
+      min-height: 48px;
+      padding: 12px 20px;
+      border: 1px solid rgba(251,191,36,.25);
+      border-radius: 10px;
+      background: var(--glass);
+      backdrop-filter: blur(10px);
+      font-size: clamp(.82rem, 1.4vw, .96rem);
+      line-height: 1.55;
+      color: var(--text);
+      text-align: center;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── Control Bar ───────────────────────── */
+    .bar {
+      display: grid;
+      grid-template-columns: 1fr minmax(260px, 480px) 1fr;
+      gap: 14px;
+      align-items: center;
+      padding: 10px clamp(14px, 3vw, 32px);
+      border-top: 1px solid var(--line);
+      background: var(--glass);
+      backdrop-filter: blur(14px);
+    }
+    .bar-grp { display: flex; align-items: center; gap: 8px; }
+    .bar-grp.end { justify-content: flex-end; }
+
+    .bar-nav {
+      display: inline-flex; align-items: center; gap: 7px;
+      height: 36px; padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: transparent;
+      color: var(--dim);
+      font-size: .74rem; font-weight: 700;
+      transition: all .15s;
+    }
+    .bar-nav:hover { color: var(--cyan); border-color: rgba(103,232,249,.5); background: rgba(103,232,249,.06); }
+    .bar-nav:disabled { opacity: .28; cursor: not-allowed; }
+    .bar-nav:disabled:hover { color: var(--dim); border-color: var(--line); background: transparent; }
+
+    .bar-transport { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; }
+
+    .bar-play {
+      display: inline-flex; align-items: center; gap: 7px;
+      height: 38px; padding: 0 16px;
+      border: 1px solid var(--violet);
+      border-radius: 7px;
+      background: var(--violet);
+      color: #fff;
+      font-size: .74rem; font-weight: 800;
+      box-shadow: 0 4px 14px rgba(167,139,250,.2);
+      transition: all .15s;
+    }
+    .bar-play:hover { background: #8b5cf6; box-shadow: 0 6px 20px rgba(167,139,250,.35); }
+
+    .bar-progress { height: 5px; border-radius: 99px; background: rgba(255,255,255,.08); overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--cyan), var(--violet)); transition: width .3s; }
+    .bar-count { font-size: .7rem; color: var(--dim); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+    /* ── Responsive ─────────────────────────── */
+    @media (max-width: 720px) {
+      body { grid-template-rows: 50px minmax(0, 1fr) auto auto; }
+      .top { min-height: 50px; }
+      .logo small { display: none; }
+      .stage { padding: 20px 14px; }
+      .slide { grid-template-columns: 1fr; min-height: 0; }
+      .s-text { text-align: center; }
+      .slide h2 { margin: 0 auto 18px; }
+      .s-lead { margin: 0 auto; }
+      .tags { justify-content: center; }
+      .s-art { min-height: 260px; }
+      .bar { grid-template-columns: 1fr; gap: 8px; }
+      .bar-grp { justify-content: space-between; }
+      .bar-grp.end { display: none; }
+      .bar-transport { grid-template-columns: auto 1fr auto; }
+    }
+
+    @media (max-width: 380px) {
+      .slide h2 { font-size: 1.7rem; }
+      .s-art { min-height: 230px; }
+      .phone-m { transform: scale(.82) rotate(-5deg); }
+      .field-hint { right: -68px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="top">
+  <div class="logo">EBI<small>Apresentação V3</small></div>
+  <div class="top-actions">
+    <button class="btn-pill" id="btnVoice" title="Voz"><i class="fas fa-sliders-h"></i><span>Voz</span></button>
+    <button class="btn-icon" id="btnClose" title="Fechar"><i class="fas fa-times"></i></button>
+  </div>
+</header>
+
+<div class="voice-panel" id="voicePanel">
+  <h3>Configurações de Voz</h3>
+  <label class="vp-label" for="selVoice">Voz em Português</label>
+  <select id="selVoice" class="vp-select"></select>
+  <div class="vp-range-row">
+    <label class="vp-label" for="inpRate" style="margin:0">Ritmo</label>
+    <input id="inpRate" class="vp-range" type="range" min="0.8" max="1.2" step="0.02" value="0.96">
+    <span class="vp-val" id="valRate">0.96x</span>
+  </div>
+  <div class="vp-hint"><i class="fas fa-star"></i> Chrome e Edge oferecem vozes Google/Neural de alta fidelidade quando disponíveis.</div>
+</div>
+
+<div class="stage">
+  <div class="deck" id="deck">
+
+    <!-- 1 -->
+    <section class="slide on" data-narr="Bem-vindo à apresentação do sistema EBI. Ele foi criado para organizar com segurança o controle de entrada e saída das crianças durante o Ensino Bíblico Infantil, em total conformidade com a LGPD.">
+      <div class="s-text">
+        <div class="s-step">Ensino Bíblico Infantil</div>
+        <h2>Sistema de Controle<br>de Entrada e Saída</h2>
+        <p class="s-lead">Uma plataforma pensada para trazer <strong>organização à equipe</strong>, <span class="hl">agilidade na recepção</span> e <span class="vi">segurança para as famílias</span>.</p>
+        <div class="tags">
+          <span class="tag"><i class="fas fa-shield-alt"></i> LGPD</span>
+          <span class="tag"><i class="fas fa-qrcode"></i> QR Code</span>
+          <span class="tag"><i class="fas fa-users"></i> Self-Service</span>
+        </div>
+      </div>
+      <div class="s-art">
+        <span class="float-tag t1">ENTRADA</span>
+        <span class="orb-ring r1"></span>
+        <span class="orb-ring r2"></span>
+        <div class="orb"><i class="fas fa-book-open"></i></div>
+        <span class="float-tag t2">SAÍDA</span>
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section class="slide" data-narr="O sistema foi desenvolvido em conformidade com a Lei Geral de Proteção de Dados. Não existe cadastro permanente de crianças ou responsáveis. Todos os dados pessoais ficam armazenados exclusivamente nos cartões QR Code que os próprios pais guardam consigo.">
+      <div class="s-text">
+        <div class="s-step">Privacidade & LGPD</div>
+        <h2>Os dados pessoais<br>ficam com a família.</h2>
+        <p class="s-lead">Não há um banco de dados central com nomes ou telefones. Cada família guarda seu próprio <span class="hl">cartão QR Code</span> — o sistema <strong>nunca retém dados pessoais</strong> após o evento.</p>
+        <div class="tags">
+          <span class="tag"><i class="fas fa-lock"></i> Sem cadastro central</span>
+          <span class="tag"><i class="fas fa-id-card"></i> Cartão individual</span>
+        </div>
+      </div>
+      <div class="s-art">
+        <div class="shield-wrap">
+          <i class="fas fa-user-shield shield-icon"></i>
+          <span class="shield-label">Conformidade LGPD</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3 -->
+    <section class="slide" data-narr="Antes do EBI, o responsável acessa qrcode ponto ccbcampinas ponto org ponto br para criar o cartão. Ele informa o nome das crianças, o nome do responsável, a comum ou congregação, o telefone e a idade de cada criança. Cada responsável recebe um cartão individual.">
+      <div class="s-text">
+        <div class="s-step">Passo 1 — Cadastro</div>
+        <h2>Os pais criam<br>o cartão QR Code.</h2>
+        <p class="s-lead">No site <span class="hl">qrcode.ccbcampinas.org.br</span>, o responsável informa nome das crianças, seu nome, comum, telefone e idade. <strong>Cada responsável tem seu cartão individual</strong>.</p>
+        <div class="tags">
+          <span class="tag"><i class="fas fa-child"></i> Criança</span>
+          <span class="tag"><i class="fas fa-phone-alt"></i> Telefone</span>
+          <span class="tag"><i class="fas fa-church"></i> Comum</span>
+        </div>
+      </div>
+      <div class="s-art">
+        <div class="phone-m">
+          <div class="phone-inner">
+            <span class="pi-title">Cartão EBI</span>
+            <div class="pi-qr"><i class="fas fa-qrcode"></i></div>
+            <span class="pi-line"></span><span class="pi-line short"></span>
+            <span class="pi-badge">PRONTO</span>
+          </div>
+          <span class="field-hint f1">Nome</span>
+          <span class="field-hint f2">Comum</span>
+          <span class="field-hint f3">Idade</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4 -->
+    <section class="slide" data-narr="Na chegada ao EBI, o responsável apresenta o QR Code. A equipe pode ler o código com leitor ou câmera, ou digitar manualmente. Os dados passam para o sistema em poucos segundos, apenas para aquele evento.">
+      <div class="s-text">
+        <div class="s-step">Passo 2 — Entrada</div>
+        <h2>Na porta, o QR Code<br>agiliza a recepção.</h2>
+        <p class="s-lead">A leitura transfere as informações do cartão instantaneamente. Há também a opção de <strong>digitação manual</strong>, para que o fluxo continue mesmo sem leitor disponível.</p>
+        <div class="tags">
+          <span class="tag"><i class="fas fa-barcode"></i> Leitor QR</span>
+          <span class="tag"><i class="fas fa-keyboard"></i> Manual</span>
+          <span class="tag"><i class="fas fa-bolt"></i> Rápido</span>
+        </div>
+      </div>
+      <div class="s-art">
+        <div class="scan-box">
+          <i class="fas fa-qrcode"></i>
+          <div class="scan-info"><strong>Cartão reconhecido</strong><span>CRIANÇAS: 02<br>COMUM: BONFIM<br>STATUS: ENTRADA</span></div>
+          <span class="scan-laser"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5 -->
+    <section class="slide" data-narr="Os dados pessoais ficam no sistema por no máximo três horas. Depois, tudo é apagado automaticamente. Permanecem apenas estatísticas anônimas como quantidade de crianças, faixa etária, portaria, cidade, nome da comum e data.">
+      <div class="s-text">
+        <div class="s-step">Dados Temporários</div>
+        <h2>Apagamento total<br>após o evento.</h2>
+        <p class="s-lead">As informações pessoais ficam disponíveis por <strong>no máximo 3 horas</strong>. Depois, são removidas permanentemente. Restam apenas <span class="hl">estatísticas anônimas</span> — sem nenhum nome.</p>
+        <div class="tags">
+          <span class="tag"><i class="fas fa-hourglass-half"></i> 3 horas</span>
+          <span class="tag"><i class="fas fa-chart-pie"></i> Dados anônimos</span>
+        </div>
+      </div>
+      <div class="s-art">
+        <div class="clock-wrap">
+          <div class="clock-ring"><span class="clock-val">3h</span></div>
+          <span class="clock-arrow">➔</span>
+          <div class="wipe-card"><i class="fas fa-fire-alt"></i><span>Wipe total</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6 -->
+    <section class="slide" data-narr="A impressora de pulseiras é opcional e acelera a entrada. O modelo compatível é a Elgin ou Bematech L42DT. O procedimento de instalação e uso está no Menu, Impressora dentro do sistema.">
+      <div class="s-text">
+        <div class="s-step">Opcional — Pulseiras</div>
+        <h2>Pulseira impressa<br>na hora da entrada.</h2>
+        <p class="s-lead">A impressão de pulseiras agiliza a identificação. Modelo compatível: <strong>Elgin / Bematech L42DT</strong>. O passo a passo completo está em <span class="am">Menu → Impressora</span>.</p>
+        <div class="tags">
+          <span class="tag"><i class="fas fa-print"></i> Elgin L42DT</span>
+          <span class="tag"><i class="fas fa-tag"></i> Pulseira padrão</span>
+        </div>
+      </div>
+      <div class="s-art">
+        <div class="printer-box">
+          <div class="pr-top"></div>
+          <div class="pr-body"><span class="pr-screen"></span><span class="pr-led"></span><span class="pr-slot"></span></div>
+          <div class="pr-band">EBI | CÓDIGO DE SAÍDA</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7 -->
+    <section class="slide" data-narr="Na saída, os coordenadores usam o smartphone para ler o código da pulseira. O nome da criança aparece imediatamente no Painel de Saída, visível para toda a equipe. Assim, uma pessoa atende na porta e os coordenadores dentro do EBI veem quem deve ser encaminhado.">
+      <div class="s-text">
+        <div class="s-step">Passo 3 — Saída</div>
+        <h2>Smartphone chama.<br>Painel orienta.</h2>
+        <p class="s-lead">O coordenador registra a saída pelo celular. O <strong>Painel de Saída</strong> exibe o nome da criança em tempo real, para que a equipe saiba <span class="hl">exatamente quem encaminhar</span> à porta.</p>
+        <div class="tags">
+          <span class="tag"><i class="fas fa-mobile-alt"></i> Smartphone</span>
+          <span class="tag"><i class="fas fa-tv"></i> Painel</span>
+          <span class="tag"><i class="fas fa-door-open"></i> Porta</span>
+        </div>
+      </div>
+      <div class="s-art">
+        <div class="exit-grid">
+          <div class="ex-phone"><i class="fas fa-qrcode"></i><small>LEITURA</small></div>
+          <span class="ex-arrow"></span><span class="ex-dot"></span>
+          <div class="ex-panel"><strong>PAINEL DE SAÍDA</strong><div class="ex-name">GABRIEL S.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8 -->
+    <section class="slide" data-narr="O sistema é self-service. Cada igreja cria uma conta com e-mail e senha e reutiliza em todos os dias de EBI. As estatísticas acumulam automaticamente. Se esquecer a senha, basta informar o e-mail para receber um link de redefinição.">
+      <div class="s-text">
+        <div class="s-step">Passo 4 — Conta</div>
+        <h2>Uma conta para<br>todos os dias de EBI.</h2>
+        <p class="s-lead">Cada congregação cria sua conta com <strong>e-mail e senha</strong>. A mesma conta funciona em todos os eventos, mantendo o <span class="hl">histórico estatístico</span>. Esqueceu a senha? Solicite o <span class="vi">reset por e-mail</span>.</p>
+        <div class="tags">
+          <span class="tag"><i class="fas fa-envelope"></i> E-mail</span>
+          <span class="tag"><i class="fas fa-chart-line"></i> Histórico</span>
+          <span class="tag"><i class="fas fa-key"></i> Reset</span>
+        </div>
+      </div>
+      <div class="s-art">
+        <div class="acc-path">
+          <div class="acc-card"><i class="fas fa-user-plus"></i>Criar<br>conta</div><span class="acc-link"></span>
+          <div class="acc-card"><i class="fas fa-calendar-check"></i>Usar nos<br>EBIs</div><span class="acc-link"></span>
+          <div class="acc-card"><i class="fas fa-chart-bar"></i>Ver<br>estatísticas</div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<div class="cc-dock" id="ccDock">
+  <div class="cc-box" id="ccBox">Clique em <strong>▶ Reproduzir</strong> para ouvir a apresentação com narração.</div>
+</div>
+
+<footer class="bar">
+  <div class="bar-grp">
+    <button class="bar-nav" id="btnPrev" disabled><i class="fas fa-arrow-left"></i> Anterior</button>
+    <button class="btn-pill on" id="btnCC" title="Legendas"><i class="fas fa-closed-captioning"></i><span id="ccText">CC</span></button>
+  </div>
+  <div class="bar-transport">
+    <button class="bar-play" id="btnPlay"><i class="fas fa-play" id="playIco"></i><span id="playLbl">Reproduzir</span></button>
+    <div class="bar-progress"><div class="bar-fill" id="barFill" style="width:12.5%"></div></div>
+    <span class="bar-count" id="barCount">01 / 08</span>
+  </div>
+  <div class="bar-grp end">
+    <button class="bar-nav" id="btnNext">Próximo <i class="fas fa-arrow-right"></i></button>
+  </div>
+</footer>
+
+<script>
+const slides = Array.from(document.querySelectorAll('.slide'));
+const ccBox = document.getElementById('ccBox');
+const ccDock = document.getElementById('ccDock');
+const btnCC = document.getElementById('btnCC');
+const btnPrev = document.getElementById('btnPrev');
+const btnNext = document.getElementById('btnNext');
+const btnPlay = document.getElementById('btnPlay');
+const playIco = document.getElementById('playIco');
+const playLbl = document.getElementById('playLbl');
+const barFill = document.getElementById('barFill');
+const barCount = document.getElementById('barCount');
+const btnVoice = document.getElementById('btnVoice');
+const voicePanel = document.getElementById('voicePanel');
+const selVoice = document.getElementById('selVoice');
+const inpRate = document.getElementById('inpRate');
+const valRate = document.getElementById('valRate');
+const btnClose = document.getElementById('btnClose');
+const synth = 'speechSynthesis' in window ? window.speechSynthesis : null;
+const total = slides.length;
+
+let cur = 0, playing = false, ccOn = localStorage.getItem('ebi-v3-cc') !== 'off';
+let voiceUri = localStorage.getItem('ebi-v3-voice') || '';
+let rate = Number(localStorage.getItem('ebi-v3-rate')) || 0.96;
+let voices = [], timer = null, seq = 0;
+
+function pad(n) { return String(n).padStart(2, '0'); }
+
+function show(idx) {
+  slides[cur].classList.remove('on');
+  cur = Math.max(0, Math.min(idx, total - 1));
+  slides[cur].classList.add('on');
+  btnPrev.disabled = cur === 0;
+  btnNext.disabled = cur === total - 1;
+  barFill.style.width = ((cur + 1) / total * 100) + '%';
+  barCount.textContent = pad(cur + 1) + ' / ' + pad(total);
+  if (!playing) ccBox.textContent = slides[cur].dataset.narr;
+}
+
+function stopSpeak() {
+  clearTimeout(timer);
+  seq++;
+  if (synth) synth.cancel();
+}
+
+function speak() {
+  stopSpeak();
+  const text = slides[cur].dataset.narr;
+  ccBox.textContent = text;
+
+  if (!synth || !voices.length) {
+    timer = setTimeout(() => { if (playing) advance(); }, Math.max(5000, text.length * 58 / rate));
+    return;
+  }
+
+  const run = ++seq;
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'pt-BR';
+  u.rate = rate;
+  u.pitch = 1;
+  const v = voices.find(x => x.voiceURI === voiceUri);
+  if (v) u.voice = v;
+
+  u.onend = () => { if (playing && run === seq) timer = setTimeout(() => { if (playing) advance(); }, 1200); };
+  u.onerror = () => { if (playing && run === seq) timer = setTimeout(() => { if (playing) advance(); }, Math.max(5000, text.length * 58 / rate)); };
+  synth.speak(u);
+}
+
+function advance() {
+  if (cur >= total - 1) { playing = false; updPlay(); return; }
+  show(cur + 1);
+  speak();
+}
+
+function updPlay() {
+  playIco.className = playing ? 'fas fa-pause' : 'fas fa-play';
+  playLbl.textContent = playing ? 'Pausar' : 'Reproduzir';
+}
+
+function nav(dir) { const cont = playing; stopSpeak(); show(cur + dir); if (cont) speak(); }
+
+function loadVoices() {
+  if (!synth) { selVoice.innerHTML = '<option>Indisponível</option>'; selVoice.disabled = true; return; }
+  voices = synth.getVoices().filter(v => v.lang.toLowerCase().startsWith('pt'));
+  voices.sort((a, b) => {
+    const sc = v => { const n = v.name.toLowerCase(); let s = v.lang === 'pt-BR' ? 8 : 0; if (n.includes('natural')) s += 30; if (n.includes('neural')) s += 28; if (n.includes('google')) s += 24; if (n.includes('microsoft')) s += 20; if (v.localService) s += 3; return s; };
+    return sc(b) - sc(a);
+  });
+  selVoice.innerHTML = '';
+  if (!voices.length) { selVoice.innerHTML = '<option>Nenhuma voz PT</option>'; selVoice.disabled = true; return; }
+  selVoice.disabled = false;
+  voices.forEach(v => { const o = document.createElement('option'); o.value = v.voiceURI; o.textContent = v.name + ' (' + v.lang + ')'; selVoice.appendChild(o); });
+  if (!voices.some(v => v.voiceURI === voiceUri)) voiceUri = voices[0].voiceURI;
+  selVoice.value = voiceUri;
+}
+
+function save() {
+  localStorage.setItem('ebi-v3-voice', voiceUri);
+  localStorage.setItem('ebi-v3-rate', String(rate));
+  localStorage.setItem('ebi-v3-cc', ccOn ? 'on' : 'off');
+}
+
+function syncCC() {
+  ccDock.classList.toggle('off', !ccOn);
+  btnCC.classList.toggle('on', ccOn);
+}
+
+btnPrev.onclick = () => { if (cur > 0) nav(-1); };
+btnNext.onclick = () => { if (cur < total - 1) nav(1); };
+btnPlay.onclick = () => { playing = !playing; updPlay(); if (playing) speak(); else stopSpeak(); };
+btnCC.onclick = () => { ccOn = !ccOn; syncCC(); save(); };
+
+btnVoice.onclick = e => { e.stopPropagation(); voicePanel.classList.toggle('open'); };
+document.addEventListener('click', e => { if (!voicePanel.contains(e.target) && !btnVoice.contains(e.target)) voicePanel.classList.remove('open'); });
+
+selVoice.onchange = () => { voiceUri = selVoice.value; save(); if (playing) speak(); };
+inpRate.value = rate;
+valRate.textContent = rate.toFixed(2) + 'x';
+inpRate.oninput = () => { rate = Number(inpRate.value); valRate.textContent = rate.toFixed(2) + 'x'; save(); };
+inpRate.onchange = () => { if (playing) speak(); };
+
+btnClose.onclick = () => { stopSpeak(); history.length > 1 ? history.back() : location.href = 'selfservice.php'; };
+
+document.addEventListener('keydown', e => {
+  if (e.target.matches('select, input')) return;
+  if (e.key === 'ArrowRight') btnNext.click();
+  if (e.key === 'ArrowLeft') btnPrev.click();
+  if (e.key === ' ') { e.preventDefault(); btnPlay.click(); }
+  if (e.key === 'Escape') btnClose.click();
+});
+
+if (synth) { synth.onvoiceschanged = loadVoices; loadVoices(); } else loadVoices();
+syncCC();
+show(0);
+</script>
+</body>
+</html>

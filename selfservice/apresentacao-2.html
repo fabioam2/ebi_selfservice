@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#063843">
+  <title>EBI em Movimento | Apresentação 2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <style>
+    :root {
+      --ink: #e9f8f4;
+      --muted: #9ec5be;
+      --paper: #f7f4e9;
+      --canvas: #042933;
+      --canvas-deep: #021a22;
+      --surface: rgba(6, 61, 73, 0.78);
+      --surface-strong: #063b47;
+      --line: rgba(183, 239, 223, 0.2);
+      --aqua: #5be2c4;
+      --aqua-rgb: 91, 226, 196;
+      --gold: #f3c969;
+      --gold-rgb: 243, 201, 105;
+      --coral: #ff9b78;
+      --success: #8ce0ad;
+      --shadow: 0 22px 64px rgba(0, 11, 15, 0.35);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { background: var(--canvas-deep); }
+
+    body {
+      min-width: 320px;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+      color: var(--ink);
+      font-family: "Manrope", sans-serif;
+      display: grid;
+      grid-template-rows: 68px minmax(0, 1fr) auto auto;
+      background:
+        radial-gradient(circle at 20% 10%, rgba(91, 226, 196, 0.14), transparent 30rem),
+        radial-gradient(circle at 83% 76%, rgba(243, 201, 105, 0.12), transparent 28rem),
+        linear-gradient(145deg, var(--canvas) 0%, var(--canvas-deep) 72%);
+    }
+
+    button, select, input { font: inherit; }
+    button { -webkit-tap-highlight-color: transparent; }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      min-height: 68px;
+      padding: 13px clamp(16px, 4vw, 48px);
+      border-bottom: 1px solid var(--line);
+      background: rgba(2, 26, 34, 0.78);
+      backdrop-filter: blur(18px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--ink);
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+
+    .brand-mark {
+      display: grid;
+      width: 31px;
+      height: 31px;
+      place-items: center;
+      border: 1px solid rgba(91, 226, 196, 0.65);
+      border-radius: 7px;
+      color: var(--aqua);
+      font-family: "DM Mono", monospace;
+      font-size: 0.78rem;
+      font-weight: 500;
+    }
+
+    .topbar-actions { display: flex; align-items: center; gap: 8px; }
+
+    .icon-button, .tool-button, .nav-button, .play-button {
+      border: 1px solid var(--line);
+      cursor: pointer;
+      transition: transform 160ms ease, background 160ms ease, color 160ms ease, border-color 160ms ease;
+    }
+
+    .icon-button:hover, .tool-button:hover, .nav-button:hover {
+      transform: translateY(-1px);
+      border-color: rgba(91, 226, 196, 0.72);
+      background: rgba(91, 226, 196, 0.12);
+      color: var(--aqua);
+    }
+
+    .icon-button {
+      display: grid;
+      width: 38px;
+      height: 38px;
+      place-items: center;
+      border-radius: 8px;
+      color: var(--muted);
+      background: transparent;
+    }
+
+    .tool-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 38px;
+      padding: 0 12px;
+      border-radius: 8px;
+      color: var(--muted);
+      background: transparent;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .tool-button.is-active {
+      border-color: rgba(91, 226, 196, 0.75);
+      color: var(--aqua);
+      background: rgba(91, 226, 196, 0.1);
+    }
+
+    .audio-popover {
+      position: fixed;
+      top: 61px;
+      right: clamp(16px, 4vw, 48px);
+      z-index: 35;
+      display: none;
+      width: min(340px, calc(100vw - 32px));
+      padding: 18px;
+      border: 1px solid rgba(91, 226, 196, 0.3);
+      border-radius: 10px;
+      background: rgba(3, 39, 49, 0.97);
+      box-shadow: var(--shadow);
+    }
+
+    .audio-popover.is-open { display: block; animation: popover-in 180ms ease both; }
+
+    @keyframes popover-in {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .audio-popover h2 {
+      margin: 0 0 5px;
+      color: var(--paper);
+      font-size: 0.98rem;
+    }
+
+    .audio-popover p {
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: 0.74rem;
+      line-height: 1.55;
+    }
+
+    .setting { margin-top: 14px; }
+
+    .setting label {
+      display: block;
+      margin-bottom: 7px;
+      color: var(--muted);
+      font-size: 0.69rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .voice-select, .rate-input {
+      width: 100%;
+      color: var(--ink);
+      background: #021e27;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      outline: none;
+    }
+
+    .voice-select { padding: 10px; font-size: 0.78rem; }
+    .voice-select:focus, .rate-input:focus { border-color: var(--aqua); }
+
+    .rate-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; }
+    .rate-input { accent-color: var(--aqua); }
+    .rate-value { min-width: 37px; color: var(--aqua); font-family: "DM Mono", monospace; font-size: 0.74rem; text-align: right; }
+
+    .voice-status {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      margin-top: 16px;
+      padding-top: 13px;
+      border-top: 1px solid rgba(255, 255, 255, 0.07);
+      color: var(--muted);
+      font-size: 0.71rem;
+      line-height: 1.45;
+    }
+    .voice-status i { color: var(--gold); }
+
+    main {
+      display: grid;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 34px 24px;
+      place-items: center;
+    }
+
+    .stage {
+      width: min(1100px, 100%);
+      min-height: min(610px, calc(100vh - 250px));
+    }
+
+    .slide {
+      display: none;
+      width: 100%;
+      min-height: inherit;
+      grid-template-columns: minmax(0, 1fr) minmax(310px, 0.88fr);
+      gap: clamp(30px, 7vw, 90px);
+      align-items: center;
+    }
+
+    .slide.is-active { display: grid; }
+
+    .copy, .art { opacity: 0; }
+    .slide.is-active .copy { animation: rise-in 600ms 80ms cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .slide.is-active .art { animation: rise-in 650ms 210ms cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+    @keyframes rise-in {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 18px;
+      color: var(--aqua);
+      font-family: "DM Mono", monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      width: 27px;
+      height: 1px;
+      content: "";
+      background: currentColor;
+    }
+
+    h1, h2 { margin: 0; color: var(--paper); letter-spacing: 0; }
+
+    .slide h1, .slide h2 {
+      max-width: 620px;
+      font-size: clamp(2rem, 5.4vw, 4.25rem);
+      font-weight: 800;
+      line-height: 1.04;
+    }
+
+    .slide-lead {
+      max-width: 610px;
+      margin: 25px 0 0;
+      color: var(--muted);
+      font-size: clamp(0.97rem, 1.5vw, 1.1rem);
+      line-height: 1.75;
+    }
+
+    .slide-lead strong { color: var(--paper); font-weight: 700; }
+    .accent { color: var(--aqua); font-weight: 700; }
+    .gold { color: var(--gold); font-weight: 700; }
+
+    .steps {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 26px;
+    }
+
+    .step-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      color: var(--muted);
+      background: rgba(4, 52, 63, 0.42);
+      font-size: 0.73rem;
+      font-weight: 700;
+    }
+    .step-chip i { color: var(--gold); }
+
+    /* Reusable artboard */
+    .art {
+      position: relative;
+      display: grid;
+      min-height: 340px;
+      overflow: hidden;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background:
+        linear-gradient(130deg, rgba(91, 226, 196, 0.08), rgba(243, 201, 105, 0.04)),
+        rgba(4, 47, 58, 0.46);
+      box-shadow: var(--shadow);
+      isolation: isolate;
+    }
+
+    .art::before {
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      content: "";
+      background-image: linear-gradient(rgba(183, 239, 223, 0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(183, 239, 223, 0.06) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.72), transparent);
+    }
+
+    /* Art 1: EBI pulse */
+    .pulse-seal {
+      position: relative;
+      display: grid;
+      width: 160px;
+      height: 160px;
+      place-items: center;
+      border: 1px solid rgba(91, 226, 196, 0.78);
+      border-radius: 50%;
+      color: var(--aqua);
+      background: rgba(4, 63, 73, 0.76);
+      box-shadow: 0 0 0 18px rgba(91, 226, 196, 0.04), 0 0 65px rgba(91, 226, 196, 0.18);
+    }
+    .pulse-seal::before, .pulse-seal::after {
+      position: absolute;
+      border: 1px solid rgba(91, 226, 196, 0.28);
+      border-radius: 50%;
+      content: "";
+      animation: orbit 8s linear infinite;
+    }
+    .pulse-seal::before { inset: -28px; border-left-color: transparent; }
+    .pulse-seal::after { inset: -55px; border-right-color: transparent; animation-direction: reverse; animation-duration: 12s; }
+    .pulse-seal i { font-size: 3.4rem; }
+    .pulse-seal span { margin-top: -34px; font-family: "DM Mono", monospace; font-size: 0.73rem; font-weight: 500; letter-spacing: 0.18em; }
+    .slide.is-active .pulse-seal { animation: seal-breathe 3.8s ease-in-out infinite; }
+    @keyframes orbit { to { transform: rotate(360deg); } }
+    @keyframes seal-breathe { 50% { transform: scale(1.05); } }
+
+    .floating-label {
+      position: absolute;
+      padding: 8px 10px;
+      border: 1px solid rgba(243, 201, 105, 0.34);
+      border-radius: 6px;
+      color: var(--gold);
+      background: rgba(3, 35, 43, 0.88);
+      font-family: "DM Mono", monospace;
+      font-size: 0.64rem;
+      letter-spacing: 0.04em;
+    }
+    .floating-label.one { top: 25%; left: 12%; }
+    .floating-label.two { right: 9%; bottom: 20%; color: var(--aqua); border-color: rgba(91, 226, 196, 0.34); }
+    .slide.is-active .floating-label { animation: float 3s ease-in-out infinite; }
+    .slide.is-active .floating-label.two { animation-delay: 0.7s; }
+    @keyframes float { 50% { transform: translateY(-9px); } }
+
+    /* Art 2: privacy */
+    .privacy-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; width: min(330px, 84%); }
+    .privacy-card {
+      display: grid;
+      min-height: 132px;
+      place-items: center;
+      padding: 14px;
+      border: 1px solid rgba(183, 239, 223, 0.18);
+      border-radius: 10px;
+      text-align: center;
+      background: rgba(2, 30, 39, 0.62);
+    }
+    .privacy-card i { margin-bottom: 9px; color: var(--aqua); font-size: 2rem; }
+    .privacy-card span { color: var(--muted); font-size: 0.71rem; line-height: 1.35; }
+    .privacy-divider { position: absolute; left: 50%; width: 1px; height: 145px; background: rgba(91, 226, 196, 0.4); transform: translateX(-50%); }
+    .privacy-divider::before { position: absolute; top: 50%; left: 50%; display: grid; width: 40px; height: 40px; place-items: center; border-radius: 50%; color: var(--canvas-deep); content: "\f023"; background: var(--gold); font-family: "Font Awesome 5 Free"; font-size: 0.85rem; font-weight: 900; transform: translate(-50%, -50%); }
+    .slide.is-active .privacy-divider::before { animation: lock-click 1.2s ease both; }
+    @keyframes lock-click { 0% { transform: translate(-50%, -50%) scale(0.2); } 60% { transform: translate(-50%, -50%) scale(1.18); } 100% { transform: translate(-50%, -50%) scale(1); } }
+
+    /* Art 3: QR card */
+    .phone {
+      position: relative;
+      width: 168px;
+      height: 286px;
+      padding: 14px 11px;
+      border: 6px solid #092c35;
+      border-radius: 27px;
+      background: #d9f6ee;
+      box-shadow: 0 20px 42px rgba(0, 0, 0, 0.35);
+      transform: rotate(-6deg);
+    }
+    .phone::before { position: absolute; top: 7px; left: 50%; width: 46px; height: 5px; border-radius: 99px; content: ""; background: #092c35; transform: translateX(-50%); }
+    .phone-screen { display: flex; height: 100%; padding-top: 17px; align-items: center; flex-direction: column; color: #073d48; }
+    .phone-title { font-size: 0.56rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
+    .phone-qr { display: grid; width: 96px; height: 96px; margin: 18px 0 13px; place-items: center; color: #073d48; font-size: 5.2rem; }
+    .phone-line { width: 112px; height: 6px; margin-top: 6px; border-radius: 3px; background: rgba(7, 61, 72, 0.22); }
+    .phone-line.short { width: 77px; }
+    .phone-badge { margin-top: 16px; padding: 5px 8px; border-radius: 99px; color: #075262; background: #93ead6; font-size: 0.52rem; font-weight: 800; }
+    .form-field { position: absolute; right: -86px; padding: 8px 10px; border: 1px solid rgba(91, 226, 196, 0.36); border-radius: 6px; color: var(--aqua); background: rgba(2, 30, 39, 0.92); font-family: "DM Mono", monospace; font-size: 0.61rem; }
+    .form-field.name { top: 70px; }
+    .form-field.common { top: 120px; right: -102px; color: var(--gold); border-color: rgba(243, 201, 105, 0.4); }
+    .form-field.age { top: 170px; }
+    .slide.is-active .phone { animation: phone-float 4.5s ease-in-out infinite; }
+    .slide.is-active .form-field { animation: field-in 600ms ease both; }
+    .slide.is-active .form-field.common { animation-delay: 170ms; }
+    .slide.is-active .form-field.age { animation-delay: 340ms; }
+    @keyframes phone-float { 50% { transform: translateY(-8px) rotate(-4deg); } }
+    @keyframes field-in { from { opacity: 0; transform: translateX(-16px); } to { opacity: 1; transform: translateX(0); } }
+
+    /* Art 4: QR scan */
+    .scan-card { position: relative; display: grid; width: 252px; height: 163px; padding: 20px; grid-template-columns: 95px 1fr; gap: 17px; align-items: center; overflow: hidden; border: 1px solid rgba(91, 226, 196, 0.42); border-radius: 11px; background: #e7f8f1; box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28); }
+    .scan-card i { color: #083943; font-size: 4.9rem; }
+    .scan-copy { color: #0d4b57; text-align: left; }
+    .scan-copy strong { display: block; font-size: 0.72rem; }
+    .scan-copy span { display: block; margin-top: 7px; color: #27766d; font-family: "DM Mono", monospace; font-size: 0.56rem; line-height: 1.55; }
+    .scan-line { position: absolute; left: 0; width: 100%; height: 3px; background: var(--gold); box-shadow: 0 0 17px var(--gold); }
+    .slide.is-active .scan-line { animation: scan-card 2.3s ease-in-out infinite; }
+    @keyframes scan-card { 0%, 100% { top: 15px; } 50% { top: 145px; } }
+    .scan-source { position: absolute; right: 14%; bottom: 25px; color: var(--aqua); font-size: 2rem; animation: source-pulse 2.3s ease-in-out infinite; }
+    @keyframes source-pulse { 50% { opacity: 0.55; transform: scale(1.11); } }
+
+    /* Art 5: temporary data */
+    .time-loop { position: relative; width: 205px; height: 205px; border: 2px dashed rgba(243, 201, 105, 0.65); border-radius: 50%; }
+    .time-loop::before { position: absolute; inset: 26px; border: 1px solid rgba(91, 226, 196, 0.5); border-radius: 50%; content: ""; }
+    .time-core { position: absolute; inset: 50% auto auto 50%; display: grid; width: 94px; height: 94px; place-items: center; border: 1px solid rgba(91, 226, 196, 0.68); border-radius: 50%; color: var(--aqua); background: #063b47; font-family: "DM Mono", monospace; font-size: 1.12rem; font-weight: 500; transform: translate(-50%, -50%); }
+    .data-dot { position: absolute; display: grid; width: 32px; height: 32px; place-items: center; border: 1px solid rgba(243, 201, 105, 0.7); border-radius: 50%; color: var(--gold); background: #05323c; font-size: 0.7rem; }
+    .data-dot.a { top: -14px; left: 50%; transform: translateX(-50%); }
+    .data-dot.b { right: -12px; bottom: 24px; }
+    .data-dot.c { bottom: 7px; left: 21px; }
+    .slide.is-active .time-loop { animation: orbit 15s linear infinite; }
+    .slide.is-active .data-dot { animation: dots-fade 4.8s ease-in-out infinite; }
+    .slide.is-active .data-dot.b { animation-delay: 0.9s; }
+    .slide.is-active .data-dot.c { animation-delay: 1.8s; }
+    @keyframes dots-fade { 0%, 58% { opacity: 1; } 74% { opacity: 0.08; transform: scale(0.55); } 100% { opacity: 1; } }
+
+    /* Art 6: printer */
+    .printer { position: relative; width: 268px; height: 190px; }
+    .printer-body { position: absolute; inset: 20px 10px 0; border: 1px solid rgba(91, 226, 196, 0.52); border-radius: 13px 13px 8px 8px; background: #074451; box-shadow: 0 18px 38px rgba(0, 0, 0, 0.28); }
+    .printer-top { position: absolute; top: 0; left: 43px; width: 180px; height: 48px; border: 1px solid rgba(183, 239, 223, 0.28); border-radius: 8px 8px 0 0; background: #0b5662; }
+    .printer-screen { position: absolute; top: 49px; left: 42px; width: 84px; height: 23px; border-radius: 4px; background: #9bf2d7; }
+    .printer-led { position: absolute; top: 54px; right: 33px; width: 9px; height: 9px; border-radius: 50%; background: var(--success); box-shadow: 0 0 12px var(--success); }
+    .printer-slot { position: absolute; right: 28px; bottom: 29px; left: 28px; height: 10px; border-radius: 9px; background: #021d25; }
+    .wristband { position: absolute; bottom: -14px; left: 55px; width: 160px; height: 35px; border: 1px solid rgba(243, 201, 105, 0.72); border-radius: 5px; color: #5e4611; background: var(--gold); font-family: "DM Mono", monospace; font-size: 0.6rem; line-height: 35px; text-align: center; }
+    .slide.is-active .wristband { animation: print-band 3.4s ease-in-out infinite; }
+    @keyframes print-band { 0%, 25% { transform: translateY(-24px); opacity: 0; } 46%, 83% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(5px); opacity: 0; } }
+
+    /* Art 7: exit flow */
+    .exit-network { display: grid; width: min(340px, 85%); grid-template-columns: 74px 1fr; gap: 33px; align-items: center; }
+    .exit-phone { display: grid; width: 69px; height: 130px; place-items: center; border: 4px solid #0d5662; border-radius: 14px; color: var(--aqua); background: #052f3a; box-shadow: 0 0 0 7px rgba(91, 226, 196, 0.05); }
+    .exit-phone i { font-size: 1.5rem; }
+    .exit-phone small { margin-top: -30px; font-family: "DM Mono", monospace; font-size: 0.42rem; }
+    .exit-arrow { position: absolute; top: 50%; left: 100px; width: 70px; height: 1px; background: var(--gold); }
+    .exit-arrow::after { position: absolute; top: -4px; right: -1px; border-top: 4px solid transparent; border-bottom: 4px solid transparent; border-left: 7px solid var(--gold); content: ""; }
+    .exit-signal { position: absolute; top: calc(50% - 9px); left: 111px; width: 11px; height: 11px; border-radius: 50%; background: var(--gold); }
+    .slide.is-active .exit-signal { animation: signal-travel 2.2s ease-in-out infinite; }
+    @keyframes signal-travel { 0% { opacity: 0; transform: translateX(0); } 20% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; transform: translateX(60px); } }
+    .exit-panel { padding: 14px; border: 1px solid rgba(129, 140, 248, 0.5); border-radius: 8px; background: #031e27; box-shadow: 0 14px 30px rgba(0, 0, 0, 0.3); }
+    .exit-panel strong { display: block; color: var(--aqua); font-family: "DM Mono", monospace; font-size: 0.56rem; letter-spacing: 0.08em; }
+    .exit-name { margin-top: 14px; padding: 10px; border-radius: 4px; color: #061d24; background: var(--gold); font-size: 0.75rem; font-weight: 800; text-align: center; }
+    .slide.is-active .exit-name { animation: alert-pulse 1.5s ease-in-out infinite; }
+    @keyframes alert-pulse { 50% { box-shadow: 0 0 24px rgba(243, 201, 105, 0.75); } }
+
+    /* Art 8: self-service */
+    .account-path { display: grid; width: min(340px, 86%); grid-template-columns: 1fr 32px 1fr 32px 1fr; gap: 0; align-items: center; }
+    .path-card { display: grid; min-height: 118px; place-items: center; padding: 13px 7px; border: 1px solid rgba(91, 226, 196, 0.26); border-radius: 9px; color: var(--muted); background: rgba(2, 30, 39, 0.64); font-size: 0.62rem; font-weight: 700; text-align: center; }
+    .path-card i { display: block; margin-bottom: 9px; color: var(--aqua); font-size: 1.45rem; }
+    .path-link { height: 1px; background: rgba(243, 201, 105, 0.65); }
+    .slide.is-active .path-link { animation: path-bright 2.4s ease-in-out infinite; }
+    .slide.is-active .path-link:nth-of-type(2) { animation-delay: 0.45s; }
+    @keyframes path-bright { 50% { background: var(--gold); box-shadow: 0 0 10px var(--gold); } }
+
+    /* Footer */
+    .caption-dock {
+      display: flex;
+      justify-content: center;
+      padding: 0 24px;
+      transition: opacity 180ms ease, transform 180ms ease;
+    }
+
+    .caption-dock.is-hidden { opacity: 0; transform: translateY(16px); }
+
+    .caption {
+      width: min(870px, 100%);
+      min-height: 58px;
+      padding: 14px 22px;
+      border: 1px solid rgba(243, 201, 105, 0.3);
+      border-radius: 9px;
+      color: var(--paper);
+      background: rgba(2, 26, 34, 0.95);
+      box-shadow: 0 -8px 34px rgba(0, 0, 0, 0.17);
+      font-size: clamp(0.78rem, 1.5vw, 0.95rem);
+      line-height: 1.55;
+      text-align: center;
+    }
+
+    .controlbar {
+      display: grid;
+      min-height: 78px;
+      grid-template-columns: 1fr minmax(320px, 520px) 1fr;
+      gap: 18px;
+      align-items: center;
+      padding: 12px clamp(16px, 4vw, 48px);
+      border-top: 1px solid var(--line);
+      background: rgba(2, 26, 34, 0.94);
+      backdrop-filter: blur(18px);
+    }
+
+    .control-group { display: flex; align-items: center; gap: 8px; }
+    .control-group.right { justify-content: flex-end; }
+
+    .nav-button {
+      display: inline-flex;
+      min-height: 37px;
+      align-items: center;
+      gap: 8px;
+      padding: 0 12px;
+      border-radius: 7px;
+      color: var(--muted);
+      background: transparent;
+      font-size: 0.75rem;
+      font-weight: 800;
+    }
+    .nav-button:disabled { cursor: not-allowed; opacity: 0.32; }
+    .nav-button:disabled:hover { transform: none; border-color: var(--line); color: var(--muted); background: transparent; }
+
+    .transport { display: grid; grid-template-columns: auto minmax(90px, 1fr) auto; gap: 11px; align-items: center; }
+
+    .play-button {
+      display: inline-flex;
+      min-height: 40px;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 0 16px;
+      border-color: var(--aqua);
+      border-radius: 7px;
+      color: #04242d;
+      background: var(--aqua);
+      font-size: 0.76rem;
+      font-weight: 800;
+      box-shadow: 0 6px 16px rgba(91, 226, 196, 0.15);
+    }
+    .play-button:hover { transform: translateY(-1px); background: #8ef1d8; }
+
+    .progress { height: 5px; overflow: hidden; border-radius: 99px; background: rgba(183, 239, 223, 0.16); }
+    .progress span { display: block; width: 12.5%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--aqua), var(--gold)); transition: width 340ms ease; }
+    .counter { color: var(--muted); font-family: "DM Mono", monospace; font-size: 0.69rem; white-space: nowrap; }
+
+    @media (max-width: 760px) {
+      body { grid-template-rows: 61px minmax(0, 1fr) auto auto; }
+      .topbar { min-height: 61px; }
+      .brand span { display: none; }
+      .tool-button span { display: none; }
+      .tool-button { width: 38px; padding: 0; }
+      main { padding: 32px 18px; }
+      .stage { min-height: 0; }
+      .slide { min-height: 0; grid-template-columns: 1fr; gap: 30px; }
+      .copy { text-align: center; }
+      .slide h1, .slide h2 { margin: 0 auto; }
+      .slide-lead { margin-right: auto; margin-left: auto; }
+      .steps { justify-content: center; }
+      .art { min-height: 290px; }
+      .caption-dock { padding: 0 16px; }
+      .caption { min-height: 48px; padding: 11px 14px; }
+      .controlbar { grid-template-columns: 1fr; gap: 9px; min-height: 138px; padding: 10px 16px; }
+      .control-group { justify-content: space-between; }
+      .control-group.right { display: none; }
+      .transport { grid-template-columns: auto 1fr auto; }
+      .privacy-layout { width: min(290px, 90%); }
+    }
+
+    @media (max-width: 390px) {
+      .slide h1, .slide h2 { font-size: 1.95rem; }
+      .art { min-height: 250px; }
+      .phone { transform: scale(0.82) rotate(-6deg); }
+      .form-field { right: -77px; }
+      .account-path { transform: scale(0.88); }
+      .exit-network { transform: scale(0.9); }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand" aria-label="Apresentação do Sistema EBI">
+      <span class="brand-mark">EBI</span>
+      <span>Apresentação 2</span>
+    </div>
+    <div class="topbar-actions">
+      <button type="button" class="tool-button" id="audioSettingsButton" aria-expanded="false" aria-controls="audioSettings" title="Configurações de voz">
+        <i class="fas fa-volume-up" aria-hidden="true"></i><span>Voz</span>
+      </button>
+      <button type="button" class="icon-button" id="closeButton" title="Voltar ao SelfService" aria-label="Voltar ao SelfService">
+        <i class="fas fa-times" aria-hidden="true"></i>
+      </button>
+    </div>
+  </header>
+
+  <aside class="audio-popover" id="audioSettings" aria-label="Configurações de áudio">
+    <h2>Voz da apresentação</h2>
+    <p>Escolha a voz em português de maior qualidade disponível neste navegador. A escolha fica salva neste dispositivo.</p>
+    <div class="setting">
+      <label for="voiceSelect">Voz</label>
+      <select id="voiceSelect" class="voice-select" aria-label="Escolher voz"></select>
+    </div>
+    <div class="setting">
+      <label for="rateInput">Ritmo da narração</label>
+      <div class="rate-row">
+        <input id="rateInput" class="rate-input" type="range" min="0.8" max="1.18" step="0.02" value="0.96" aria-label="Ritmo da narração">
+        <span class="rate-value" id="rateValue">0.96x</span>
+      </div>
+    </div>
+    <div class="voice-status"><i class="fas fa-star" aria-hidden="true"></i><span id="voiceStatus">Carregando as vozes do dispositivo.</span></div>
+  </aside>
+
+  <main>
+    <div class="stage" id="stage">
+      <section class="slide is-active" data-narr="Bem-vindo ao sistema EBI, o sistema de controle de entrada e saída para o Ensino Bíblico Infantil. Ele reúne organização para a igreja, atendimento ágil para a equipe e segurança para as crianças e seus responsáveis.">
+        <div class="copy">
+          <div class="eyebrow">Ensino Bíblico Infantil</div>
+          <h1>Uma entrada tranquila.<br>Uma saída segura.</h1>
+          <p class="slide-lead">O Sistema EBI foi criado para organizar o atendimento das crianças durante o EBI, com um fluxo simples para as famílias e <strong>controle seguro para a coordenação</strong>.</p>
+          <div class="steps">
+            <span class="step-chip"><i class="fas fa-shield-alt"></i> Proteção</span>
+            <span class="step-chip"><i class="fas fa-qrcode"></i> QR Code</span>
+            <span class="step-chip"><i class="fas fa-users"></i> Coordenação</span>
+          </div>
+        </div>
+        <div class="art" aria-hidden="true">
+          <span class="floating-label one">ENTRADA</span>
+          <div class="pulse-seal"><i class="fas fa-book-open"></i><span>EBI</span></div>
+          <span class="floating-label two">SAÍDA</span>
+        </div>
+      </section>
+
+      <section class="slide" data-narr="A segurança dos dados é parte central do projeto. O sistema foi desenvolvido em conformidade com a LGPD. Não existe cadastro permanente de crianças ou de responsáveis no sistema. Os dados pessoais ficam no cartão QR Code que permanece com os pais.">
+        <div class="copy">
+          <div class="eyebrow">Privacidade desde a origem</div>
+          <h2>Os dados pessoais<br>ficam com a família.</h2>
+          <p class="slide-lead">Em conformidade com a <strong>LGPD</strong>, não há uma base permanente com nomes de crianças, pais ou telefones. Cada responsável guarda seu próprio <span class="accent">cartão QR Code</span>.</p>
+          <div class="steps">
+            <span class="step-chip"><i class="fas fa-lock"></i> Sem cadastro central</span>
+            <span class="step-chip"><i class="fas fa-id-card"></i> Cartão em mãos</span>
+          </div>
+        </div>
+        <div class="art" aria-hidden="true">
+          <div class="privacy-layout">
+            <div class="privacy-card"><i class="fas fa-database"></i><span>O sistema não mantém dados pessoais após o evento</span></div>
+            <div class="privacy-card"><i class="fas fa-qrcode"></i><span>O responsável guarda seu cartão individual</span></div>
+          </div>
+          <div class="privacy-divider"></div>
+        </div>
+      </section>
+
+      <section class="slide" data-narr="Antes do EBI, o responsável acessa qrcode ponto ccbcampinas ponto org ponto br para criar seu cartão. Ele informa os nomes das crianças, seu nome, a comum ou congregação, telefone e idade de cada criança. Cada responsável recebe um cartão individual porque é ele quem entrega e retira a criança.">
+        <div class="copy">
+          <div class="eyebrow">Passo 1 de 4</div>
+          <h2>O responsável cria<br>o cartão QR Code.</h2>
+          <p class="slide-lead">No site <span class="accent">qrcode.ccbcampinas.org.br</span>, o responsável informa nome da criança, nome do responsável, comum ou congregação, telefone e idade. O cartão é <strong>individual para cada responsável</strong>.</p>
+          <div class="steps">
+            <span class="step-chip"><i class="fas fa-child"></i> Criança</span>
+            <span class="step-chip"><i class="fas fa-phone-alt"></i> Telefone</span>
+            <span class="step-chip"><i class="fas fa-church"></i> Comum</span>
+          </div>
+        </div>
+        <div class="art" aria-hidden="true">
+          <div class="phone">
+            <div class="phone-screen">
+              <span class="phone-title">Cartão EBI</span>
+              <div class="phone-qr"><i class="fas fa-qrcode"></i></div>
+              <span class="phone-line"></span><span class="phone-line short"></span>
+              <span class="phone-badge">PRONTO PARA O EBI</span>
+            </div>
+            <span class="form-field name">Nome</span>
+            <span class="form-field common">Comum</span>
+            <span class="form-field age">Idade</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-narr="Na chegada, o responsável apresenta o QR Code do seu cartão. A equipe pode ler o código com um leitor ou câmera, e também pode digitar as informações manualmente. Os dados necessários passam para o sistema em poucos segundos, apenas para o evento em andamento.">
+        <div class="copy">
+          <div class="eyebrow">Passo 2 de 4</div>
+          <h2>Na entrada, o QR Code<br>agiliza a recepção.</h2>
+          <p class="slide-lead">A leitura transfere as informações do cartão para o atendimento. Há também a opção de <strong>digitação manual</strong>, para que o fluxo continue mesmo quando a leitura não for possível.</p>
+          <div class="steps">
+            <span class="step-chip"><i class="fas fa-barcode"></i> Leitor QR Code</span>
+            <span class="step-chip"><i class="fas fa-keyboard"></i> Digitação manual</span>
+            <span class="step-chip"><i class="fas fa-bolt"></i> Atendimento ágil</span>
+          </div>
+        </div>
+        <div class="art" aria-hidden="true">
+          <div class="scan-card">
+            <i class="fas fa-qrcode"></i>
+            <div class="scan-copy"><strong>Cartão reconhecido</strong><span>CRIANÇAS: 02<br>COMUM: BONFIM<br>STATUS: ENTRADA</span></div>
+            <span class="scan-line"></span>
+          </div>
+          <i class="fas fa-wifi scan-source"></i>
+        </div>
+      </section>
+
+      <section class="slide" data-narr="Os dados pessoais são usados somente durante o evento, por no máximo três horas. Depois desse período, o sistema apaga os dados de crianças e responsáveis. Ficam apenas estatísticas anônimas, como quantidade de crianças, faixas de idade, portaria, cidade, comum e dia do evento.">
+        <div class="copy">
+          <div class="eyebrow">Proteção durante e depois</div>
+          <h2>Dados temporários.<br>Estatísticas duradouras.</h2>
+          <p class="slide-lead">As informações pessoais ficam disponíveis por <strong>no máximo 3 horas</strong>. Ao final, são removidas. Permanecem somente dados estatísticos, sem nomes: quantidade, idade, portaria, cidade, comum e data.</p>
+          <div class="steps">
+            <span class="step-chip"><i class="fas fa-hourglass-half"></i> Máximo de 3 horas</span>
+            <span class="step-chip"><i class="fas fa-chart-pie"></i> Dados anônimos</span>
+          </div>
+        </div>
+        <div class="art" aria-hidden="true">
+          <div class="time-loop">
+            <span class="time-core">03:00</span>
+            <span class="data-dot a"><i class="fas fa-user"></i></span>
+            <span class="data-dot b"><i class="fas fa-phone"></i></span>
+            <span class="data-dot c"><i class="fas fa-map-marker-alt"></i></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-narr="A impressora de pulseiras é opcional e pode acelerar ainda mais a entrada. O modelo atualmente compatível é a Elgin ou Bematech L42DT, com o tamanho de pulseira especificado pelo sistema. O procedimento completo de instalação e uso está em Menu, Impressora.">
+        <div class="copy">
+          <div class="eyebrow">Opcional para mais agilidade</div>
+          <h2>Pulseiras impressas<br>no momento da entrada.</h2>
+          <p class="slide-lead">A impressão pode agilizar a identificação das crianças. O modelo compatível é a <strong>Elgin / Bematech L42DT</strong>, usando o tamanho de pulseira especificado. O passo a passo está em <span class="gold">Menu → Impressora</span>.</p>
+          <div class="steps">
+            <span class="step-chip"><i class="fas fa-print"></i> Elgin / Bematech L42DT</span>
+            <span class="step-chip"><i class="fas fa-tag"></i> Pulseira padrão</span>
+          </div>
+        </div>
+        <div class="art" aria-hidden="true">
+          <div class="printer">
+            <div class="printer-top"></div>
+            <div class="printer-body"><span class="printer-screen"></span><span class="printer-led"></span><span class="printer-slot"></span></div>
+            <div class="wristband">EBI | CÓDIGO DE SAÍDA</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-narr="Na saída, os coordenadores podem usar o smartphone para registrar o código da pulseira do responsável. O pedido chega imediatamente ao Painel de Saída. Assim, uma pessoa pode atender a porta enquanto os coordenadores dentro do EBI veem, em uma tela, qual criança precisa ser encaminhada.">
+        <div class="copy">
+          <div class="eyebrow">Passo 3 de 4</div>
+          <h2>O smartphone chama.<br>O painel orienta.</h2>
+          <p class="slide-lead">Com o código da pulseira, o coordenador registra a solicitação pelo celular. O <strong>Painel de Saída</strong> mostra o nome da criança para a equipe que está dentro do EBI, enquanto outra pessoa atende na porta.</p>
+          <div class="steps">
+            <span class="step-chip"><i class="fas fa-mobile-alt"></i> Smartphone</span>
+            <span class="step-chip"><i class="fas fa-tv"></i> Painel em tempo real</span>
+            <span class="step-chip"><i class="fas fa-door-open"></i> Porta organizada</span>
+          </div>
+        </div>
+        <div class="art" aria-hidden="true">
+          <div class="exit-network">
+            <div class="exit-phone"><i class="fas fa-qrcode"></i><small>LEITURA</small></div>
+            <span class="exit-arrow"></span><span class="exit-signal"></span>
+            <div class="exit-panel"><strong>PAINEL DE SAÍDA</strong><div class="exit-name">GABRIEL S.</div></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-narr="O Sistema EBI é self-service. Cada igreja cria uma conta com e-mail e senha e usa a mesma conta em todos os dias de EBI. Dessa forma, a congregação mantém as estatísticas ao longo do tempo. Caso esqueça a senha, basta informar o e-mail para receber um link seguro de redefinição.">
+        <div class="copy">
+          <div class="eyebrow">Passo 4 de 4</div>
+          <h2>Uma conta para<br>todos os dias de EBI.</h2>
+          <p class="slide-lead">Cada igreja cria e administra sua conta com e-mail e senha. A mesma conta pode ser reutilizada em cada EBI, mantendo o histórico estatístico. Esqueceu a senha? Solicite o <strong>reset por e-mail</strong>.</p>
+          <div class="steps">
+            <span class="step-chip"><i class="fas fa-envelope"></i> Conta por e-mail</span>
+            <span class="step-chip"><i class="fas fa-chart-line"></i> Histórico estatístico</span>
+            <span class="step-chip"><i class="fas fa-key"></i> Reset seguro</span>
+          </div>
+        </div>
+        <div class="art" aria-hidden="true">
+          <div class="account-path">
+            <div class="path-card"><span><i class="fas fa-user-plus"></i>Criar<br>conta</span></div><span class="path-link"></span>
+            <div class="path-card"><span><i class="fas fa-calendar-check"></i>Usar em<br>cada EBI</span></div><span class="path-link"></span>
+            <div class="path-card"><span><i class="fas fa-chart-bar"></i>Ver<br>estatísticas</span></div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div class="caption-dock" id="captionDock" aria-live="polite">
+    <div class="caption" id="caption">Selecione reproduzir para ouvir a apresentação. As legendas podem ser desligadas a qualquer momento.</div>
+  </div>
+
+  <footer class="controlbar" aria-label="Controles da apresentação">
+    <div class="control-group">
+      <button type="button" class="nav-button" id="previousButton" disabled><i class="fas fa-arrow-left" aria-hidden="true"></i> Anterior</button>
+      <button type="button" class="tool-button is-active" id="captionButton" aria-pressed="true" title="Ligar ou desligar legendas"><i class="fas fa-closed-captioning" aria-hidden="true"></i><span id="captionButtonText">Legenda</span></button>
+    </div>
+    <div class="transport">
+      <button type="button" class="play-button" id="playButton"><i class="fas fa-play" aria-hidden="true"></i><span id="playText">Reproduzir</span></button>
+      <div class="progress" aria-hidden="true"><span id="progressFill"></span></div>
+      <span class="counter" id="counter">01 / 08</span>
+    </div>
+    <div class="control-group right">
+      <button type="button" class="nav-button" id="nextButton">Próximo <i class="fas fa-arrow-right" aria-hidden="true"></i></button>
+    </div>
+  </footer>
+
+  <script>
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    const caption = document.getElementById('caption');
+    const captionDock = document.getElementById('captionDock');
+    const captionButton = document.getElementById('captionButton');
+    const previousButton = document.getElementById('previousButton');
+    const nextButton = document.getElementById('nextButton');
+    const playButton = document.getElementById('playButton');
+    const playText = document.getElementById('playText');
+    const progressFill = document.getElementById('progressFill');
+    const counter = document.getElementById('counter');
+    const settingsButton = document.getElementById('audioSettingsButton');
+    const settingsPanel = document.getElementById('audioSettings');
+    const voiceSelect = document.getElementById('voiceSelect');
+    const voiceStatus = document.getElementById('voiceStatus');
+    const rateInput = document.getElementById('rateInput');
+    const rateValue = document.getElementById('rateValue');
+    const closeButton = document.getElementById('closeButton');
+    const synth = 'speechSynthesis' in window ? window.speechSynthesis : null;
+
+    let currentSlide = 0;
+    let isPlaying = false;
+    let captionsEnabled = localStorage.getItem('ebi-apresentacao-2-captions') !== 'off';
+    let selectedVoiceUri = localStorage.getItem('ebi-apresentacao-2-voice') || '';
+    let speechRate = Number(localStorage.getItem('ebi-apresentacao-2-rate')) || 0.96;
+    let voices = [];
+    let advanceTimer = null;
+    let speechSequence = 0;
+
+    function setCaption(text) {
+      caption.textContent = text;
+    }
+
+    function renderSlide(index) {
+      slides[currentSlide].classList.remove('is-active');
+      currentSlide = Math.max(0, Math.min(index, slides.length - 1));
+      slides[currentSlide].classList.add('is-active');
+
+      previousButton.disabled = currentSlide === 0;
+      nextButton.disabled = currentSlide === slides.length - 1;
+      counter.textContent = String(currentSlide + 1).padStart(2, '0') + ' / ' + String(slides.length).padStart(2, '0');
+      progressFill.style.width = ((currentSlide + 1) / slides.length * 100) + '%';
+
+      if (!isPlaying) {
+        setCaption(slides[currentSlide].dataset.narr);
+      }
+    }
+
+    function updatePlayButton() {
+      playButton.querySelector('i').className = isPlaying ? 'fas fa-pause' : 'fas fa-play';
+      playText.textContent = isPlaying ? 'Pausar' : 'Reproduzir';
+    }
+
+    function stopNarration() {
+      clearTimeout(advanceTimer);
+      speechSequence += 1;
+      if (synth) {
+        synth.cancel();
+      }
+    }
+
+    function advanceFromNarration() {
+      advanceTimer = window.setTimeout(() => {
+        if (!isPlaying) return;
+        if (currentSlide === slides.length - 1) {
+          isPlaying = false;
+          updatePlayButton();
+          return;
+        }
+        renderSlide(currentSlide + 1);
+        narrateCurrentSlide();
+      }, 1100);
+    }
+
+    function timeBasedAdvance() {
+      const estimatedDuration = Math.max(5000, slides[currentSlide].dataset.narr.length * 58 / speechRate);
+      advanceTimer = window.setTimeout(() => {
+        if (!isPlaying) return;
+        if (currentSlide === slides.length - 1) {
+          isPlaying = false;
+          updatePlayButton();
+          return;
+        }
+        renderSlide(currentSlide + 1);
+        narrateCurrentSlide();
+      }, estimatedDuration);
+    }
+
+    function narrateCurrentSlide() {
+      stopNarration();
+      const text = slides[currentSlide].dataset.narr;
+      setCaption(text);
+
+      if (!synth || !voices.length) {
+        timeBasedAdvance();
+        return;
+      }
+
+      const run = ++speechSequence;
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'pt-BR';
+      utterance.rate = speechRate;
+      utterance.pitch = 1;
+
+      const chosenVoice = voices.find(voice => voice.voiceURI === selectedVoiceUri);
+      if (chosenVoice) utterance.voice = chosenVoice;
+
+      utterance.onend = () => {
+        if (!isPlaying || run !== speechSequence) return;
+        advanceFromNarration();
+      };
+      utterance.onerror = () => {
+        if (!isPlaying || run !== speechSequence) return;
+        timeBasedAdvance();
+      };
+
+      synth.speak(utterance);
+    }
+
+    function changeSlide(nextIndex) {
+      const continuePlaying = isPlaying;
+      stopNarration();
+      renderSlide(nextIndex);
+      if (continuePlaying) narrateCurrentSlide();
+    }
+
+    function scoreVoice(voice) {
+      const name = voice.name.toLowerCase();
+      let score = voice.lang.toLowerCase() === 'pt-br' ? 8 : 0;
+      if (name.includes('natural')) score += 30;
+      if (name.includes('neural')) score += 28;
+      if (name.includes('google')) score += 24;
+      if (name.includes('microsoft')) score += 20;
+      if (name.includes('premium') || name.includes('enhanced')) score += 18;
+      if (name.includes('siri')) score += 14;
+      if (voice.localService) score += 3;
+      return score;
+    }
+
+    function updateVoiceOptions() {
+      if (!synth) {
+        voiceSelect.innerHTML = '<option>Áudio não disponível neste navegador</option>';
+        voiceSelect.disabled = true;
+        voiceStatus.textContent = 'Use Chrome, Edge ou Safari atualizado para narração por voz.';
+        return;
+      }
+
+      voices = synth.getVoices().filter(voice => voice.lang.toLowerCase().startsWith('pt'));
+      voices.sort((a, b) => scoreVoice(b) - scoreVoice(a));
+      voiceSelect.innerHTML = '';
+
+      if (!voices.length) {
+        voiceSelect.innerHTML = '<option>Nenhuma voz em português encontrada</option>';
+        voiceSelect.disabled = true;
+        voiceStatus.textContent = 'Instale uma voz em português no dispositivo para ativar a narração.';
+        return;
+      }
+
+      voiceSelect.disabled = false;
+      voices.forEach(voice => {
+        const option = document.createElement('option');
+        option.value = voice.voiceURI;
+        option.textContent = voice.name + ' (' + voice.lang + ')';
+        voiceSelect.appendChild(option);
+      });
+
+      if (!voices.some(voice => voice.voiceURI === selectedVoiceUri)) {
+        selectedVoiceUri = voices[0].voiceURI;
+      }
+      voiceSelect.value = selectedVoiceUri;
+      voiceStatus.textContent = 'Vozes neurais, naturais ou do Google/Microsoft aparecem primeiro quando disponíveis.';
+    }
+
+    function savePreferences() {
+      localStorage.setItem('ebi-apresentacao-2-voice', selectedVoiceUri);
+      localStorage.setItem('ebi-apresentacao-2-rate', String(speechRate));
+      localStorage.setItem('ebi-apresentacao-2-captions', captionsEnabled ? 'on' : 'off');
+    }
+
+    function syncCaptionPreference() {
+      captionDock.classList.toggle('is-hidden', !captionsEnabled);
+      captionButton.classList.toggle('is-active', captionsEnabled);
+      captionButton.setAttribute('aria-pressed', String(captionsEnabled));
+      document.getElementById('captionButtonText').textContent = captionsEnabled ? 'Legenda' : 'Legenda off';
+    }
+
+    previousButton.addEventListener('click', () => {
+      if (currentSlide > 0) changeSlide(currentSlide - 1);
+    });
+
+    nextButton.addEventListener('click', () => {
+      if (currentSlide < slides.length - 1) changeSlide(currentSlide + 1);
+    });
+
+    playButton.addEventListener('click', () => {
+      isPlaying = !isPlaying;
+      updatePlayButton();
+      if (isPlaying) {
+        narrateCurrentSlide();
+      } else {
+        stopNarration();
+      }
+    });
+
+    captionButton.addEventListener('click', () => {
+      captionsEnabled = !captionsEnabled;
+      syncCaptionPreference();
+      savePreferences();
+    });
+
+    settingsButton.addEventListener('click', event => {
+      event.stopPropagation();
+      const isOpen = settingsPanel.classList.toggle('is-open');
+      settingsButton.setAttribute('aria-expanded', String(isOpen));
+    });
+
+    voiceSelect.addEventListener('change', () => {
+      selectedVoiceUri = voiceSelect.value;
+      savePreferences();
+      if (isPlaying) narrateCurrentSlide();
+    });
+
+    rateInput.value = speechRate;
+    rateValue.textContent = speechRate.toFixed(2) + 'x';
+    rateInput.addEventListener('input', () => {
+      speechRate = Number(rateInput.value);
+      rateValue.textContent = speechRate.toFixed(2) + 'x';
+      savePreferences();
+    });
+    rateInput.addEventListener('change', () => {
+      if (isPlaying) narrateCurrentSlide();
+    });
+
+    closeButton.addEventListener('click', () => {
+      stopNarration();
+      if (history.length > 1) {
+        history.back();
+      } else {
+        window.location.href = 'selfservice.php';
+      }
+    });
+
+    document.addEventListener('click', event => {
+      if (!settingsPanel.contains(event.target) && !settingsButton.contains(event.target)) {
+        settingsPanel.classList.remove('is-open');
+        settingsButton.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    document.addEventListener('keydown', event => {
+      if (event.target.matches('select, input')) return;
+      if (event.key === 'ArrowRight') nextButton.click();
+      if (event.key === 'ArrowLeft') previousButton.click();
+      if (event.key === ' ') {
+        event.preventDefault();
+        playButton.click();
+      }
+      if (event.key === 'Escape') closeButton.click();
+    });
+
+    if (synth) {
+      synth.onvoiceschanged = updateVoiceOptions;
+      updateVoiceOptions();
+    } else {
+      updateVoiceOptions();
+    }
+
+    syncCaptionPreference();
+    renderSlide(0);
+  </script>
+</body>
+</html>
