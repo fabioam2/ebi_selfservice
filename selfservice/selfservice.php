@@ -915,6 +915,13 @@ if (isset($_SESSION['instancia_existente'])) {
                 <h1>Crie sua Conta</h1>
                 <p>Cadastre-se e receba acesso ao Sistema de Cadastro de Crianças</p>
             </div>
+
+            <!-- Botão apresentação -->
+            <div class="text-center mb-3">
+                <a href="apresentacao.html" class="btn btn-sm" style="border:1px solid rgba(14,116,144,.4);color:#0e7490;border-radius:50px;padding:6px 18px;font-size:.82rem;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:7px;background:rgba(14,116,144,.07);transition:background .2s" onmouseover="this.style.background='rgba(14,116,144,.15)'" onmouseout="this.style.background='rgba(14,116,144,.07)'">
+                    <i class="fas fa-play-circle"></i> O que é o sistema?
+                </a>
+            </div>
             
             <?php if ($mensagem): ?>
                 <div class="alert alert-<?php echo $tipo_mensagem; ?> alert-dismissible fade show" role="alert">
