@@ -243,7 +243,7 @@ $totalCriancasPeriodo = array_sum($ageTotals) ?: 1; // evita divisão por zero
 <!-- Por Comum -->
 <?php if (!empty($statsPorComum)): ?>
 <div class="content-header mt-4">
-    <h4><i class="fas fa-church mr-2"></i>Por Comum
+    <h4><i class="fas fa-users mr-2"></i>Por Comum
         <small class="text-muted">(últimos <?php echo $periodo; ?> dias)</small>
     </h4>
 </div>

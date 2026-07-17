@@ -763,6 +763,49 @@ if (isset($_SESSION['instancia_existente'])) {
             background: rgba(255, 255, 255, 0.18);
         }
 
+        .test-links {
+            position: relative;
+            z-index: 1;
+            max-width: 720px;
+            margin: 0 auto 24px;
+            padding: 12px 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .test-links .test-links-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.65);
+        }
+
+        .test-links-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .test-link-btn {
+            border: 1px dashed rgba(255, 255, 255, 0.45);
+            color: rgba(255, 255, 255, 0.85);
+            border-radius: 999px;
+            background: transparent;
+            font-weight: 600;
+            font-size: 0.82rem;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        .test-link-btn:hover {
+            color: #fff;
+            transform: translateY(-1px);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
         @media (max-width: 768px) {
             body {
                 padding: 14px;
@@ -970,7 +1013,7 @@ if (isset($_SESSION['instancia_existente'])) {
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="comum"><i class="fas fa-church"></i> Comum</label>
+                            <label for="comum"><i class="fas fa-users"></i> Comum</label>
                             <input type="text" class="form-control" id="comum" name="comum" 
                                    placeholder="Nome do comum" required
                                    value="<?php echo htmlspecialchars($_POST['comum'] ?? ''); ?>">
@@ -1016,6 +1059,18 @@ if (isset($_SESSION['instancia_existente'])) {
         <a href="../qrcode/default.php" class="btn btn-sm quick-link-btn">
             <i class="fas fa-qrcode mr-1"></i>QR Code
         </a>
+    </div>
+
+    <div class="test-links">
+        <span class="test-links-label"><i class="fas fa-flask mr-1"></i>Área de testes (conceito v2)</span>
+        <div class="test-links-buttons">
+            <a href="../ebi/template/ebi.test.php" class="btn btn-sm test-link-btn" target="_blank">
+                <i class="fas fa-child mr-1"></i>Cadastro EBI (teste)
+            </a>
+            <a href="../qrcode/qrcode.2.php" class="btn btn-sm test-link-btn" target="_blank">
+                <i class="fas fa-qrcode mr-1"></i>QR Code v2 (nascimento)
+            </a>
+        </div>
     </div>
 
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
