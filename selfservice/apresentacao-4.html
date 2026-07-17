@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0b2e2a">
+  <title>EBI — Apresentação V4</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <style>
+    :root {
+      --bg: #051614;
+      --bg2: #0a2421;
+      --card: rgba(16, 42, 39, 0.72);
+      --text: #eefcf9;
+      --dim: #8dbdb5;
+      --mint: #6ee7b7;
+      --mint-rgb: 110, 231, 183;
+      --teal: #2dd4bf;
+      --teal-rgb: 45, 212, 191;
+      --sky: #38bdf8;
+      --sky-rgb: 56, 189, 248;
+      --rose: #fda4af;
+      --rose-rgb: 253, 164, 175;
+      --gold: #fcd34d;
+      --gold-rgb: 252, 211, 77;
+      --line: rgba(110, 231, 183, 0.16);
+      --glass: rgba(5, 22, 20, 0.94);
+      --radius: 18px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { background: var(--bg); }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      color: var(--text);
+      height: 100vh;
+      overflow: hidden;
+      display: grid;
+      grid-template-rows: 56px minmax(0, 1fr) auto auto;
+      background:
+        radial-gradient(ellipse 80% 50% at 20% 10%, rgba(45, 212, 191, 0.12), transparent 55%),
+        radial-gradient(ellipse 70% 45% at 85% 90%, rgba(253, 164, 175, 0.10), transparent 50%),
+        radial-gradient(ellipse 60% 40% at 50% 50%, rgba(56, 189, 248, 0.06), transparent 50%),
+        linear-gradient(165deg, var(--bg) 0%, var(--bg2) 100%);
+    }
+
+    button { font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+
+    /* ── Top Bar ───────────────────────────── */
+    .top {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 clamp(14px, 3vw, 32px);
+      border-bottom: 1px solid var(--line);
+      background: var(--glass);
+      backdrop-filter: blur(16px);
+      z-index: 10;
+    }
+    .logo { display: flex; align-items: baseline; gap: 8px; font-weight: 800; font-size: .98rem; color: var(--mint); letter-spacing: .03em; }
+    .logo small { font-weight: 400; color: var(--dim); font-size: .78rem; }
+    .logo .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--rose); box-shadow: 0 0 10px var(--rose); animation: pulse-dot 2s ease-in-out infinite; }
+    @keyframes pulse-dot { 50% { opacity: .4; transform: scale(.8); } }
+    .top-actions { display: flex; gap: 7px; align-items: center; }
+
+    .btn-icon {
+      width: 36px; height: 36px;
+      display: grid; place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(110, 231, 183, 0.04);
+      color: var(--dim);
+      font-size: .88rem;
+      transition: all .18s;
+    }
+    .btn-icon:hover { color: var(--mint); border-color: rgba(110,231,183,.5); background: rgba(110,231,183,.09); }
+
+    .btn-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      height: 34px; padding: 0 13px;
+      border: 1px solid var(--line);
+      border-radius: 99px;
+      background: rgba(110, 231, 183, 0.04);
+      color: var(--dim);
+      font-size: .72rem; font-weight: 700;
+      transition: all .18s;
+    }
+    .btn-pill:hover { color: var(--mint); border-color: rgba(110,231,183,.5); background: rgba(110,231,183,.09); }
+    .btn-pill.on { color: var(--bg); border-color: var(--mint); background: var(--mint); }
+    .btn-pill.on:hover { background: #a7f3d0; }
+
+    /* ── Voice Panel ───────────────────────── */
+    .voice-panel {
+      position: fixed; top: 58px; right: clamp(14px, 3vw, 32px);
+      z-index: 20;
+      width: min(340px, calc(100vw - 28px));
+      padding: 18px;
+      border: 1px solid rgba(110,231,183,.35);
+      border-radius: var(--radius);
+      background: rgba(5, 22, 20, 0.98);
+      box-shadow: 0 18px 50px rgba(0,0,0,.55);
+      display: none;
+    }
+    .voice-panel.open { display: block; animation: vp-in .2s ease both; }
+    @keyframes vp-in { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; } }
+    .voice-panel h3 { font-size: .9rem; color: var(--text); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+    .vp-label { display: block; font-size: .65rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--dim); margin-bottom: 6px; }
+    .vp-select {
+      width: 100%; padding: 10px 11px; border: 1px solid var(--line);
+      border-radius: 8px; background: var(--bg); color: var(--text);
+      font-size: .78rem; outline: none;
+    }
+    .vp-select:focus { border-color: var(--mint); }
+    .vp-select option { background: var(--bg); }
+    .vp-range-row { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+    .vp-range { flex: 1; accent-color: var(--teal); }
+    .vp-val { font-size: .72rem; color: var(--teal); min-width: 36px; text-align: right; font-variant-numeric: tabular-nums; }
+    .vp-hint { margin-top: 14px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,.06); font-size: .68rem; color: var(--dim); line-height: 1.55; }
+
+    /* ── Stage ──────────────────────────────── */
+    .stage {
+      overflow-y: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 28px clamp(14px, 4vw, 48px);
+    }
+
+    .deck { width: min(1120px, 100%); }
+
+    .slide {
+      display: none;
+      width: 100%;
+      gap: clamp(24px, 5vw, 72px);
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      min-height: min(540px, calc(100vh - 260px));
+    }
+    .slide.on { display: grid; }
+
+    .slide.on .s-text { animation: fadeInRight .55s cubic-bezier(.16,1,.3,1) .08s both; }
+    .slide.on .s-art  { animation: fadeInLeft .6s cubic-bezier(.16,1,.3,1) .2s both; }
+    @keyframes fadeInRight { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; } }
+    @keyframes fadeInLeft { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; } }
+
+    .s-step {
+      display: inline-flex; align-items: center; gap: 8px;
+      margin-bottom: 14px;
+      font-size: .68rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+      color: var(--teal);
+    }
+    .s-step::before { content: ''; width: 22px; height: 1px; background: currentColor; }
+
+    .slide h2 {
+      font-size: clamp(1.65rem, 4.6vw, 3.1rem);
+      font-weight: 800;
+      line-height: 1.05;
+      color: #fff;
+      margin-bottom: 18px;
+    }
+
+    .s-lead {
+      font-size: clamp(.94rem, 1.45vw, 1.08rem);
+      line-height: 1.75;
+      color: var(--dim);
+      max-width: 560px;
+    }
+    .s-lead strong { color: #fff; }
+    .s-lead .hl { color: var(--mint); font-weight: 700; }
+    .s-lead .sky { color: var(--sky); font-weight: 700; }
+    .s-lead .rose { color: var(--rose); font-weight: 700; }
+    .s-lead .gold { color: var(--gold); font-weight: 700; }
+
+    .tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+    .tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 12px;
+      border: 1px solid var(--line);
+      border-radius: 99px;
+      font-size: .7rem; font-weight: 700; color: var(--dim);
+      background: rgba(16, 42, 39, 0.55);
+    }
+    .tag i { color: var(--gold); }
+
+    /* ── Art Panels ─────────────────────────── */
+    .s-art {
+      position: relative;
+      display: grid; place-items: center;
+      min-height: 340px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      background:
+        linear-gradient(145deg, rgba(110,231,183,.06), rgba(56,189,248,.04), rgba(253,164,175,.03)),
+        var(--card);
+      box-shadow: 0 24px 60px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.04);
+      backdrop-filter: blur(8px);
+    }
+    .s-art::before {
+      content: '';
+      position: absolute; inset: 0; z-index: 0;
+      background-image:
+        linear-gradient(rgba(110,231,183,.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(110,231,183,.05) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: radial-gradient(circle at 50% 50%, rgba(0,0,0,.7), transparent 75%);
+      pointer-events: none;
+    }
+    .s-art > * { position: relative; z-index: 1; }
+
+    /* ambient blobs */
+    .blob {
+      position: absolute; border-radius: 50%;
+      filter: blur(50px);
+      opacity: .35;
+      animation: blob-move 10s ease-in-out infinite alternate;
+    }
+    .blob.b1 { width: 160px; height: 160px; top: 10%; left: 10%; background: rgba(110,231,183,.35); }
+    .blob.b2 { width: 120px; height: 120px; bottom: 12%; right: 12%; background: rgba(253,164,175,.3); animation-delay: -4s; }
+    .blob.b3 { width: 90px; height: 90px; top: 55%; left: 55%; background: rgba(56,189,248,.25); animation-delay: -7s; }
+    @keyframes blob-move { to { transform: translate(20px, -20px) scale(1.08); } }
+
+    /* Art: Hero */
+    .hero-ring {
+      position: absolute;
+      border: 1px solid rgba(110,231,183,.2);
+      border-radius: 50%;
+    }
+    .hero-ring.r1 { inset: calc(50% - 105px); border-top-color: transparent; }
+    .hero-ring.r2 { inset: calc(50% - 140px); border-bottom-color: transparent; border-color: rgba(56,189,248,.18); }
+    .hero-ring.r3 { inset: calc(50% - 170px); border-left-color: transparent; border-color: rgba(253,164,175,.15); }
+    .slide.on .hero-ring.r1 { animation: spin 10s linear infinite; }
+    .slide.on .hero-ring.r2 { animation: spin 16s linear infinite reverse; }
+    .slide.on .hero-ring.r3 { animation: spin 22s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .hero-orb {
+      width: 150px; height: 150px;
+      border-radius: 50%;
+      display: grid; place-items: center;
+      background: radial-gradient(circle at 35% 30%, rgba(110,231,183,.25), transparent 60%),
+                  radial-gradient(circle at 70% 70%, rgba(56,189,248,.2), transparent 55%),
+                  rgba(5,22,20,.75);
+      border: 1px solid rgba(110,231,183,.45);
+      box-shadow: 0 0 0 14px rgba(110,231,183,.04), 0 0 60px rgba(110,231,183,.15);
+      font-size: 2.8rem; color: var(--mint);
+      animation: orb-breathe 4s ease-in-out infinite;
+    }
+    @keyframes orb-breathe { 50% { transform: scale(1.03); box-shadow: 0 0 0 18px rgba(110,231,183,.06), 0 0 72px rgba(110,231,183,.22); } }
+
+    .float-pill {
+      position: absolute;
+      padding: 8px 13px;
+      border: 1px solid var(--line);
+      border-radius: 99px;
+      font-size: .62rem; font-weight: 800; letter-spacing: .04em;
+      background: rgba(5,22,20,.88);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .float-pill.p1 { top: 16%; left: 8%; color: var(--gold); border-color: rgba(252,211,77,.35); }
+    .float-pill.p2 { bottom: 18%; right: 6%; color: var(--sky); border-color: rgba(56,189,248,.35); }
+    .slide.on .float-pill { animation: bob 3.4s ease-in-out infinite; }
+    .slide.on .float-pill.p2 { animation-delay: .9s; }
+    @keyframes bob { 50% { transform: translateY(-9px); } }
+
+    /* Art: Shield */
+    .shield-wrap { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+    .shield-icon { font-size: 4.2rem; color: var(--mint); filter: drop-shadow(0 0 22px rgba(110,231,183,.35)); animation: shield-pulse 3s ease-in-out infinite; }
+    @keyframes shield-pulse { 50% { filter: drop-shadow(0 0 30px rgba(110,231,183,.55)); transform: scale(1.03); } }
+    .shield-label { font-size: .72rem; font-weight: 800; color: var(--dim); text-transform: uppercase; letter-spacing: .12em; }
+
+    /* Art: Phone */
+    .phone-m {
+      width: 160px; height: 276px;
+      border: 5px solid rgba(16,42,39,.9);
+      border-radius: 26px;
+      background: linear-gradient(160deg, #e0fcf4, #ccfbf1);
+      padding: 13px 11px;
+      box-shadow: 0 20px 45px rgba(0,0,0,.4);
+      transform: rotate(-4deg);
+      position: relative;
+    }
+    .phone-m::before { content: ''; position: absolute; top: 7px; left: 50%; width: 44px; height: 4px; border-radius: 99px; background: rgba(16,42,39,.85); transform: translateX(-50%); }
+    .phone-inner { display: flex; flex-direction: column; align-items: center; padding-top: 18px; height: 100%; color: #0b3d36; }
+    .phone-inner .pi-title { font-size: .54rem; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; color: #115e56; }
+    .phone-inner .pi-qr { font-size: 4.6rem; margin: 16px 0 10px; color: #0f3d36; }
+    .phone-inner .pi-line { width: 100px; height: 5px; border-radius: 3px; background: rgba(15,61,54,.18); margin-top: 5px; }
+    .phone-inner .pi-line.short { width: 68px; }
+    .phone-inner .pi-badge { margin-top: 14px; font-size: .5rem; font-weight: 800; padding: 5px 10px; border-radius: 99px; background: var(--mint); color: #064e3b; }
+    .field-hint {
+      position: absolute; right: -84px;
+      padding: 7px 11px; border-radius: 8px;
+      font-size: .6rem; font-weight: 700;
+      background: rgba(5,22,20,.92);
+      border: 1px solid;
+      white-space: nowrap;
+    }
+    .field-hint.f1 { top: 62px; color: var(--mint); border-color: rgba(110,231,183,.4); }
+    .field-hint.f2 { top: 110px; color: var(--gold); border-color: rgba(252,211,77,.4); }
+    .field-hint.f3 { top: 158px; color: var(--sky); border-color: rgba(56,189,248,.4); }
+    .slide.on .phone-m { animation: phone-drift 4.4s ease-in-out infinite; }
+    @keyframes phone-drift { 50% { transform: translateY(-8px) rotate(-2deg); } }
+    .slide.on .field-hint { animation: hint-in .5s ease both; }
+    .slide.on .field-hint.f2 { animation-delay: .15s; }
+    .slide.on .field-hint.f3 { animation-delay: .3s; }
+    @keyframes hint-in { from { opacity: 0; transform: translateX(-12px); } to { opacity: 1; } }
+
+    /* Art: Scanner */
+    .scan-box {
+      width: 250px; height: 158px;
+      border: 1px solid rgba(110,231,183,.5);
+      border-radius: 12px;
+      background: linear-gradient(135deg, #e0fcf4, #ccfbf1);
+      display: grid; grid-template-columns: 84px 1fr; gap: 16px;
+      align-items: center; padding: 18px;
+      box-shadow: 0 18px 40px rgba(0,0,0,.35);
+      position: relative; overflow: hidden;
+    }
+    .scan-box i.fa-qrcode { font-size: 4rem; color: #0b3d36; }
+    .scan-info { text-align: left; color: #0b3d36; }
+    .scan-info strong { display: block; font-size: .72rem; margin-bottom: 7px; }
+    .scan-info span { font-size: .56rem; line-height: 1.5; display: block; color: #27766d; font-family: monospace; }
+    .scan-laser {
+      position: absolute; left: 0; width: 100%; height: 2px;
+      background: var(--gold); box-shadow: 0 0 14px var(--gold);
+    }
+    .slide.on .scan-laser { animation: laser 2.1s ease-in-out infinite; }
+    @keyframes laser { 0%, 100% { top: 14px; } 50% { top: 142px; } }
+
+    /* Art: Clock Wipe */
+    .clock-wrap { display: flex; align-items: center; gap: 26px; }
+    .clock-ring {
+      width: 86px; height: 86px;
+      border: 4px solid rgba(253,164,175,.12);
+      border-top-color: var(--rose);
+      border-radius: 50%;
+      display: grid; place-items: center;
+      box-shadow: 0 0 24px rgba(253,164,175,.1);
+    }
+    .clock-val { font-size: 1rem; font-weight: 800; color: var(--rose); }
+    .slide.on .clock-ring { animation: spin 3s linear infinite; }
+    .slide.on .clock-val { animation: spin 3s linear infinite reverse; }
+    .clock-arrow { font-size: 1.5rem; color: var(--dim); }
+    .wipe-card {
+      padding: 14px 18px; border: 1px solid rgba(253,164,175,.35); border-radius: 10px;
+      background: rgba(253,164,175,.06); text-align: center;
+    }
+    .wipe-card i { display: block; font-size: 1.7rem; color: var(--rose); margin-bottom: 7px; }
+    .wipe-card span { font-size: .74rem; font-weight: 800; color: var(--rose); }
+
+    /* Art: Printer */
+    .printer-box { position: relative; width: 250px; height: 178px; }
+    .pr-body {
+      position: absolute; inset: 18px 10px 0;
+      border: 1px solid rgba(110,231,183,.45);
+      border-radius: 14px 14px 7px 7px;
+      background: rgba(16,42,39,.9);
+      box-shadow: 0 18px 36px rgba(0,0,0,.35);
+    }
+    .pr-top { position: absolute; top: 0; left: 40px; width: 170px; height: 46px; border: 1px solid rgba(56,189,248,.25); border-radius: 10px 10px 0 0; background: rgba(16,42,39,.98); }
+    .pr-screen { position: absolute; top: 48px; left: 40px; width: 76px; height: 20px; border-radius: 4px; background: var(--mint); }
+    .pr-led { position: absolute; top: 52px; right: 32px; width: 9px; height: 9px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 12px var(--mint); animation: led-blink 1.4s ease-in-out infinite; }
+    @keyframes led-blink { 50% { opacity: .35; } }
+    .pr-slot { position: absolute; right: 26px; bottom: 26px; left: 26px; height: 9px; border-radius: 99px; background: var(--bg); }
+    .pr-band {
+      position: absolute; bottom: -12px; left: 48px;
+      width: 154px; height: 32px;
+      border: 1px solid rgba(252,211,77,.7);
+      border-radius: 5px;
+      background: var(--gold);
+      color: #553c0d;
+      font-size: .58rem; font-weight: 800;
+      line-height: 32px; text-align: center;
+      font-family: monospace;
+    }
+    .slide.on .pr-band { animation: band-out 3.2s ease-in-out infinite; }
+    @keyframes band-out { 0%, 22% { transform: translateY(-20px); opacity: 0; } 42%, 80% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(4px); opacity: 0; } }
+
+    /* Art: Exit Panel */
+    .exit-grid { display: grid; grid-template-columns: 68px 1fr; gap: 32px; align-items: center; width: min(320px, 86%); }
+    .ex-phone {
+      width: 64px; height: 120px;
+      border: 3px solid rgba(16,42,39,.95);
+      border-radius: 14px;
+      display: grid; place-items: center;
+      background: rgba(5,22,20,.9);
+      color: var(--mint);
+      box-shadow: 0 0 0 7px rgba(110,231,183,.05);
+    }
+    .ex-phone i { font-size: 1.4rem; }
+    .ex-phone small { margin-top: -26px; font-size: .42rem; font-family: monospace; color: var(--dim); }
+    .ex-panel {
+      padding: 16px;
+      border: 1px solid rgba(56,189,248,.45);
+      border-radius: 10px;
+      background: rgba(5,22,20,.82);
+      box-shadow: 0 12px 30px rgba(0,0,0,.32);
+    }
+    .ex-panel strong { display: block; font-size: .56rem; color: var(--sky); font-family: monospace; letter-spacing: .08em; margin-bottom: 12px; }
+    .ex-name {
+      padding: 10px; border-radius: 6px;
+      background: var(--gold); color: #3b2e0a;
+      font-size: .76rem; font-weight: 800; text-align: center;
+    }
+    .slide.on .ex-name { animation: name-flash 1.6s ease-in-out infinite; }
+    @keyframes name-flash { 50% { box-shadow: 0 0 22px rgba(252,211,77,.7); } }
+    .ex-arrow {
+      position: absolute; top: 50%; left: 84px;
+      width: 62px; height: 1px;
+      background: var(--gold);
+    }
+    .ex-arrow::after { content: ''; position: absolute; top: -4px; right: -1px; border-left: 6px solid var(--gold); border-top: 4px solid transparent; border-bottom: 4px solid transparent; }
+    .ex-dot {
+      position: absolute; top: calc(50% - 5px); left: 96px;
+      width: 10px; height: 10px;
+      border-radius: 50%; background: var(--gold);
+    }
+    .slide.on .ex-dot { animation: dot-fly 2s ease-in-out infinite; }
+    @keyframes dot-fly { 0% { opacity: 0; transform: translateX(0); } 20% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; transform: translateX(52px); } }
+
+    /* Art: Account Path */
+    .acc-path { display: grid; grid-template-columns: 1fr 30px 1fr 30px 1fr; align-items: center; width: min(330px, 88%); }
+    .acc-card {
+      display: grid; place-items: center; min-height: 114px;
+      padding: 14px 6px;
+      border: 1px solid var(--line); border-radius: 10px;
+      background: rgba(5,22,20,.55);
+      font-size: .62rem; font-weight: 800; color: var(--dim); text-align: center;
+      transition: transform .2s;
+    }
+    .acc-card i { display: block; font-size: 1.4rem; color: var(--mint); margin-bottom: 9px; }
+    .acc-link { height: 2px; background: rgba(252,211,77,.45); border-radius: 2px; }
+    .slide.on .acc-link { animation: link-glow 2.4s ease-in-out infinite; }
+    .slide.on .acc-link:nth-of-type(2) { animation-delay: .5s; }
+    @keyframes link-glow { 50% { background: var(--gold); box-shadow: 0 0 10px var(--gold); } }
+
+    /* Art: Password */
+    .pw-mock {
+      width: min(280px, 80%);
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(5,22,20,.65);
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .pw-label { font-size: .64rem; font-weight: 800; color: var(--dim); text-transform: uppercase; letter-spacing: .08em; }
+    .pw-input {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 9px 12px;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 8px;
+      background: var(--bg);
+      font-size: .78rem; color: var(--dim);
+    }
+    .pw-input i { color: var(--mint); }
+    .pw-btn {
+      padding: 10px; border: none; border-radius: 8px;
+      background: linear-gradient(90deg, var(--teal), var(--sky)); color: #fff;
+      font-size: .78rem; font-weight: 800; text-align: center;
+    }
+
+    /* ── Caption Dock ──────────────────────── */
+    .cc-dock {
+      display: flex;
+      justify-content: center;
+      padding: 8px clamp(14px, 3vw, 32px);
+      transition: opacity .2s, max-height .25s, padding .25s;
+      overflow: hidden;
+      max-height: 130px;
+    }
+    .cc-dock.off { opacity: 0; max-height: 0; padding: 0; pointer-events: none; }
+    .cc-box {
+      width: min(880px, 100%);
+      min-height: 52px;
+      padding: 14px 22px;
+      border: 1px solid rgba(110,231,183,.22);
+      border-radius: 12px;
+      background: var(--glass);
+      backdrop-filter: blur(12px);
+      font-size: clamp(.84rem, 1.45vw, .98rem);
+      line-height: 1.6;
+      color: var(--text);
+      text-align: center;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* ── Control Bar ───────────────────────── */
+    .bar {
+      display: grid;
+      grid-template-columns: 1fr minmax(260px, 520px) 1fr;
+      gap: 14px;
+      align-items: center;
+      padding: 12px clamp(14px, 3vw, 32px);
+      border-top: 1px solid var(--line);
+      background: var(--glass);
+      backdrop-filter: blur(16px);
+    }
+    .bar-grp { display: flex; align-items: center; gap: 8px; }
+    .bar-grp.end { justify-content: flex-end; }
+
+    .bar-nav {
+      display: inline-flex; align-items: center; gap: 7px;
+      height: 38px; padding: 0 13px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: transparent;
+      color: var(--dim);
+      font-size: .75rem; font-weight: 700;
+      transition: all .18s;
+    }
+    .bar-nav:hover { color: var(--mint); border-color: rgba(110,231,183,.5); background: rgba(110,231,183,.07); }
+    .bar-nav:disabled { opacity: .28; cursor: not-allowed; }
+    .bar-nav:disabled:hover { color: var(--dim); border-color: var(--line); background: transparent; }
+
+    .bar-transport { display: grid; grid-template-columns: auto 1fr auto; gap: 12px; align-items: center; }
+
+    .bar-play {
+      display: inline-flex; align-items: center; gap: 7px;
+      height: 40px; padding: 0 18px;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(90deg, var(--teal), var(--sky));
+      color: #fff;
+      font-size: .76rem; font-weight: 800;
+      box-shadow: 0 6px 18px rgba(45,212,191,.25);
+      transition: all .18s;
+    }
+    .bar-play:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(45,212,191,.35); }
+
+    .bar-progress { height: 5px; border-radius: 99px; background: rgba(255,255,255,.08); overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--mint), var(--sky), var(--rose)); background-size: 200% 100%; animation: shimmer 2.5s linear infinite; transition: width .3s; }
+    @keyframes shimmer { to { background-position: 200% 0; } }
+    .bar-count { font-size: .72rem; color: var(--dim); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+    /* ── Responsive ─────────────────────────── */
+    @media (max-width: 760px) {
+      body { grid-template-rows: 52px minmax(0, 1fr) auto auto; }
+      .top { min-height: 52px; }
+      .logo small { display: none; }
+      .stage { padding: 22px 14px; }
+      .slide { grid-template-columns: 1fr; min-height: 0; }
+      .s-text { text-align: center; }
+      .slide h2 { margin: 0 auto 18px; }
+      .s-lead { margin: 0 auto; }
+      .tags { justify-content: center; }
+      .s-art { min-height: 270px; }
+      .bar { grid-template-columns: 1fr; gap: 8px; }
+      .bar-grp { justify-content: space-between; }
+      .bar-grp.end { display: none; }
+      .bar-transport { grid-template-columns: auto 1fr auto; }
+      .field-hint { right: -72px; }
+    }
+
+    @media (max-width: 380px) {
+      .slide h2 { font-size: 1.75rem; }
+      .s-art { min-height: 240px; }
+      .phone-m { transform: scale(.8) rotate(-4deg); }
+      .field-hint { right: -60px; font-size: .55rem; padding: 5px 8px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="top">
+  <div class="logo">EBI<small>Apresentação V4</small><span class="dot"></span></div>
+  <div class="top-actions">
+    <button class="btn-pill" id="btnVoice" title="Voz"><i class="fas fa-sliders-h"></i><span>Voz</span></button>
+    <button class="btn-icon" id="btnCC" title="Legendas"><i class="fas fa-closed-captioning"></i></button>
+    <button class="btn-icon" id="btnClose" title="Fechar"><i class="fas fa-times"></i></button>
+  </div>
+</header>
+
+<div class="voice-panel" id="voicePanel">
+  <h3><i class="fas fa-microphone-alt"></i> Configurações de Voz</h3>
+  <label class="vp-label" for="selVoice">Voz em Português</label>
+  <select id="selVoice" class="vp-select"></select>
+  <div class="vp-range-row">
+    <label class="vp-label" for="inpRate" style="margin:0">Ritmo</label>
+    <input id="inpRate" class="vp-range" type="range" min="0.82" max="1.15" step="0.01" value="0.95">
+    <span class="vp-val" id="valRate">0.95x</span>
+  </div>
+  <div class="vp-hint"><i class="fas fa-star"></i> Chrome/Edge oferecem vozes Google e Neural em pt-BR. Use este painel para escolher a melhor voz disponível no seu dispositivo.</div>
+</div>
+
+<div class="stage">
+  <div class="deck" id="deck">
+
+    <!-- 1 -->
+    <section class="slide on" data-narr="Bem-vindo à apresentação do sistema EBI. Ele foi criado para organizar com segurança o controle de entrada e saída das crianças durante o Ensino Bíblico Infantil, em total conformidade com a LGPD.">
+      <div class="s-text">
+        <div class="s-step">Ensino Bíblico Infantil</div>
+        <h2>Sistema de Controle<br>de Entrada e Saída</h2>
+        <p class="s-lead">Uma plataforma pensada para trazer <strong>organização à equipe</strong>, <span class="hl">agilidade na recepção</span> e <span class="sky">segurança para as famílias</span>.</p>
+        <div class="tags">
+          <span class="tag"><i class="fas fa-shield-alt"></i> LGPD</span>
+          <span class="tag"><i class="fas fa-qrcode"></i> QR Code</span>
+          <span class="tag"><i class="fas fa-users"></i> Self-Service</span>
+        </div>
+      </div>
+      <div class="s-art">
+        <span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span>
+        <span class="hero-ring r1"></span>
+        <span class="hero-ring r2"></span>
+        <span class="hero-ring r3"></span>
+        <div class="hero-orb"><i class="fas fa-book-open"></i></div>
+        <span class="float-pill p1"><i class="fas fa-door-open"></i> ENTRADA</span>
+        <span class="float-pill p2"><i class="fas fa-walking"></i> SAÍDA</span>
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section class="slide" data-narr="O sistema foi desenvolvido em conformidade com a Lei Geral de Proteção de Dados. Não existe cadastro permanente de crianças ou responsáveis. Todos os dados pessoais ficam armazenados exclusivamente nos cartões QR Code que os próprios pais guardam consigo.">
+      <div class="s-text">
+        <div class="s-step">Privacidade & LGPD</div>
+        <h2>Os dados pessoais<br>ficam com a família.</h2>
+        <p class="s-lead">Não há um banco de dados central com nomes ou telefones. Cada família guarda seu próprio <span class="hl">cartão QR Code</span> — o sistema <strong>nunca retém dados pessoais</strong> após o evento.</p>
+        <div class="tags">
+          <span class="tag"><i class="fas fa-lock"></i> Sem cadastro central</span>
+          <span class="tag"><i class="fas fa-id-card"></i> Cartão individual</span>
+        </div>
+      </div>
+      <div class="s-art">
+        <span class="blob b1"></span><span class="blob b2"></span>
+        <div class="shield-wrap">
+          <i class="fas fa-user-shield shield-icon"></i>
+          <span class="shield-label">Conformidade LGPD</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3 -->
+    <section class="slide" data-narr="Antes do EBI, o responsável acessa qrcode ponto ccbcampinas ponto org ponto br para criar o cartão. Ele informa o nome das crianças, o nome do responsável, a comum ou congregação, o telefone e a idade de cada criança. Cada responsável recebe um cartão individual.">
+      <div class="s-text">
+        <div class="s-step">Passo 1 — Cadastro</div>
+        <h2>Os pais criam<br>o cartão QR Code.</h2>
+        <p class="s-lead">No site <span class="hl">qrcode.ccbcampinas.org.br</span>, o responsável informa nome das crianças, seu nome, comum, telefone e idade. <strong>Cada responsável tem seu cartão individual</strong>.</p>
+        <div class="tags">
+          <span class="tag"><i class="fas fa-child"></i> Criança</span>
+          <span class="tag"><i class="fas fa-phone-alt"></i> Telefone</span>
+          <span class="tag"><i class="fas fa-church"></i> Comum</span>
+        </div>
+      </div>
+      <div class="s-art">
+        <span class="blob b2"></span><span class="blob b3"></span>
+        <div class="phone-m">
+          <div class="phone-inner">
+            <span class="pi-title">Cartão EBI</span>
+            <div class="pi-qr"><i class="fas fa-qrcode"></i></div>
+            <span class="pi-line"></span><span class="pi-line short"></span>
+            <span class="pi-badge">PRONTO</span>
+          </div>
+          <span class="field-hint f1">Nome</span>
+          <span class="field-hint f2">Comum</span>
+          <span class="field-hint f3">Idade</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4 -->
+    <section class="slide" data-narr="Na chegada ao EBI, o responsável apresenta o QR Code. A equipe pode ler o código com leitor ou câmera, ou digitar manualmente. Os dados passam para o sistema em poucos segundos, apenas para aquele evento.">
+      <div class="s-text">
+        <div class="s-step">Passo 2 — Entrada</div>
+        <h2>Na porta, o QR Code<br>agiliza a recepção.</h2>
+        <p class="s-lead">A leitura transfere as informações do cartão instantaneamente. Há também a opção de <strong>digitação manual</strong>, para que o fluxo continue mesmo sem leitor disponível.</p>
+        <div class="tags">
+          <span class="tag"><i class="fas fa-barcode"></i> Leitor QR</span>
+          <span class="tag"><i class="fas fa-keyboard"></i> Manual</span>
+          <span class="tag"><i class="fas fa-bolt"></i> Rápido</span>
+        </div>
+      </div>
+      <div class="s-art">
+        <span class="blob b1"></span><span class="blob b3"></span>
+        <div class="scan-box">
+          <i class="fas fa-qrcode"></i>
+          <div class="scan-info"><strong>Cartão reconhecido</strong><span>CRIANÇAS: 02<br>COMUM: BONFIM<br>STATUS: ENTRADA</span></div>
+          <span class="scan-laser"></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5 -->
+    <section class="slide" data-narr="Os dados pessoais ficam no sistema por no máximo três horas. Depois, tudo é apagado automaticamente. Permanecem apenas estatísticas anônimas como quantidade de crianças, faixa etária, portaria, cidade, nome da comum e data.">
+      <div class="s-text">
+        <div class="s-step">Dados Temporários</div>
+        <h2>Apagamento total<br>após o evento.</h2>
+        <p class="s-lead">As informações pessoais ficam disponíveis por <strong>no máximo 3 horas</strong>. Depois, são removidas permanentemente. Restam apenas <span class="hl">estatísticas anônimas</span> — sem nenhum nome.</p>
+        <div class="tags">
+          <span class="tag"><i class="fas fa-hourglass-half"></i> 3 horas</span>
+          <span class="tag"><i class="fas fa-chart-pie"></i> Dados anônimos</span>
+        </div>
+      </div>
+      <div class="s-art">
+        <span class="blob b2"></span><span class="blob b3"></span>
+        <div class="clock-wrap">
+          <div class="clock-ring"><span class="clock-val">3h</span></div>
+          <span class="clock-arrow">➔</span>
+          <div class="wipe-card"><i class="fas fa-fire-alt"></i><span>Wipe total</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6 -->
+    <section class="slide" data-narr="A impressora de pulseiras é opcional e acelera a entrada. O modelo compatível é a Elgin ou Bematech L42DT. O procedimento de instalação e uso está no Menu, Impressora dentro do sistema.">
+      <div class="s-text">
+        <div class="s-step">Opcional — Pulseiras</div>
+        <h2>Pulseira impressa<br>na hora da entrada.</h2>
+        <p class="s-lead">A impressão de pulseiras agiliza a identificação. Modelo compatível: <strong>Elgin / Bematech L42DT</strong>. O passo a passo completo está em <span class="gold">Menu → Impressora</span>.</p>
+        <div class="tags">
+          <span class="tag"><i class="fas fa-print"></i> Elgin L42DT</span>
+          <span class="tag"><i class="fas fa-tag"></i> Pulseira padrão</span>
+        </div>
+      </div>
+      <div class="s-art">
+        <span class="blob b1"></span><span class="blob b2"></span>
+        <div class="printer-box">
+          <div class="pr-top"></div>
+          <div class="pr-body"><span class="pr-screen"></span><span class="pr-led"></span><span class="pr-slot"></span></div>
+          <div class="pr-band">EBI | CÓDIGO DE SAÍDA</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7 -->
+    <section class="slide" data-narr="Na saída, os coordenadores usam o smartphone para ler o código da pulseira. O nome da criança aparece imediatamente no Painel de Saída, visível para toda a equipe. Assim, uma pessoa atende na porta e os coordenadores dentro do EBI veem quem deve ser encaminhado.">
+      <div class="s-text">
+        <div class="s-step">Passo 3 — Saída</div>
+        <h2>Smartphone chama.<br>Painel orienta.</h2>
+        <p class="s-lead">O coordenador registra a saída pelo celular. O <strong>Painel de Saída</strong> exibe o nome da criança em tempo real, para que a equipe saiba <span class="hl">exatamente quem encaminhar</span> à porta.</p>
+        <div class="tags">
+          <span class="tag"><i class="fas fa-mobile-alt"></i> Smartphone</span>
+          <span class="tag"><i class="fas fa-tv"></i> Painel</span>
+          <span class="tag"><i class="fas fa-door-open"></i> Porta</span>
+        </div>
+      </div>
+      <div class="s-art">
+        <span class="blob b1"></span><span class="blob b3"></span>
+        <div class="exit-grid">
+          <div class="ex-phone"><i class="fas fa-qrcode"></i><small>LEITURA</small></div>
+          <span class="ex-arrow"></span><span class="ex-dot"></span>
+          <div class="ex-panel"><strong>PAINEL DE SAÍDA</strong><div class="ex-name">GABRIEL S.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8 -->
+    <section class="slide" data-narr="O sistema é self-service. Cada igreja cria uma conta com e-mail e senha e reutiliza em todos os dias de EBI. As estatísticas acumulam automaticamente. Se esquecer a senha, basta informar o e-mail para receber um link de redefinição.">
+      <div class="s-text">
+        <div class="s-step">Passo 4 — Conta</div>
+        <h2>Uma conta para<br>todos os dias de EBI.</h2>
+        <p class="s-lead">Cada congregação cria sua conta com <strong>e-mail e senha</strong>. A mesma conta funciona em todos os eventos, mantendo o <span class="hl">histórico estatístico</span>. Esqueceu a senha? Solicite o <span class="sky">reset por e-mail</span>.</p>
+        <div class="tags">
+          <span class="tag"><i class="fas fa-envelope"></i> E-mail</span>
+          <span class="tag"><i class="fas fa-chart-line"></i> Histórico</span>
+          <span class="tag"><i class="fas fa-key"></i> Reset</span>
+        </div>
+      </div>
+      <div class="s-art">
+        <span class="blob b1"></span><span class="blob b2"></span>
+        <div class="acc-path">
+          <div class="acc-card"><i class="fas fa-user-plus"></i>Criar<br>conta</div><span class="acc-link"></span>
+          <div class="acc-card"><i class="fas fa-calendar-check"></i>Usar nos<br>EBIs</div><span class="acc-link"></span>
+          <div class="acc-card"><i class="fas fa-chart-bar"></i>Ver<br>estatísticas</div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<div class="cc-dock" id="ccDock">
+  <div class="cc-box" id="ccBox">Clique em <strong>▶ Reproduzir</strong> para ouvir a apresentação com narração.</div>
+</div>
+
+<footer class="bar">
+  <div class="bar-grp">
+    <button class="bar-nav" id="btnPrev" disabled><i class="fas fa-arrow-left"></i> Anterior</button>
+  </div>
+  <div class="bar-transport">
+    <button class="bar-play" id="btnPlay"><i class="fas fa-play" id="playIco"></i><span id="playLbl">Reproduzir</span></button>
+    <div class="bar-progress"><div class="bar-fill" id="barFill" style="width:12.5%"></div></div>
+    <span class="bar-count" id="barCount">01 / 08</span>
+  </div>
+  <div class="bar-grp end">
+    <button class="bar-nav" id="btnNext">Próximo <i class="fas fa-arrow-right"></i></button>
+  </div>
+</footer>
+
+<script>
+const slides = Array.from(document.querySelectorAll('.slide'));
+const ccBox = document.getElementById('ccBox');
+const ccDock = document.getElementById('ccDock');
+const btnCC = document.getElementById('btnCC');
+const btnPrev = document.getElementById('btnPrev');
+const btnNext = document.getElementById('btnNext');
+const btnPlay = document.getElementById('btnPlay');
+const playIco = document.getElementById('playIco');
+const playLbl = document.getElementById('playLbl');
+const barFill = document.getElementById('barFill');
+const barCount = document.getElementById('barCount');
+const btnVoice = document.getElementById('btnVoice');
+const voicePanel = document.getElementById('voicePanel');
+const selVoice = document.getElementById('selVoice');
+const inpRate = document.getElementById('inpRate');
+const valRate = document.getElementById('valRate');
+const btnClose = document.getElementById('btnClose');
+const synth = 'speechSynthesis' in window ? window.speechSynthesis : null;
+const total = slides.length;
+
+let cur = 0, playing = false, ccOn = localStorage.getItem('ebi-v4-cc') !== 'off';
+let voiceUri = localStorage.getItem('ebi-v4-voice') || '';
+let rate = Number(localStorage.getItem('ebi-v4-rate')) || 0.95;
+let voices = [], timer = null, seq = 0;
+
+function pad(n) { return String(n).padStart(2, '0'); }
+
+function show(idx) {
+  slides[cur].classList.remove('on');
+  cur = Math.max(0, Math.min(idx, total - 1));
+  slides[cur].classList.add('on');
+  btnPrev.disabled = cur === 0;
+  btnNext.disabled = cur === total - 1;
+  barFill.style.width = ((cur + 1) / total * 100) + '%';
+  barCount.textContent = pad(cur + 1) + ' / ' + pad(total);
+  if (!playing) ccBox.textContent = slides[cur].dataset.narr;
+}
+
+function stopSpeak() {
+  clearTimeout(timer);
+  seq++;
+  if (synth) synth.cancel();
+}
+
+function speak() {
+  stopSpeak();
+  const text = slides[cur].dataset.narr;
+  ccBox.textContent = text;
+
+  if (!synth || !voices.length) {
+    timer = setTimeout(() => { if (playing) advance(); }, Math.max(5500, text.length * 60 / rate));
+    return;
+  }
+
+  const run = ++seq;
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'pt-BR';
+  u.rate = rate;
+  u.pitch = 1.02;
+  const v = voices.find(x => x.voiceURI === voiceUri);
+  if (v) u.voice = v;
+
+  u.onend = () => { if (playing && run === seq) timer = setTimeout(() => { if (playing) advance(); }, 1300); };
+  u.onerror = () => { if (playing && run === seq) timer = setTimeout(() => { if (playing) advance(); }, Math.max(5500, text.length * 60 / rate)); };
+  synth.speak(u);
+}
+
+function advance() {
+  if (cur >= total - 1) { playing = false; updPlay(); return; }
+  show(cur + 1);
+  speak();
+}
+
+function updPlay() {
+  playIco.className = playing ? 'fas fa-pause' : 'fas fa-play';
+  playLbl.textContent = playing ? 'Pausar' : 'Reproduzir';
+}
+
+function nav(dir) { const cont = playing; stopSpeak(); show(cur + dir); if (cont) speak(); }
+
+function scoreVoice(v) {
+  const n = v.name.toLowerCase();
+  let s = v.lang === 'pt-BR' ? 10 : (v.lang.toLowerCase().startsWith('pt') ? 5 : 0);
+  if (n.includes('neural')) s += 35;
+  if (n.includes('natural')) s += 32;
+  if (n.includes('google')) s += 28;
+  if (n.includes('microsoft')) s += 24;
+  if (n.includes('siri')) s += 22;
+  if (n.includes('luciana') || n.includes('francisca') || n.includes('fábio') || n.includes('antonio')) s += 6;
+  if (v.localService) s += 2;
+  return s;
+}
+
+function loadVoices() {
+  if (!synth) { selVoice.innerHTML = '<option>Indisponível</option>'; selVoice.disabled = true; return; }
+  voices = synth.getVoices().filter(v => v.lang.toLowerCase().startsWith('pt'));
+  voices.sort((a, b) => scoreVoice(b) - scoreVoice(a));
+  selVoice.innerHTML = '';
+  if (!voices.length) { selVoice.innerHTML = '<option>Nenhuma voz PT</option>'; selVoice.disabled = true; return; }
+  selVoice.disabled = false;
+  voices.forEach(v => { const o = document.createElement('option'); o.value = v.voiceURI; o.textContent = v.name + ' (' + v.lang + ')'; selVoice.appendChild(o); });
+  if (!voices.some(v => v.voiceURI === voiceUri)) voiceUri = voices[0].voiceURI;
+  selVoice.value = voiceUri;
+}
+
+function save() {
+  localStorage.setItem('ebi-v4-voice', voiceUri);
+  localStorage.setItem('ebi-v4-rate', String(rate));
+  localStorage.setItem('ebi-v4-cc', ccOn ? 'on' : 'off');
+}
+
+function syncCC() {
+  ccDock.classList.toggle('off', !ccOn);
+  btnCC.classList.toggle('on', ccOn);
+}
+
+btnPrev.onclick = () => { if (cur > 0) nav(-1); };
+btnNext.onclick = () => { if (cur < total - 1) nav(1); };
+btnPlay.onclick = () => { playing = !playing; updPlay(); if (playing) speak(); else stopSpeak(); };
+btnCC.onclick = () => { ccOn = !ccOn; syncCC(); save(); };
+
+btnVoice.onclick = e => { e.stopPropagation(); voicePanel.classList.toggle('open'); };
+document.addEventListener('click', e => { if (!voicePanel.contains(e.target) && !btnVoice.contains(e.target)) voicePanel.classList.remove('open'); });
+
+selVoice.onchange = () => { voiceUri = selVoice.value; save(); if (playing) speak(); };
+inpRate.value = rate;
+valRate.textContent = rate.toFixed(2) + 'x';
+inpRate.oninput = () => { rate = Number(inpRate.value); valRate.textContent = rate.toFixed(2) + 'x'; save(); };
+inpRate.onchange = () => { if (playing) speak(); };
+
+btnClose.onclick = () => { stopSpeak(); history.length > 1 ? history.back() : location.href = 'selfservice.php'; };
+
+document.addEventListener('keydown', e => {
+  if (e.target.matches('select, input')) return;
+  if (e.key === 'ArrowRight') btnNext.click();
+  if (e.key === 'ArrowLeft') btnPrev.click();
+  if (e.key === ' ') { e.preventDefault(); btnPlay.click(); }
+  if (e.key === 'Escape') btnClose.click();
+});
+
+if (synth) { synth.onvoiceschanged = loadVoices; loadVoices(); } else loadVoices();
+syncCC();
+show(0);
+</script>
+</body>
+</html>
