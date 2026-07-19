@@ -1207,5 +1207,6 @@ window.addEventListener('beforeunload', function() {
 });
 </script>
 
+<div class="text-center mt-4 mb-2" style="font-size:9px;color:#b0b0b0;opacity:0.6">v<?php echo defined('VERSAO_SISTEMA') ? VERSAO_SISTEMA : date('YmdHi'); ?></div>
 </body>
 </html>
