@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-    <title>Gerador de QR Code – Espaço Bíblico Infantil</title>
+    <title>Gerador de QR Code v2 – Espaço Bíblico Infantil</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
@@ -354,8 +354,8 @@
         <div class="qr-container">
             <div class="qr-header">
                 <i class="fas fa-qrcode icon-header"></i>
-                <h1>Gerador de QR Code</h1>
-                <p>Espaço Bíblico Infantil</p>
+                <h1>Gerador de QR Code <span class="badge badge-warning" style="font-size:.55em;vertical-align:middle">v2</span></h1>
+                <p>Espaço Bíblico Infantil — inclui data de nascimento</p>
             </div>
 
             <div class="important-box">
@@ -370,6 +370,7 @@
                     <li>Cada família deve gerar apenas um QR Code por responsável.</li>
                     <li>Guarde o QR Code gerado. Caso o perca, poderá gerar um novo facilmente.</li>
                     <li>O responsável precisa ser maior de idade.</li>
+                    <li><strong>Novidade (v2):</strong> este QR Code inclui a data de nascimento de cada criança, permitindo identificar aniversários e calcular a idade exata.</li>
                 </ul>
             </details>
 
@@ -677,9 +678,11 @@
                 }
 
                 if (isValid && nomeFilho && idade !== null) {
-                    // Estrutura de dados por linha (uma criança):
-                    // NomeFilho \t NomePai \t IdadeFilho \t TelefonePai \t ComumPai
-                    qrData += `${nomeFilho}\t${nomePai}\t${idade}\t${telefone}\t${comum}`;
+                    // Estrutura de dados por linha (uma criança) — formato v2, com data de nascimento:
+                    // NomeFilho \t NomePai \t IdadeFilho \t TelefonePai \t ComumPai \t DataNascimentoFilho
+                    // A data de nascimento (dd/mm/aaaa) permite identificar aniversários e
+                    // recalcular a idade exata na leitura do QR Code.
+                    qrData += `${nomeFilho}\t${nomePai}\t${idade}\t${telefone}\t${comum}\t${dataNascimentoMaskValue}`;
 
                     if (i < childCount) {
                         qrData += '\r'; // Separador de registros (crianças)

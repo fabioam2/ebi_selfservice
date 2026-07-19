@@ -99,6 +99,15 @@ if (!defined('DATA_PATH')) {
     define('DATA_PATH', getDataPath());
 }
 
+// Aplicar modo debug conforme configurado no painel admin (.env: DEBUG_MODE)
+// Controla exibição de erros PHP em tela (nunca deve ficar ligado em produção).
+if (filter_var($_ENV['DEBUG_MODE'] ?? 'false', FILTER_VALIDATE_BOOLEAN)) {
+    error_reporting(E_ALL);
+    ini_set('display_errors', '1');
+} else {
+    ini_set('display_errors', '0');
+}
+
 if (!defined('LOG_FILE_PATH')) {
     define('LOG_FILE_PATH', getLogFilePath());
 }

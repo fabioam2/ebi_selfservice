@@ -43,6 +43,11 @@ composer.phar
 !/selfservice/data/.gitkeep
 !/ebi/template/data/.gitkeep
 
+# Banco SQLite da instância de teste (ebi.test.php / main.test.php)
+/ebi/template/data/*.db
+/ebi/template/data/*.db-*
+!/ebi/template/data/.gitkeep
+
 # Backups
 /selfservice/backups/*
 !/selfservice/backups/.gitkeep
