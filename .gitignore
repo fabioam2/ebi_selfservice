@@ -39,7 +39,9 @@ composer.phar
 /selfservice/data/*.log
 /selfservice/data/*.db
 /ebi/i/**/data/*.db
+/ebi/template/data/*.db
 !/selfservice/data/.gitkeep
+!/ebi/template/data/.gitkeep
 
 # Backups
 /selfservice/backups/*

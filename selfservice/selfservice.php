@@ -336,7 +336,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['cadastrar'])) {
         $hash_senha = password_hash($senha, PASSWORD_BCRYPT, ['cost' => 12]);
 
         // Registrar usuário no banco central
-        db_inserir_usuario($user_id, $email, $nome, $cidade, $comum, $hash_senha);
+        if (!db_inserir_usuario($user_id, $email, $nome, $cidade, $comum, $hash_senha)) {
+            $tipo_mensagem = 'danger';
+            $mensagem = 'Erro ao registrar usuário. Tente novamente.';
+        } else {
 
         // Criar instância do sistema para o usuário
         require_once 'criar_instancia.php';
@@ -361,9 +364,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['cadastrar'])) {
             header("Location: selfservice.php");
             exit;
         } else {
+            // Rollback: remover registro órfão do usuário se a instância falhou
+            db_remover_usuario($user_id);
             $tipo_mensagem = 'danger';
             $mensagem = "Erro ao criar sua instância: " . $resultado['erro'];
         }
+        } // end db_inserir_usuario ok
     } else {
         $tipo_mensagem = 'danger';
         $mensagem = implode('<br>', $erros);
@@ -1015,6 +1021,9 @@ if (isset($_SESSION['instancia_existente'])) {
         </a>
         <a href="../qrcode/default.php" class="btn btn-sm quick-link-btn">
             <i class="fas fa-qrcode mr-1"></i>QR Code
+        </a>
+        <a href="../ebi/template/index.php" class="btn btn-sm quick-link-btn" target="_blank">
+            <i class="fas fa-eye mr-1"></i>Experimentar EBI
         </a>
     </div>
 

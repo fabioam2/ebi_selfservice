@@ -77,7 +77,17 @@
             gap: 10px;
         }
         .child-data-group input[type="text"] {
-            width: 100px; /* Ajusta o tamanho da caixa de texto da data */
+            width: 45px;
+            font-size: 12px;
+            padding: 3px 4px;
+            text-align: center;
+        }
+        .child-data-group .dt-label {
+            font-size: 11px;
+            font-weight: bold;
+            color: #666;
+            white-space: nowrap;
+            cursor: help;
         }
         .idade-display {
             font-weight: bold;
@@ -248,12 +258,12 @@
                     <input type="text" id="nomeFilho1" name="nomeFilho1" placeholder="Nome e Sobrenome"><br>
                     <span id="errorNomeFilho1" class="error"></span><br>
 
-                    <label for="dataNascimentoFilho1">Data de Nascimento da Criança 1 (dd/mm/aaaa):</label>
                     <div class="child-data-group">
-                        <input type="text" id="dataNascimentoMaskFilho1" name="dataNascimentoMaskFilho1" placeholder="dd/mm/aaaa" maxlength="10">
+                        <span class="dt-label" title="Data de Nascimento">DT</span>
+                        <input type="text" id="dataNascimentoMaskFilho1" name="dataNascimentoMaskFilho1" placeholder="dd/mm/aaaa" maxlength="10" title="Data de Nascimento">
                         <span id="idadeDisplay1" class="idade-display"></span>
+                        <span id="errorDataNascimentoFilho1" class="error"></span>
                     </div>
-                    <span id="errorDataNascimentoFilho1" class="error"></span><br>
                     <span id="errorIdade1" class="error"></span><br>
                     
                 </div>
@@ -370,12 +380,12 @@
                     <input type="text" id="nomeFilho${childCount}" name="nomeFilho${childCount}" placeholder="Nome e Sobrenome"><br>
                     <span id="errorNomeFilho${childCount}" class="error"></span><br>
 
-                    <label for="dataNascimentoFilho${childCount}">Data de Nascimento da Criança ${childCount} (dd/mm/aaaa):</label>
                     <div class="child-data-group">
-                        <input type="text" id="dataNascimentoMaskFilho${childCount}" name="dataNascimentoMaskFilho${childCount}" placeholder="dd/mm/aaaa" maxlength="10">
+                        <span class="dt-label" title="Data de Nascimento">DT</span>
+                        <input type="text" id="dataNascimentoMaskFilho${childCount}" name="dataNascimentoMaskFilho${childCount}" placeholder="dd/mm/aaaa" maxlength="10" title="Data de Nascimento">
                         <span id="idadeDisplay${childCount}" class="idade-display"></span>
+                        <span id="errorDataNascimentoFilho${childCount}" class="error"></span>
                     </div>
-                    <span id="errorDataNascimentoFilho${childCount}" class="error"></span><br>
                     
                     <span id="errorIdade${childCount}" class="error"></span><br>
 
@@ -409,7 +419,6 @@
                     children[i].querySelector('span[id^="errorNomeFilho"]').id = `errorNomeFilho${newId}`;
                     
                     // DATA DE NASCIMENTO (mask input)
-                    children[i].querySelector('label[for^="dataNascimentoMaskFilho"]').innerText = `Data de Nascimento da Criança ${newId} (dd/mm/aaaa):`;
                     const maskInput = children[i].querySelector('input[id^="dataNascimentoMaskFilho"]');
                     maskInput.id = `dataNascimentoMaskFilho${newId}`;
                     maskInput.name = `dataNascimentoMaskFilho${newId}`;

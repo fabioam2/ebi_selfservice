@@ -98,9 +98,9 @@ foreach ($instancias as $instanceId) {
         continue;
     }
 
-    // Buscar arquivo .lastaccess
-    $lastAccessFile = $instancePath . '/config/.lastaccess';
-    $configDir = $instancePath . '/config/';
+    // Buscar arquivo .lastaccess (na raiz da instância, onde o bootstrap grava)
+    $lastAccessFile = $instancePath . '/.lastaccess';
+    $lastAccessFileLegado = $instancePath . '/config/.lastaccess';
 
     // Determinar último acesso
     $ultimoAcesso = null;
@@ -108,9 +108,13 @@ foreach ($instancias as $instanceId) {
     if (file_exists($lastAccessFile)) {
         $ultimoAcesso = (int)file_get_contents($lastAccessFile);
         logMessage("  [$instanceId] Último acesso via .lastaccess: " . date('Y-m-d H:i:s', $ultimoAcesso), true);
-    } elseif (file_exists($configDir)) {
-        // Fallback: usar data de modificação do diretório config
-        $ultimoAcesso = filemtime($configDir);
+    } elseif (file_exists($lastAccessFileLegado)) {
+        // Fallback legado: instâncias antigas gravam em config/.lastaccess
+        $ultimoAcesso = (int)file_get_contents($lastAccessFileLegado);
+        logMessage("  [$instanceId] Último acesso via .lastaccess (legado): " . date('Y-m-d H:i:s', $ultimoAcesso), true);
+    } elseif (is_dir($instancePath . '/config/')) {
+        // Último fallback: usar data de modificação do diretório config
+        $ultimoAcesso = filemtime($instancePath . '/config/');
         logMessage("  [$instanceId] Último acesso via filemtime: " . date('Y-m-d H:i:s', $ultimoAcesso), true);
     }
 
