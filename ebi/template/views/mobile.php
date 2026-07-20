@@ -137,6 +137,10 @@
             cursor: pointer;
             margin-top: 12px;
             transition: transform 0.15s, box-shadow 0.15s;
+            display: none;
+        }
+        .btn-cadastrar.show {
+            display: block;
         }
         .btn-cadastrar:hover {
             transform: translateY(-2px);
@@ -147,6 +151,25 @@
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
+        }
+        .btn-scan {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .btn-scan:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(245,158,11,0.35);
+        }
+        .btn-scan.scanning {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
         }
         .portaria-input {
             display: flex;
@@ -258,8 +281,11 @@
     <!-- Scanner -->
     <div class="mobile-card">
         <h2><i class="fas fa-camera"></i> Escanear QR Code</h2>
-        <div id="qr-reader"></div>
-        <div id="scanStatus" class="scan-status">Aponte a câmera para o QR Code do responsável</div>
+        <div id="qr-reader" style="display:none;"></div>
+        <div id="scanStatus" class="scan-status">Pressione o botão abaixo para abrir a câmera</div>
+        <button type="button" class="btn-scan" id="btnScan" onclick="toggleScanner()">
+            <i class="fas fa-camera mr-2"></i> Scan
+        </button>
     </div>
 
     <!-- Resultado -->
@@ -287,7 +313,7 @@
                 </span>
             </div>
 
-            <button type="submit" class="btn-cadastrar" id="btnCadastrar" disabled>
+            <button type="submit" class="btn-cadastrar" id="btnCadastrar">
                 <i class="fas fa-check-circle mr-1"></i> Cadastrar
             </button>
         </form>
@@ -301,6 +327,7 @@
 (function() {
     let scannedData = [];
     let scanner = null;
+    let isScanning = false;
     const resultBox = document.getElementById('resultBox');
     const resultItems = document.getElementById('resultItems');
     const emptyState = document.getElementById('emptyState');
@@ -309,6 +336,8 @@
     const counterBadge = document.getElementById('counterBadge');
     const childCount = document.getElementById('childCount');
     const scanStatus = document.getElementById('scanStatus');
+    const btnScan = document.getElementById('btnScan');
+    const qrReader = document.getElementById('qr-reader');
 
     function showToast(msg, type) {
         const t = document.getElementById('msgToast');
@@ -318,6 +347,49 @@
         setTimeout(function() { t.style.display = 'none'; }, 3500);
     }
     window.showToast = showToast;
+
+    window.toggleScanner = function() {
+        if (isScanning) {
+            stopScanner();
+        } else {
+            startScanner();
+        }
+    };
+
+    function startScanner() {
+        qrReader.style.display = 'block';
+        scanner = new Html5Qrcode('qr-reader');
+        scanner.start(
+            { facingMode: 'environment' },
+            { fps: 10, qrbox: { width: 220, height: 220 } },
+            onScanSuccess
+        ).then(function() {
+            isScanning = true;
+            btnScan.innerHTML = '<i class="fas fa-stop mr-2"></i> Parar';
+            btnScan.classList.add('scanning');
+            scanStatus.textContent = 'Aponte a câmera para o QR Code';
+            scanStatus.className = 'scan-status';
+        }).catch(function(err) {
+            scanStatus.textContent = 'Não foi possível acessar a câmera';
+            scanStatus.className = 'scan-status error';
+            qrReader.style.display = 'none';
+        });
+    }
+
+    function stopScanner() {
+        if (scanner && isScanning) {
+            scanner.stop().then(function() {
+                isScanning = false;
+                btnScan.innerHTML = '<i class="fas fa-camera mr-2"></i> Scan';
+                btnScan.classList.remove('scanning');
+                qrReader.style.display = 'none';
+                if (scannedData.length === 0) {
+                    scanStatus.textContent = 'Pressione o botão abaixo para abrir a câmera';
+                    scanStatus.className = 'scan-status';
+                }
+            });
+        }
+    }
 
     function parseQRData(text) {
         // Formato: NomeCriança\tResponsável\tIdade\tTelefone\tComum
@@ -363,7 +435,7 @@
         if (scannedData.length === 0) {
             resultBox.classList.remove('show');
             emptyState.style.display = 'block';
-            btnCadastrar.disabled = true;
+            btnCadastrar.classList.remove('show');
             counterBadge.style.display = 'none';
             hiddenFields.innerHTML = '';
             return;
@@ -371,7 +443,7 @@
 
         emptyState.style.display = 'none';
         resultBox.classList.add('show');
-        btnCadastrar.disabled = false;
+        btnCadastrar.classList.add('show');
         counterBadge.style.display = 'inline-flex';
         childCount.textContent = scannedData.length;
 
@@ -423,23 +495,13 @@
         scanStatus.textContent = parsed.length + ' criança(s) lida(s) com sucesso!';
         scanStatus.className = 'scan-status success';
 
+        // Parar scanner após leitura bem-sucedida
+        stopScanner();
+
         // Vibrar o celular para feedback
         if (navigator.vibrate) navigator.vibrate(200);
     }
 
-    function startScanner() {
-        scanner = new Html5Qrcode('qr-reader');
-        scanner.start(
-            { facingMode: 'environment' },
-            { fps: 10, qrbox: { width: 220, height: 220 } },
-            onScanSuccess
-        ).catch(function(err) {
-            scanStatus.textContent = 'Não foi possível acessar a câmera: ' + err;
-            scanStatus.className = 'scan-status error';
-        });
-    }
-
-    document.addEventListener('DOMContentLoaded', startScanner);
 })();
 </script>
 </body>
