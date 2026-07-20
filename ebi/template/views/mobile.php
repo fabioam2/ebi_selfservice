@@ -156,8 +156,20 @@ $totalHoje = count($cadastrosHojeMobile);
             <?php if ($totalHoje > 0): ?>
                 <?php foreach ($cadastrosHojeMobile as $c): ?>
                     <div class="lista-item">
-                        <span class="nome"><?php echo sanitize_for_html($c['nomeCrianca']); ?></span>
-                        <span class="info"><?php echo sanitize_for_html($c['portaria']); ?> · <?php echo sanitize_for_html($c['idade']); ?>a</span>
+                        <span class="nome"><?php
+                            echo sanitize_for_html($c['nomeCrianca']);
+                            if (function_exists('verificarAniversario')) {
+                                $tag = verificarAniversario($c['dataNascimento'] ?? '');
+                                if ($tag === 'hoje') echo ' 🎂';
+                                elseif ($tag === 'semana') echo ' 🎈';
+                            }
+                        ?></span>
+                        <span class="info"><?php
+                            $dn = $c['dataNascimento'] ?? '';
+                            $dnShort = $dn ? substr($dn, 0, 5) : '';
+                            echo sanitize_for_html($c['portaria']) . ' · ' . sanitize_for_html($c['idade']) . 'a';
+                            if ($dnShort) echo ' · ' . sanitize_for_html($dnShort);
+                        ?></span>
                     </div>
                 <?php endforeach; ?>
             <?php else: ?>
