@@ -16,6 +16,7 @@ if (isset($_POST['cadastrar'])) {
     $idades            = $_POST['idade']             ?? [];
     $telefones         = $_POST['telefone']          ?? [];
     $comuns            = $_POST['comum']             ?? [];
+    $datasNascimento   = $_POST['data_nascimento']   ?? [];
     $portariaCadastro  = strtoupper(trim($_POST['portaria_cadastro'] ?? ''));
 
     $cadastrosOk  = 0;
@@ -32,12 +33,14 @@ if (isset($_POST['cadastrar'])) {
             $pdo = ebi_db();
             $pdo->beginTransaction();
 
-            for ($i = 0; $i < NUM_LINHAS_FORMULARIO_CADASTRO; $i++) {
+            $numLinhas = min(count($nomesCrianca), NUM_LINHAS_FORMULARIO_CADASTRO);
+            for ($i = 0; $i < $numLinhas; $i++) {
                 $nome     = trim($nomesCrianca[$i]     ?? '');
                 $resp     = trim($nomesResponsavel[$i]  ?? '');
                 $idade    = trim($idades[$i]            ?? '');
                 $tel      = trim($telefones[$i]         ?? '');
                 $comum    = trim($comuns[$i]            ?? '');
+                $dataNasc = trim($datasNascimento[$i]   ?? '');
 
                 if ($nome === '' && $resp === '' && $idade === '' && $tel === '' && $comum === '') {
                     continue;
@@ -59,7 +62,8 @@ if (isset($_POST['cadastrar'])) {
                     (int)$idade,
                     sanitize_for_file($comum),
                     $portariaCadastro,
-                    $codResp
+                    $codResp,
+                    sanitize_for_file($dataNasc)
                 );
 
                 $novosParaStats[] = [

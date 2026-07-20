@@ -37,6 +37,7 @@ function _ebi_db_init(PDO $pdo): void {
             status_impresso  TEXT    NOT NULL DEFAULT 'N',
             portaria         TEXT    NOT NULL DEFAULT '',
             cod_resp         INTEGER NOT NULL DEFAULT 0,
+            data_nascimento  TEXT    NOT NULL DEFAULT '',
             created_at       TEXT    NOT NULL
                 DEFAULT (strftime('%Y-%m-%d %H:%M:%S','now','localtime'))
         );
@@ -72,6 +73,16 @@ function _ebi_db_init(PDO $pdo): void {
             updated_at       TEXT
         );
     ");
+
+    // Migration: adicionar coluna data_nascimento em BDs existentes
+    $cols = $pdo->query("PRAGMA table_info(cadastros)")->fetchAll();
+    $hasDataNasc = false;
+    foreach ($cols as $col) {
+        if ($col['name'] === 'data_nascimento') { $hasDataNasc = true; break; }
+    }
+    if (!$hasDataNasc) {
+        $pdo->exec("ALTER TABLE cadastros ADD COLUMN data_nascimento TEXT NOT NULL DEFAULT ''");
+    }
 }
 
 // ── Cadastros ────────────────────────────────────────────────────────────────
@@ -83,22 +94,23 @@ function db_inserir_cadastro(
     int    $idade,
     string $comum,
     string $portaria,
-    int    $codResp
+    int    $codResp,
+    string $dataNascimento = ''
 ): int {
     $pdo  = ebi_db();
     $stmt = $pdo->prepare(
         'INSERT INTO cadastros
-            (nome_crianca, nome_responsavel, telefone, idade, comum, portaria, cod_resp)
-         VALUES (?,?,?,?,?,?,?)'
+            (nome_crianca, nome_responsavel, telefone, idade, comum, portaria, cod_resp, data_nascimento)
+         VALUES (?,?,?,?,?,?,?,?)'
     );
-    $stmt->execute([$nomeCrianca, $nomeResponsavel, $telefone, $idade, $comum, $portaria, $codResp]);
+    $stmt->execute([$nomeCrianca, $nomeResponsavel, $telefone, $idade, $comum, $portaria, $codResp, $dataNascimento]);
     return (int)$pdo->lastInsertId();
 }
 
 function db_listar_cadastros(): array {
     $rows = ebi_db()->query(
         'SELECT id, nome_crianca, nome_responsavel, telefone, idade, comum,
-                status_impresso, portaria, cod_resp, created_at
+                status_impresso, portaria, cod_resp, data_nascimento, created_at
          FROM cadastros ORDER BY id ASC'
     )->fetchAll();
 
@@ -114,6 +126,7 @@ function db_listar_cadastros(): array {
             'statusImpresso'  => $r['status_impresso'],
             'portaria'        => strtoupper(trim($r['portaria'])),
             'cod_resp'        => (string)$r['cod_resp'],
+            'dataNascimento'  => $r['data_nascimento'] ?? '',
         ];
     }
     return $result;
