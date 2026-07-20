@@ -450,7 +450,17 @@
                                     <td data-campo="portaria" style="text-align: center;"><?php echo sanitize_for_html($crianca['portaria'] ?? ''); ?></td>
                                     <td style="text-align: center;"><?php echo sanitize_for_html($crianca['id']); ?></td>
                                     <td style="text-align: center;"><?php echo sanitize_for_html($crianca['cod_resp'] ?? ''); ?></td>
-                                    <td><?php echo sanitize_for_html($crianca['nomeCrianca']); ?></td>
+                                    <td><?php
+                                        echo sanitize_for_html($crianca['nomeCrianca']);
+                                        if (function_exists('verificarAniversario')) {
+                                            $tagAniv = verificarAniversario($crianca['dataNascimento'] ?? '');
+                                            if ($tagAniv === 'hoje') {
+                                                echo ' <span class="badge badge-warning" title="Aniversário HOJE!">🎂 Hoje</span>';
+                                            } elseif ($tagAniv === 'semana') {
+                                                echo ' <span class="badge badge-info" title="Aniversário esta semana">🎈 Semana</span>';
+                                            }
+                                        }
+                                    ?></td>
                                     <td><?php echo sanitize_for_html($crianca['nomeResponsavel']); ?></td>
                                     <td style="text-align: center;"><?php echo sanitize_for_html($crianca['telefone']); ?></td>
                                     <td style="text-align: center;"><?php echo sanitize_for_html($crianca['idade']); ?></td>

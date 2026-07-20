@@ -129,4 +129,34 @@ if (($_GET['acao'] ?? '') === 'mobile') {
     exit;
 }
 
+// ── Helper: verificar aniversário ─────────────────────────────────────────────
+function verificarAniversario(string $dataNascimento): string {
+    if ($dataNascimento === '') return '';
+    // Formato esperado: dd/mm/aaaa
+    $partes = explode('/', $dataNascimento);
+    if (count($partes) !== 3) return '';
+    $dia = (int)$partes[0];
+    $mes = (int)$partes[1];
+    if ($dia < 1 || $dia > 31 || $mes < 1 || $mes > 12) return '';
+
+    $hoje = new DateTime('today');
+    $diaHoje = (int)$hoje->format('d');
+    $mesHoje = (int)$hoje->format('m');
+
+    if ($dia === $diaHoje && $mes === $mesHoje) {
+        return 'hoje';
+    }
+
+    // Verificar se fez aniversário na semana (últimos 7 dias ou próximos 7 dias)
+    $anoAtual = (int)$hoje->format('Y');
+    $anivEsteAno = DateTime::createFromFormat('Y-m-d', "$anoAtual-$mes-$dia");
+    if ($anivEsteAno === false) return '';
+
+    $diff = (int)$hoje->diff($anivEsteAno)->format('%r%a');
+    if ($diff >= -7 && $diff <= 7 && $diff !== 0) {
+        return 'semana';
+    }
+    return '';
+}
+
 require __DIR__ . '/views/main.test.php';
