@@ -103,7 +103,12 @@ if (isset($_POST['cadastrar'])) {
         $_SESSION['cadastro_realizado_sucesso'] = true;
     }
 
-    header('Location: ' . sanitize_for_html($_SERVER['PHP_SELF']));
+    // Redirect: se veio do mobile, voltar para ?acao=mobile
+    $redirectUrl = sanitize_for_html($_SERVER['PHP_SELF']);
+    if (!empty($_POST['mobile'])) {
+        $redirectUrl .= '?acao=mobile';
+    }
+    header('Location: ' . $redirectUrl);
     return;
 }
 
