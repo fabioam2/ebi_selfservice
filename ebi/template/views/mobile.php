@@ -1,359 +1,263 @@
+<?php
+/**
+ * View Mobile — Cadastro rápido por QR Code.
+ * Acesso via ?acao=mobile no ebi.test.php ou index.php.
+ * Variáveis disponíveis: $mensagemSucesso, $mensagemErro, $todosOsCadastros
+ */
+
+// Filtrar cadastros feitos hoje pela portaria salva (para a lista)
+$portariaFiltro = strtoupper(trim($_GET['p'] ?? ''));
+$hoje = date('Y-m-d');
+$cadastrosHojeMobile = [];
+foreach ($todosOsCadastros as $c) {
+    $criadoEm = $c['created_at'] ?? '';
+    if (strpos($criadoEm, $hoje) === 0) {
+        $cadastrosHojeMobile[] = $c;
+    }
+}
+// Ordenar por mais recente primeiro
+$cadastrosHojeMobile = array_reverse($cadastrosHojeMobile);
+$totalHoje = count($cadastrosHojeMobile);
+?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
     <title>EBI Mobile – Cadastro por QR Code</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-1: #0f766e;
-            --bg-2: #0b4f8a;
-            --surface-border: rgba(15, 23, 42, 0.08);
-            --text-main: #10273b;
-            --text-soft: #4b647c;
-            --brand: #0e7490;
-            --brand-strong: #0b5f76;
-            --brand-soft: rgba(14, 116, 144, 0.14);
-            --success-bg: #dff8ea;
-            --success-border: #1f9d61;
-            --danger: #b91c1c;
-            --danger-bg: #fee2e2;
+            --bg-1: #0f766e; --bg-2: #0b4f8a;
+            --text-main: #10273b; --text-soft: #4b647c;
+            --brand: #0e7490; --brand-strong: #0b5f76;
+            --brand-soft: rgba(14,116,144,0.14);
+            --success-bg: #dff8ea; --success-border: #1f9d61;
+            --danger: #b91c1c; --danger-bg: #fee2e2;
         }
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
             background: linear-gradient(130deg, var(--bg-1) 0%, var(--bg-2) 58%, #083358 100%);
             min-height: 100vh;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
             font-family: 'Manrope', sans-serif;
-            padding: 16px 12px 30px;
+            padding: 14px 10px 30px;
+            display: flex; flex-direction: column; align-items: center;
         }
-        .mobile-page { width: 100%; max-width: 440px; }
-        .mobile-header { text-align: center; color: #fff; margin-bottom: 16px; }
-        .mobile-header h1 { font-size: 1.4rem; font-weight: 800; margin: 0; }
-        .mobile-header p { font-size: 0.8rem; opacity: 0.75; margin: 4px 0 0; }
-        .mobile-card {
-            background: rgba(255,255,255,0.98);
-            padding: 20px 18px;
-            border-radius: 18px;
-            border: 1px solid var(--surface-border);
-            box-shadow: 0 12px 36px rgba(1,27,49,0.3);
-            margin-bottom: 14px;
+        .page { width: 100%; max-width: 420px; }
+        .header { text-align: center; color: #fff; margin-bottom: 14px; }
+        .header h1 { font-size: 1.3rem; font-weight: 800; }
+        .header p { font-size: 0.75rem; opacity: 0.7; margin-top: 2px; }
+        .card {
+            background: rgba(255,255,255,0.98); padding: 18px 16px;
+            border-radius: 16px; box-shadow: 0 10px 30px rgba(1,27,49,0.3);
+            margin-bottom: 12px;
         }
-        .mobile-card h2 {
-            font-size: 0.95rem; font-weight: 700; color: var(--text-main);
-            margin: 0 0 12px; display: flex; align-items: center; gap: 8px;
-        }
-        .mobile-card h2 i { color: var(--brand); font-size: 1.1rem; }
-        #qr-reader { width: 100%; border-radius: 12px; overflow: hidden; margin-bottom: 12px; display: none; }
-        .scan-status { text-align: center; font-size: 0.82rem; color: var(--text-soft); padding: 8px; }
-        .scan-status.success { color: var(--success-border); font-weight: 700; }
-        .scan-status.error { color: var(--danger); font-weight: 600; }
+        .card h2 { font-size: 0.9rem; font-weight: 700; color: var(--text-main); margin-bottom: 10px; display: flex; align-items: center; gap: 7px; }
+        .card h2 i { color: var(--brand); }
+
+        .portaria-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding: 10px 12px; background: var(--brand-soft); border-radius: 10px; }
+        .portaria-row label { font-size: 0.8rem; font-weight: 600; color: var(--text-main); }
+        .portaria-row input { width: 44px; text-align: center; text-transform: uppercase; font-weight: 700; font-size: 1.1rem; border: 2px solid var(--brand); border-radius: 8px; padding: 5px; }
+        .portaria-row input:focus { outline: none; border-color: var(--brand-strong); }
+        .portaria-row .badge-total { font-size: 0.72rem; font-weight: 700; background: var(--brand); color: #fff; padding: 3px 8px; border-radius: 10px; margin-left: auto; }
+
+        #qr-reader { width: 100%; border-radius: 10px; overflow: hidden; display: none; margin-bottom: 10px; }
+        .scan-status { text-align: center; font-size: 0.78rem; color: var(--text-soft); padding: 6px; }
+        .scan-status.ok { color: var(--success-border); font-weight: 700; }
+        .scan-status.err { color: var(--danger); font-weight: 600; }
 
         .btn-scan {
-            width: 100%; padding: 16px; border: none; border-radius: 12px;
+            width: 100%; padding: 14px; border: none; border-radius: 12px;
             background: linear-gradient(135deg, #f59e0b, #d97706);
-            color: #fff; font-weight: 700; font-size: 1.1rem;
-            cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;
+            color: #fff; font-weight: 700; font-size: 1rem; cursor: pointer;
         }
-        .btn-scan:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(245,158,11,0.35); }
-        .btn-scan.scanning { background: linear-gradient(135deg, #dc2626, #b91c1c); }
+        .btn-scan.active { background: linear-gradient(135deg, #dc2626, #b91c1c); }
 
-        .btn-lido {
-            width: 100%; padding: 18px; border: none; border-radius: 12px;
+        .result-box { display: none; background: var(--success-bg); border: 1px solid var(--success-border); border-radius: 10px; padding: 12px; margin: 10px 0; }
+        .result-box.show { display: block; }
+        .result-box .line { font-size: 0.78rem; padding: 3px 0; color: var(--text-main); display: flex; justify-content: space-between; }
+        .result-box .line .lbl { color: var(--text-soft); }
+
+        .btn-cadastrar {
+            width: 100%; padding: 16px; border: none; border-radius: 12px;
             background: linear-gradient(135deg, #16a34a, #15803d);
-            color: #fff; font-weight: 800; font-size: 1.2rem;
-            cursor: pointer; display: none;
-            transition: transform 0.15s, box-shadow 0.15s;
-            animation: pulse 1.5s infinite;
+            color: #fff; font-weight: 800; font-size: 1.1rem; cursor: pointer;
+            display: none; margin-top: 10px; animation: pulse 1.5s infinite;
         }
-        .btn-lido.show { display: block; }
-        .btn-lido:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(22,163,74,0.4); }
+        .btn-cadastrar.show { display: block; }
         @keyframes pulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(22,163,74,0.5); }
+            0%,100% { box-shadow: 0 0 0 0 rgba(22,163,74,0.4); }
             50% { box-shadow: 0 0 0 10px rgba(22,163,74,0); }
         }
 
-        .result-box {
-            display: none; background: var(--success-bg); border: 1px solid var(--success-border);
-            border-radius: 12px; padding: 14px; margin: 12px 0;
-        }
-        .result-box.show { display: block; }
-        .result-box .item {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 5px 0; border-bottom: 1px solid rgba(31,157,97,0.15); font-size: 0.8rem;
-        }
-        .result-box .item:last-child { border-bottom: none; }
-        .result-box .item .label { color: var(--text-soft); font-weight: 500; }
-        .result-box .item .value { color: var(--text-main); font-weight: 700; text-align: right; max-width: 60%; }
+        .lista-card { max-height: 260px; overflow-y: auto; }
+        .lista-item { display: flex; align-items: center; padding: 7px 0; border-bottom: 1px solid #eee; font-size: 0.78rem; }
+        .lista-item:last-child { border-bottom: none; }
+        .lista-item .nome { font-weight: 600; color: var(--text-main); flex: 1; }
+        .lista-item .info { color: var(--text-soft); font-size: 0.7rem; }
+        .lista-empty { text-align: center; color: var(--text-soft); font-size: 0.78rem; padding: 14px 0; }
 
-        .portaria-section {
-            display: flex; align-items: center; gap: 10px;
-            margin-bottom: 14px; padding: 12px 14px;
-            background: var(--brand-soft); border-radius: 10px;
+        .toast {
+            display: none; position: fixed; top: 14px; left: 50%; transform: translateX(-50%);
+            padding: 10px 18px; border-radius: 10px; font-size: 0.82rem; font-weight: 600;
+            z-index: 9999; max-width: 88%; text-align: center; animation: slideD 0.3s ease-out;
         }
-        .portaria-section label { font-size: 0.82rem; font-weight: 600; color: var(--text-main); margin: 0; }
-        .portaria-section input {
-            width: 48px; text-align: center; text-transform: uppercase;
-            font-weight: 700; font-size: 1.1rem;
-            border: 2px solid var(--brand); border-radius: 8px; padding: 6px;
-        }
-        .portaria-section input:focus { outline: none; border-color: var(--brand-strong); }
+        .toast.ok { background: var(--success-bg); border: 1px solid var(--success-border); color: #166534; }
+        .toast.err { background: var(--danger-bg); border: 1px solid var(--danger); color: var(--danger); }
+        @keyframes slideD { from { opacity:0; transform:translate(-50%,-16px); } to { opacity:1; transform:translate(-50%,0); } }
 
-        .msg-toast {
-            display: none; position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
-            padding: 12px 20px; border-radius: 10px; font-size: 0.85rem; font-weight: 600;
-            z-index: 9999; max-width: 90%; text-align: center; animation: slideDown 0.3s ease-out;
-        }
-        .msg-toast.success { background: var(--success-bg); border: 1px solid var(--success-border); color: #166534; }
-        .msg-toast.error { background: var(--danger-bg); border: 1px solid var(--danger); color: var(--danger); }
-        @keyframes slideDown {
-            from { opacity: 0; transform: translate(-50%, -20px); }
-            to { opacity: 1; transform: translate(-50%, 0); }
-        }
-
-        .btn-voltar {
-            display: inline-flex; align-items: center; gap: 5px;
-            color: rgba(255,255,255,0.7); font-size: 0.78rem; text-decoration: none; margin-bottom: 12px;
-        }
-        .btn-voltar:hover { color: #fff; text-decoration: none; }
-        .version-footer { text-align: center; margin-top: 16px; font-size: 9px; color: rgba(255,255,255,0.35); }
+        .back-link { display: inline-flex; align-items: center; gap: 4px; color: rgba(255,255,255,0.65); font-size: 0.75rem; text-decoration: none; margin-bottom: 10px; }
+        .back-link:hover { color: #fff; text-decoration: none; }
+        .footer { text-align: center; margin-top: 12px; font-size: 9px; color: rgba(255,255,255,0.3); }
     </style>
 </head>
 <body>
-<div class="mobile-page">
-    <a href="<?php echo sanitize_for_html($_SERVER['PHP_SELF']); ?>" class="btn-voltar">
-        <i class="fas fa-arrow-left"></i> Voltar ao cadastro
-    </a>
+<div class="page">
+    <a href="<?php echo sanitize_for_html($_SERVER['PHP_SELF']); ?>" class="back-link"><i class="fas fa-arrow-left"></i> Voltar</a>
 
-    <div class="mobile-header">
-        <h1><i class="fas fa-mobile-alt mr-1"></i> EBI Mobile</h1>
+    <div class="header">
+        <h1><i class="fas fa-mobile-alt"></i> EBI Mobile</h1>
         <p>Cadastro rápido por QR Code</p>
     </div>
 
-    <div id="msgToast" class="msg-toast"></div>
-
+    <div id="toast" class="toast"></div>
     <?php if ($mensagemSucesso): ?>
-        <script>document.addEventListener('DOMContentLoaded',function(){showToast('<?php echo addslashes($mensagemSucesso); ?>','success')});</script>
+        <script>document.addEventListener('DOMContentLoaded',function(){toast('<?php echo addslashes($mensagemSucesso); ?>','ok')});</script>
     <?php endif; ?>
     <?php if ($mensagemErro): ?>
-        <script>document.addEventListener('DOMContentLoaded',function(){showToast('<?php echo addslashes($mensagemErro); ?>','error')});</script>
+        <script>document.addEventListener('DOMContentLoaded',function(){toast('<?php echo addslashes($mensagemErro); ?>','err')});</script>
     <?php endif; ?>
 
-    <!-- Portaria (persistida) -->
-    <div class="mobile-card">
-        <div class="portaria-section">
-            <label for="portaria_mobile"><i class="fas fa-door-open mr-1"></i> Portaria:</label>
-            <input type="text" id="portaria_mobile" maxlength="1" autocomplete="off" placeholder="A">
+    <!-- Scanner + Cadastro -->
+    <div class="card">
+        <div class="portaria-row">
+            <label><i class="fas fa-door-open"></i> Portaria:</label>
+            <input type="text" id="portaria" maxlength="1" autocomplete="off" placeholder="A">
+            <span class="badge-total"><?php echo $totalHoje; ?> hoje</span>
         </div>
 
-        <!-- Scanner -->
-        <h2><i class="fas fa-camera"></i> Escanear QR Code</h2>
+        <h2><i class="fas fa-qrcode"></i> Scanner</h2>
         <div id="qr-reader"></div>
-        <div id="scanStatus" class="scan-status">Toque em Scan para abrir a câmera</div>
-        <button type="button" class="btn-scan" id="btnScan" onclick="toggleScanner()">
-            <i class="fas fa-camera mr-2"></i> Scan
-        </button>
+        <div id="status" class="scan-status">Toque em Scan para abrir a câmera</div>
+        <button type="button" class="btn-scan" id="btnScan" onclick="scan()"><i class="fas fa-camera mr-1"></i> Scan</button>
 
-        <!-- Resultado lido -->
-        <div id="resultBox" class="result-box">
-            <div id="resultItems"></div>
-        </div>
+        <div id="result" class="result-box"><div id="resultData"></div></div>
 
-        <!-- Botão LIDO (aparece após leitura, submete o form) -->
-        <button type="button" class="btn-lido" id="btnLido" onclick="submitCadastro()">
-            <i class="fas fa-check-circle mr-2"></i> LIDO — Cadastrar
+        <button type="button" class="btn-cadastrar" id="btnCad" onclick="cadastrar()">
+            <i class="fas fa-check-circle mr-1"></i> Cadastrar
         </button>
     </div>
 
-    <!-- Form oculto para submit -->
-    <form method="post" action="<?php echo sanitize_for_html($_SERVER['PHP_SELF']); ?>" id="formMobile" style="display:none;">
+    <!-- Lista dos cadastros de hoje -->
+    <div class="card">
+        <h2><i class="fas fa-list"></i> Cadastros de Hoje (<?php echo $totalHoje; ?>)</h2>
+        <div class="lista-card">
+            <?php if ($totalHoje > 0): ?>
+                <?php foreach ($cadastrosHojeMobile as $c): ?>
+                    <div class="lista-item">
+                        <span class="nome"><?php echo sanitize_for_html($c['nomeCrianca']); ?></span>
+                        <span class="info"><?php echo sanitize_for_html($c['portaria']); ?> · <?php echo sanitize_for_html($c['idade']); ?>a</span>
+                    </div>
+                <?php endforeach; ?>
+            <?php else: ?>
+                <div class="lista-empty"><i class="fas fa-inbox" style="font-size:1.5rem;opacity:0.3;display:block;margin-bottom:6px;"></i>Nenhum cadastro hoje</div>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <!-- Form oculto -->
+    <form method="post" action="<?php echo sanitize_for_html($_SERVER['PHP_SELF']); ?>?acao=mobile" id="frm" style="display:none;">
         <?php echo csrf_field(); ?>
         <input type="hidden" name="cadastrar" value="1">
         <input type="hidden" name="mobile" value="1">
-        <input type="hidden" name="portaria_cadastro" id="form_portaria" value="">
-        <div id="hiddenFields"></div>
+        <input type="hidden" name="portaria_cadastro" id="frmPort" value="">
+        <div id="frmFields"></div>
     </form>
 
-    <div class="version-footer">v<?php echo defined('VERSAO_SISTEMA') ? VERSAO_SISTEMA : date('YmdHi'); ?></div>
+    <div class="footer">v<?php echo defined('VERSAO_SISTEMA') ? VERSAO_SISTEMA : date('YmdHi'); ?></div>
 </div>
 
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
-(function() {
-    let scanner = null;
-    let isScanning = false;
-    const qrReader = document.getElementById('qr-reader');
-    const scanStatus = document.getElementById('scanStatus');
-    const btnScan = document.getElementById('btnScan');
-    const btnLido = document.getElementById('btnLido');
-    const resultBox = document.getElementById('resultBox');
-    const resultItems = document.getElementById('resultItems');
-    const hiddenFields = document.getElementById('hiddenFields');
-    const formPortaria = document.getElementById('form_portaria');
-    const portariaInput = document.getElementById('portaria_mobile');
+(function(){
+    let sc = null, scanning = false, data = [];
+    const el = id => document.getElementById(id);
+    const port = el('portaria'), btn = el('btnScan'), status = el('status');
+    const result = el('result'), resultData = el('resultData');
+    const btnCad = el('btnCad'), frmPort = el('frmPort'), frmFields = el('frmFields');
 
     // Persistir portaria
-    const saved = localStorage.getItem('ebi_mobile_portaria');
-    if (saved) portariaInput.value = saved;
-    portariaInput.addEventListener('input', function() {
-        this.value = this.value.toUpperCase();
-        if (this.value) localStorage.setItem('ebi_mobile_portaria', this.value);
-    });
+    const sv = localStorage.getItem('ebi_mobile_portaria');
+    if (sv) port.value = sv;
+    port.addEventListener('input', function(){ this.value=this.value.toUpperCase(); if(this.value) localStorage.setItem('ebi_mobile_portaria',this.value); });
 
-    function showToast(msg, type) {
-        const t = document.getElementById('msgToast');
-        t.textContent = msg;
-        t.className = 'msg-toast ' + type;
-        t.style.display = 'block';
-        setTimeout(function() { t.style.display = 'none'; }, 3500);
-    }
-    window.showToast = showToast;
-
-    window.toggleScanner = function() {
-        if (!portariaInput.value.trim()) {
-            portariaInput.focus();
-            showToast('Defina a Portaria antes de escanear', 'error');
-            return;
-        }
-        if (isScanning) {
-            stopScanner();
-        } else {
-            startScanner();
-        }
+    window.toast = function(msg, type) {
+        const t = el('toast'); t.textContent=msg; t.className='toast '+type; t.style.display='block';
+        setTimeout(()=>{ t.style.display='none'; }, 3500);
     };
 
-    function startScanner() {
-        // Reset estado anterior
-        btnLido.classList.remove('show');
-        resultBox.classList.remove('show');
-        hiddenFields.innerHTML = '';
-
-        qrReader.style.display = 'block';
-        scanner = new Html5Qrcode('qr-reader');
-        scanner.start(
-            { facingMode: 'environment' },
-            { fps: 10, qrbox: { width: 220, height: 220 } },
-            onScanSuccess
-        ).then(function() {
-            isScanning = true;
-            btnScan.innerHTML = '<i class="fas fa-stop mr-2"></i> Parar';
-            btnScan.classList.add('scanning');
-            scanStatus.textContent = 'Aponte a câmera para o QR Code...';
-            scanStatus.className = 'scan-status';
-        }).catch(function(err) {
-            scanStatus.textContent = 'Erro ao acessar câmera: ' + err;
-            scanStatus.className = 'scan-status error';
-            qrReader.style.display = 'none';
-        });
-    }
-
-    function stopScanner() {
-        if (scanner && isScanning) {
-            scanner.stop().then(function() {
-                isScanning = false;
-                btnScan.innerHTML = '<i class="fas fa-camera mr-2"></i> Scan';
-                btnScan.classList.remove('scanning');
-                qrReader.style.display = 'none';
-            });
-        }
-    }
-
-    function parseQRData(text) {
-        // Formato v1 (5 colunas): NomeCriança \t Responsável \t Idade \t Telefone \t Comum
-        // Formato v2 (6 colunas): NomeCriança \t Responsável \t Idade \t Telefone \t Comum \t DataNascimento
-        // Múltiplas crianças separadas por \r
-        const lines = text.split(/\r|\n/).filter(function(l) { return l.trim() !== ''; });
-        const results = [];
-
-        for (let i = 0; i < lines.length; i++) {
-            const parts = lines[i].split('\t');
-            if (parts.length < 5) continue;
-
-            const entry = {
-                nome_crianca: parts[0].trim(),
-                nome_responsavel: parts[1].trim(),
-                idade: parts[2].trim(),
-                telefone: parts[3].trim(),
-                comum: parts[4].trim(),
-                data_nascimento: parts.length >= 6 ? parts[5].trim() : ''
-            };
-
-            if (entry.nome_crianca && entry.nome_responsavel) {
-                results.push(entry);
-            }
-        }
-        return results;
-    }
-
-    function onScanSuccess(decodedText) {
-        const parsed = parseQRData(decodedText);
-        if (parsed.length === 0) {
-            scanStatus.textContent = 'QR inválido — formato não reconhecido';
-            scanStatus.className = 'scan-status error';
-            return;
-        }
-
-        // Parar scanner
-        stopScanner();
-
-        // Vibrar feedback
-        if (navigator.vibrate) navigator.vibrate(200);
-
-        // Mostrar dados lidos
-        scanStatus.textContent = parsed.length + ' criança(s) lida(s)!';
-        scanStatus.className = 'scan-status success';
-
-        let html = '';
-        let fields = '';
-        for (let i = 0; i < parsed.length; i++) {
-            const d = parsed[i];
-            html += '<div class="item"><span class="label">Criança</span><span class="value">' + esc(d.nome_crianca) + '</span></div>';
-            html += '<div class="item"><span class="label">Responsável</span><span class="value">' + esc(d.nome_responsavel) + '</span></div>';
-            html += '<div class="item"><span class="label">Idade</span><span class="value">' + esc(d.idade) + ' anos</span></div>';
-            html += '<div class="item"><span class="label">Comum</span><span class="value">' + esc(d.comum) + '</span></div>';
-            if (d.data_nascimento) {
-                html += '<div class="item"><span class="label">Nasc.</span><span class="value">' + esc(d.data_nascimento) + '</span></div>';
-            }
-            if (i < parsed.length - 1) html += '<hr style="margin:4px 0;border-color:rgba(31,157,97,0.2)">';
-
-            fields += '<input type="hidden" name="nome_crianca[]" value="' + attr(d.nome_crianca) + '">';
-            fields += '<input type="hidden" name="nome_responsavel[]" value="' + attr(d.nome_responsavel) + '">';
-            fields += '<input type="hidden" name="idade[]" value="' + attr(d.idade) + '">';
-            fields += '<input type="hidden" name="telefone[]" value="' + attr(d.telefone) + '">';
-            fields += '<input type="hidden" name="comum[]" value="' + attr(d.comum) + '">';
-        }
-
-        resultItems.innerHTML = html;
-        resultBox.classList.add('show');
-        hiddenFields.innerHTML = fields;
-
-        // Mostrar botão LIDO
-        btnLido.classList.add('show');
-    }
-
-    window.submitCadastro = function() {
-        formPortaria.value = portariaInput.value.toUpperCase();
-        if (!formPortaria.value) {
-            showToast('Defina a Portaria!', 'error');
-            return;
-        }
-        document.getElementById('formMobile').submit();
+    window.scan = function() {
+        if (!port.value.trim()) { port.focus(); toast('Defina a Portaria','err'); return; }
+        if (scanning) { stop(); return; }
+        // Reset
+        btnCad.classList.remove('show'); result.classList.remove('show'); data=[]; frmFields.innerHTML='';
+        el('qr-reader').style.display='block';
+        sc = new Html5Qrcode('qr-reader');
+        sc.start({facingMode:'environment'},{fps:10,qrbox:{width:200,height:200}}, onRead)
+          .then(()=>{ scanning=true; btn.innerHTML='<i class="fas fa-stop mr-1"></i> Parar'; btn.classList.add('active'); status.textContent='Aponte para o QR Code...'; status.className='scan-status'; })
+          .catch(e=>{ status.textContent='Erro câmera'; status.className='scan-status err'; el('qr-reader').style.display='none'; });
     };
 
-    function esc(s) {
-        const d = document.createElement('div');
-        d.textContent = s;
-        return d.innerHTML;
+    function stop() {
+        if(sc&&scanning) sc.stop().then(()=>{ scanning=false; btn.innerHTML='<i class="fas fa-camera mr-1"></i> Scan'; btn.classList.remove('active'); el('qr-reader').style.display='none'; });
     }
-    function attr(s) {
-        return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+    function onRead(text) {
+        const lines = text.split(/\r|\n/).filter(l=>l.trim());
+        const parsed = [];
+        for(const line of lines){
+            const p = line.split('\t');
+            if(p.length<5) continue;
+            parsed.push({ nome:p[0].trim(), resp:p[1].trim(), idade:p[2].trim(), tel:p[3].trim(), comum:p[4].trim(), nasc:p[5]?p[5].trim():'' });
+        }
+        if(!parsed.length){ status.textContent='QR inválido'; status.className='scan-status err'; return; }
+        data = parsed;
+        stop();
+        if(navigator.vibrate) navigator.vibrate(200);
+        status.textContent = parsed.length+' criança(s) lida(s)!';
+        status.className = 'scan-status ok';
+        // Render
+        let h='';
+        for(const d of data){
+            h+='<div class="line"><span class="lbl">Criança</span><span>'+esc(d.nome)+'</span></div>';
+            h+='<div class="line"><span class="lbl">Responsável</span><span>'+esc(d.resp)+'</span></div>';
+            h+='<div class="line"><span class="lbl">Idade</span><span>'+esc(d.idade)+' anos</span></div>';
+            h+='<div class="line"><span class="lbl">Comum</span><span>'+esc(d.comum)+'</span></div>';
+        }
+        resultData.innerHTML=h; result.classList.add('show');
+        btnCad.classList.add('show');
     }
+
+    window.cadastrar = function() {
+        frmPort.value = port.value.toUpperCase();
+        if(!frmPort.value){ toast('Defina a Portaria!','err'); return; }
+        if(!data.length){ toast('Escaneie um QR primeiro','err'); return; }
+        let f='';
+        for(const d of data){
+            f+='<input type="hidden" name="nome_crianca[]" value="'+attr(d.nome)+'">';
+            f+='<input type="hidden" name="nome_responsavel[]" value="'+attr(d.resp)+'">';
+            f+='<input type="hidden" name="idade[]" value="'+attr(d.idade)+'">';
+            f+='<input type="hidden" name="telefone[]" value="'+attr(d.tel)+'">';
+            f+='<input type="hidden" name="comum[]" value="'+attr(d.comum)+'">';
+            f+='<input type="hidden" name="data_nascimento[]" value="'+attr(d.nasc)+'">';
+        }
+        frmFields.innerHTML=f;
+        el('frm').submit();
+    };
+
+    function esc(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+    function attr(s){ return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 })();
 </script>
 </body>

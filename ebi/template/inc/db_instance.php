@@ -127,6 +127,7 @@ function db_listar_cadastros(): array {
             'portaria'        => strtoupper(trim($r['portaria'])),
             'cod_resp'        => (string)$r['cod_resp'],
             'dataNascimento'  => $r['data_nascimento'] ?? '',
+            'created_at'      => $r['created_at'] ?? '',
         ];
     }
     return $result;
