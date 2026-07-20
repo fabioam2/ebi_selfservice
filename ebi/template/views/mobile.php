@@ -33,26 +33,10 @@
             font-family: 'Manrope', sans-serif;
             padding: 16px 12px 30px;
         }
-        .mobile-page {
-            width: 100%;
-            max-width: 440px;
-        }
-        .mobile-header {
-            text-align: center;
-            color: #fff;
-            margin-bottom: 16px;
-        }
-        .mobile-header h1 {
-            font-size: 1.4rem;
-            font-weight: 800;
-            margin: 0;
-            letter-spacing: -0.02em;
-        }
-        .mobile-header p {
-            font-size: 0.8rem;
-            opacity: 0.75;
-            margin: 4px 0 0;
-        }
+        .mobile-page { width: 100%; max-width: 440px; }
+        .mobile-header { text-align: center; color: #fff; margin-bottom: 16px; }
+        .mobile-header h1 { font-size: 1.4rem; font-weight: 800; margin: 0; }
+        .mobile-header p { font-size: 0.8rem; opacity: 0.75; margin: 4px 0 0; }
         .mobile-card {
             background: rgba(255,255,255,0.98);
             padding: 20px 18px;
@@ -62,200 +46,83 @@
             margin-bottom: 14px;
         }
         .mobile-card h2 {
-            font-size: 0.95rem;
-            font-weight: 700;
-            color: var(--text-main);
-            margin: 0 0 12px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            font-size: 0.95rem; font-weight: 700; color: var(--text-main);
+            margin: 0 0 12px; display: flex; align-items: center; gap: 8px;
         }
-        .mobile-card h2 i {
-            color: var(--brand);
-            font-size: 1.1rem;
+        .mobile-card h2 i { color: var(--brand); font-size: 1.1rem; }
+        #qr-reader { width: 100%; border-radius: 12px; overflow: hidden; margin-bottom: 12px; display: none; }
+        .scan-status { text-align: center; font-size: 0.82rem; color: var(--text-soft); padding: 8px; }
+        .scan-status.success { color: var(--success-border); font-weight: 700; }
+        .scan-status.error { color: var(--danger); font-weight: 600; }
+
+        .btn-scan {
+            width: 100%; padding: 16px; border: none; border-radius: 12px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #fff; font-weight: 700; font-size: 1.1rem;
+            cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;
         }
-        #qr-reader {
-            width: 100%;
-            border-radius: 12px;
-            overflow: hidden;
-            margin-bottom: 12px;
+        .btn-scan:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(245,158,11,0.35); }
+        .btn-scan.scanning { background: linear-gradient(135deg, #dc2626, #b91c1c); }
+
+        .btn-lido {
+            width: 100%; padding: 18px; border: none; border-radius: 12px;
+            background: linear-gradient(135deg, #16a34a, #15803d);
+            color: #fff; font-weight: 800; font-size: 1.2rem;
+            cursor: pointer; display: none;
+            transition: transform 0.15s, box-shadow 0.15s;
+            animation: pulse 1.5s infinite;
         }
-        #qr-reader video {
-            border-radius: 12px;
+        .btn-lido.show { display: block; }
+        .btn-lido:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(22,163,74,0.4); }
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(22,163,74,0.5); }
+            50% { box-shadow: 0 0 0 10px rgba(22,163,74,0); }
         }
-        .scan-status {
-            text-align: center;
-            font-size: 0.8rem;
-            color: var(--text-soft);
-            padding: 8px;
-        }
-        .scan-status.success {
-            color: var(--success-border);
-            font-weight: 700;
-        }
-        .scan-status.error {
-            color: var(--danger);
-            font-weight: 600;
-        }
+
         .result-box {
-            display: none;
-            background: var(--success-bg);
-            border: 1px solid var(--success-border);
-            border-radius: 12px;
-            padding: 14px;
-            margin-top: 10px;
+            display: none; background: var(--success-bg); border: 1px solid var(--success-border);
+            border-radius: 12px; padding: 14px; margin: 12px 0;
         }
         .result-box.show { display: block; }
         .result-box .item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 6px 0;
-            border-bottom: 1px solid rgba(31,157,97,0.15);
-            font-size: 0.82rem;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 5px 0; border-bottom: 1px solid rgba(31,157,97,0.15); font-size: 0.8rem;
         }
         .result-box .item:last-child { border-bottom: none; }
-        .result-box .item .label {
-            color: var(--text-soft);
-            font-weight: 500;
+        .result-box .item .label { color: var(--text-soft); font-weight: 500; }
+        .result-box .item .value { color: var(--text-main); font-weight: 700; text-align: right; max-width: 60%; }
+
+        .portaria-section {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 14px; padding: 12px 14px;
+            background: var(--brand-soft); border-radius: 10px;
         }
-        .result-box .item .value {
-            color: var(--text-main);
-            font-weight: 700;
-            text-align: right;
-            max-width: 60%;
+        .portaria-section label { font-size: 0.82rem; font-weight: 600; color: var(--text-main); margin: 0; }
+        .portaria-section input {
+            width: 48px; text-align: center; text-transform: uppercase;
+            font-weight: 700; font-size: 1.1rem;
+            border: 2px solid var(--brand); border-radius: 8px; padding: 6px;
         }
-        .btn-cadastrar {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 12px;
-            background: linear-gradient(135deg, var(--brand), var(--brand-strong));
-            color: #fff;
-            font-weight: 700;
-            font-size: 0.95rem;
-            cursor: pointer;
-            margin-top: 12px;
-            transition: transform 0.15s, box-shadow 0.15s;
-            display: none;
-        }
-        .btn-cadastrar.show {
-            display: block;
-        }
-        .btn-cadastrar:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 18px rgba(14,116,144,0.35);
-        }
-        .btn-cadastrar:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-        .btn-scan {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 12px;
-            background: linear-gradient(135deg, #f59e0b, #d97706);
-            color: #fff;
-            font-weight: 700;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: transform 0.15s, box-shadow 0.15s;
-        }
-        .btn-scan:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 18px rgba(245,158,11,0.35);
-        }
-        .btn-scan.scanning {
-            background: linear-gradient(135deg, #dc2626, #b91c1c);
-        }
-        .portaria-input {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 12px;
-        }
-        .portaria-input label {
-            font-size: 0.82rem;
-            font-weight: 600;
-            color: var(--text-main);
-            margin: 0;
-            white-space: nowrap;
-        }
-        .portaria-input input {
-            width: 50px;
-            text-align: center;
-            text-transform: uppercase;
-            font-weight: 700;
-            font-size: 1.1rem;
-            border: 2px solid var(--brand-soft);
-            border-radius: 8px;
-            padding: 6px;
-            transition: border-color 0.2s;
-        }
-        .portaria-input input:focus {
-            outline: none;
-            border-color: var(--brand);
-        }
+        .portaria-section input:focus { outline: none; border-color: var(--brand-strong); }
+
         .msg-toast {
-            display: none;
-            position: fixed;
-            top: 16px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 12px 20px;
-            border-radius: 10px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            z-index: 9999;
-            animation: slideDown 0.3s ease-out;
-            max-width: 90%;
-            text-align: center;
+            display: none; position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+            padding: 12px 20px; border-radius: 10px; font-size: 0.85rem; font-weight: 600;
+            z-index: 9999; max-width: 90%; text-align: center; animation: slideDown 0.3s ease-out;
         }
-        .msg-toast.success {
-            background: var(--success-bg);
-            border: 1px solid var(--success-border);
-            color: #166534;
-        }
-        .msg-toast.error {
-            background: var(--danger-bg);
-            border: 1px solid var(--danger);
-            color: var(--danger);
-        }
+        .msg-toast.success { background: var(--success-bg); border: 1px solid var(--success-border); color: #166534; }
+        .msg-toast.error { background: var(--danger-bg); border: 1px solid var(--danger); color: var(--danger); }
         @keyframes slideDown {
             from { opacity: 0; transform: translate(-50%, -20px); }
             to { opacity: 1; transform: translate(-50%, 0); }
         }
-        .counter-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            background: var(--brand-soft);
-            color: var(--brand-strong);
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            margin-top: 8px;
-        }
+
         .btn-voltar {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            color: rgba(255,255,255,0.7);
-            font-size: 0.78rem;
-            text-decoration: none;
-            margin-bottom: 12px;
+            display: inline-flex; align-items: center; gap: 5px;
+            color: rgba(255,255,255,0.7); font-size: 0.78rem; text-decoration: none; margin-bottom: 12px;
         }
         .btn-voltar:hover { color: #fff; text-decoration: none; }
-        .version-footer {
-            text-align: center;
-            margin-top: 16px;
-            font-size: 9px;
-            color: rgba(255,255,255,0.35);
-        }
+        .version-footer { text-align: center; margin-top: 16px; font-size: 9px; color: rgba(255,255,255,0.35); }
     </style>
 </head>
 <body>
@@ -278,46 +145,40 @@
         <script>document.addEventListener('DOMContentLoaded',function(){showToast('<?php echo addslashes($mensagemErro); ?>','error')});</script>
     <?php endif; ?>
 
-    <!-- Scanner -->
+    <!-- Portaria (persistida) -->
     <div class="mobile-card">
+        <div class="portaria-section">
+            <label for="portaria_mobile"><i class="fas fa-door-open mr-1"></i> Portaria:</label>
+            <input type="text" id="portaria_mobile" maxlength="1" autocomplete="off" placeholder="A">
+        </div>
+
+        <!-- Scanner -->
         <h2><i class="fas fa-camera"></i> Escanear QR Code</h2>
-        <div id="qr-reader" style="display:none;"></div>
-        <div id="scanStatus" class="scan-status">Pressione o botão abaixo para abrir a câmera</div>
+        <div id="qr-reader"></div>
+        <div id="scanStatus" class="scan-status">Toque em Scan para abrir a câmera</div>
         <button type="button" class="btn-scan" id="btnScan" onclick="toggleScanner()">
             <i class="fas fa-camera mr-2"></i> Scan
         </button>
-    </div>
 
-    <!-- Resultado -->
-    <div class="mobile-card">
-        <h2><i class="fas fa-child"></i> Dados Lidos</h2>
+        <!-- Resultado lido -->
         <div id="resultBox" class="result-box">
             <div id="resultItems"></div>
         </div>
-        <div id="emptyState" style="text-align:center;color:var(--text-soft);font-size:0.82rem;padding:16px 0;">
-            <i class="fas fa-qrcode" style="font-size:2rem;opacity:0.3;display:block;margin-bottom:8px;"></i>
-            Nenhum QR lido ainda
-        </div>
 
-        <form method="post" action="<?php echo sanitize_for_html($_SERVER['PHP_SELF']); ?>" id="formMobile">
-            <?php echo csrf_field(); ?>
-            <input type="hidden" name="cadastrar" value="1">
-            <input type="hidden" name="mobile" value="1">
-            <div id="hiddenFields"></div>
-
-            <div class="portaria-input">
-                <label for="portaria_mobile">Portaria:</label>
-                <input type="text" id="portaria_mobile" name="portaria_cadastro" maxlength="1" autocomplete="off" placeholder="A" required>
-                <span class="counter-badge" id="counterBadge" style="display:none;">
-                    <i class="fas fa-users"></i> <span id="childCount">0</span> criança(s)
-                </span>
-            </div>
-
-            <button type="submit" class="btn-cadastrar" id="btnCadastrar">
-                <i class="fas fa-check-circle mr-1"></i> Cadastrar
-            </button>
-        </form>
+        <!-- Botão LIDO (aparece após leitura, submete o form) -->
+        <button type="button" class="btn-lido" id="btnLido" onclick="submitCadastro()">
+            <i class="fas fa-check-circle mr-2"></i> LIDO — Cadastrar
+        </button>
     </div>
+
+    <!-- Form oculto para submit -->
+    <form method="post" action="<?php echo sanitize_for_html($_SERVER['PHP_SELF']); ?>" id="formMobile" style="display:none;">
+        <?php echo csrf_field(); ?>
+        <input type="hidden" name="cadastrar" value="1">
+        <input type="hidden" name="mobile" value="1">
+        <input type="hidden" name="portaria_cadastro" id="form_portaria" value="">
+        <div id="hiddenFields"></div>
+    </form>
 
     <div class="version-footer">v<?php echo defined('VERSAO_SISTEMA') ? VERSAO_SISTEMA : date('YmdHi'); ?></div>
 </div>
@@ -325,30 +186,24 @@
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
 (function() {
-    let scannedData = [];
     let scanner = null;
     let isScanning = false;
-    const resultBox = document.getElementById('resultBox');
-    const resultItems = document.getElementById('resultItems');
-    const emptyState = document.getElementById('emptyState');
-    const hiddenFields = document.getElementById('hiddenFields');
-    const btnCadastrar = document.getElementById('btnCadastrar');
-    const counterBadge = document.getElementById('counterBadge');
-    const childCount = document.getElementById('childCount');
+    const qrReader = document.getElementById('qr-reader');
     const scanStatus = document.getElementById('scanStatus');
     const btnScan = document.getElementById('btnScan');
-    const qrReader = document.getElementById('qr-reader');
+    const btnLido = document.getElementById('btnLido');
+    const resultBox = document.getElementById('resultBox');
+    const resultItems = document.getElementById('resultItems');
+    const hiddenFields = document.getElementById('hiddenFields');
+    const formPortaria = document.getElementById('form_portaria');
     const portariaInput = document.getElementById('portaria_mobile');
 
-    // Persistir portaria no localStorage
-    const savedPortaria = localStorage.getItem('ebi_mobile_portaria');
-    if (savedPortaria) {
-        portariaInput.value = savedPortaria;
-    }
+    // Persistir portaria
+    const saved = localStorage.getItem('ebi_mobile_portaria');
+    if (saved) portariaInput.value = saved;
     portariaInput.addEventListener('input', function() {
-        const val = this.value.toUpperCase();
-        this.value = val;
-        if (val) localStorage.setItem('ebi_mobile_portaria', val);
+        this.value = this.value.toUpperCase();
+        if (this.value) localStorage.setItem('ebi_mobile_portaria', this.value);
     });
 
     function showToast(msg, type) {
@@ -361,6 +216,11 @@
     window.showToast = showToast;
 
     window.toggleScanner = function() {
+        if (!portariaInput.value.trim()) {
+            portariaInput.focus();
+            showToast('Defina a Portaria antes de escanear', 'error');
+            return;
+        }
         if (isScanning) {
             stopScanner();
         } else {
@@ -369,6 +229,11 @@
     };
 
     function startScanner() {
+        // Reset estado anterior
+        btnLido.classList.remove('show');
+        resultBox.classList.remove('show');
+        hiddenFields.innerHTML = '';
+
         qrReader.style.display = 'block';
         scanner = new Html5Qrcode('qr-reader');
         scanner.start(
@@ -379,10 +244,10 @@
             isScanning = true;
             btnScan.innerHTML = '<i class="fas fa-stop mr-2"></i> Parar';
             btnScan.classList.add('scanning');
-            scanStatus.textContent = 'Aponte a câmera para o QR Code';
+            scanStatus.textContent = 'Aponte a câmera para o QR Code...';
             scanStatus.className = 'scan-status';
         }).catch(function(err) {
-            scanStatus.textContent = 'Não foi possível acessar a câmera';
+            scanStatus.textContent = 'Erro ao acessar câmera: ' + err;
             scanStatus.className = 'scan-status error';
             qrReader.style.display = 'none';
         });
@@ -395,46 +260,29 @@
                 btnScan.innerHTML = '<i class="fas fa-camera mr-2"></i> Scan';
                 btnScan.classList.remove('scanning');
                 qrReader.style.display = 'none';
-                if (scannedData.length === 0) {
-                    scanStatus.textContent = 'Pressione o botão abaixo para abrir a câmera';
-                    scanStatus.className = 'scan-status';
-                }
             });
         }
     }
 
     function parseQRData(text) {
-        // Formato: NomeCriança\tResponsável\tIdade\tTelefone\tComum
-        // Ou com 6 campos: NomeCriança\tResponsável\tDataNasc\tIdade\tTelefone\tComum
+        // Formato v1 (5 colunas): NomeCriança \t Responsável \t Idade \t Telefone \t Comum
+        // Formato v2 (6 colunas): NomeCriança \t Responsável \t Idade \t Telefone \t Comum \t DataNascimento
         // Múltiplas crianças separadas por \r
         const lines = text.split(/\r|\n/).filter(function(l) { return l.trim() !== ''; });
         const results = [];
 
         for (let i = 0; i < lines.length; i++) {
             const parts = lines[i].split('\t');
-            let entry = {};
+            if (parts.length < 5) continue;
 
-            if (parts.length === 5) {
-                // Formato 5 colunas: nome, responsavel, idade, telefone, comum
-                entry = {
-                    nome_crianca: parts[0].trim(),
-                    nome_responsavel: parts[1].trim(),
-                    idade: parts[2].trim(),
-                    telefone: parts[3].trim(),
-                    comum: parts[4].trim()
-                };
-            } else if (parts.length === 6) {
-                // Formato 6 colunas: nome, responsavel, dataNasc, idade, telefone, comum
-                entry = {
-                    nome_crianca: parts[0].trim(),
-                    nome_responsavel: parts[1].trim(),
-                    idade: parts[3].trim(),
-                    telefone: parts[4].trim(),
-                    comum: parts[5].trim()
-                };
-            } else {
-                continue; // formato inválido
-            }
+            const entry = {
+                nome_crianca: parts[0].trim(),
+                nome_responsavel: parts[1].trim(),
+                idade: parts[2].trim(),
+                telefone: parts[3].trim(),
+                comum: parts[4].trim(),
+                data_nascimento: parts.length >= 6 ? parts[5].trim() : ''
+            };
 
             if (entry.nome_crianca && entry.nome_responsavel) {
                 results.push(entry);
@@ -443,77 +291,69 @@
         return results;
     }
 
-    function renderResults() {
-        if (scannedData.length === 0) {
-            resultBox.classList.remove('show');
-            emptyState.style.display = 'block';
-            btnCadastrar.classList.remove('show');
-            counterBadge.style.display = 'none';
-            hiddenFields.innerHTML = '';
-            return;
-        }
-
-        emptyState.style.display = 'none';
-        resultBox.classList.add('show');
-        btnCadastrar.classList.add('show');
-        counterBadge.style.display = 'inline-flex';
-        childCount.textContent = scannedData.length;
-
-        let html = '';
-        let fields = '';
-
-        for (let i = 0; i < scannedData.length; i++) {
-            const d = scannedData[i];
-            html += '<div class="item"><span class="label">Criança</span><span class="value">' + escHtml(d.nome_crianca) + '</span></div>';
-            html += '<div class="item"><span class="label">Responsável</span><span class="value">' + escHtml(d.nome_responsavel) + '</span></div>';
-            html += '<div class="item"><span class="label">Idade</span><span class="value">' + escHtml(d.idade) + ' anos</span></div>';
-            html += '<div class="item"><span class="label">Telefone</span><span class="value">' + escHtml(d.telefone) + '</span></div>';
-            html += '<div class="item"><span class="label">Comum</span><span class="value">' + escHtml(d.comum) + '</span></div>';
-            if (i < scannedData.length - 1) {
-                html += '<hr style="margin:6px 0;border-color:rgba(31,157,97,0.2)">';
-            }
-
-            fields += '<input type="hidden" name="nome_crianca[]" value="' + escAttr(d.nome_crianca) + '">';
-            fields += '<input type="hidden" name="nome_responsavel[]" value="' + escAttr(d.nome_responsavel) + '">';
-            fields += '<input type="hidden" name="idade[]" value="' + escAttr(d.idade) + '">';
-            fields += '<input type="hidden" name="telefone[]" value="' + escAttr(d.telefone) + '">';
-            fields += '<input type="hidden" name="comum[]" value="' + escAttr(d.comum) + '">';
-        }
-
-        resultItems.innerHTML = html;
-        hiddenFields.innerHTML = fields;
-    }
-
-    function escHtml(s) {
-        const d = document.createElement('div');
-        d.textContent = s;
-        return d.innerHTML;
-    }
-
-    function escAttr(s) {
-        return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    }
-
     function onScanSuccess(decodedText) {
         const parsed = parseQRData(decodedText);
         if (parsed.length === 0) {
-            scanStatus.textContent = 'QR Code inválido — formato não reconhecido';
+            scanStatus.textContent = 'QR inválido — formato não reconhecido';
             scanStatus.className = 'scan-status error';
             return;
         }
 
-        scannedData = parsed;
-        renderResults();
-        scanStatus.textContent = parsed.length + ' criança(s) lida(s) com sucesso!';
-        scanStatus.className = 'scan-status success';
-
-        // Parar scanner após leitura bem-sucedida
+        // Parar scanner
         stopScanner();
 
-        // Vibrar o celular para feedback
+        // Vibrar feedback
         if (navigator.vibrate) navigator.vibrate(200);
+
+        // Mostrar dados lidos
+        scanStatus.textContent = parsed.length + ' criança(s) lida(s)!';
+        scanStatus.className = 'scan-status success';
+
+        let html = '';
+        let fields = '';
+        for (let i = 0; i < parsed.length; i++) {
+            const d = parsed[i];
+            html += '<div class="item"><span class="label">Criança</span><span class="value">' + esc(d.nome_crianca) + '</span></div>';
+            html += '<div class="item"><span class="label">Responsável</span><span class="value">' + esc(d.nome_responsavel) + '</span></div>';
+            html += '<div class="item"><span class="label">Idade</span><span class="value">' + esc(d.idade) + ' anos</span></div>';
+            html += '<div class="item"><span class="label">Comum</span><span class="value">' + esc(d.comum) + '</span></div>';
+            if (d.data_nascimento) {
+                html += '<div class="item"><span class="label">Nasc.</span><span class="value">' + esc(d.data_nascimento) + '</span></div>';
+            }
+            if (i < parsed.length - 1) html += '<hr style="margin:4px 0;border-color:rgba(31,157,97,0.2)">';
+
+            fields += '<input type="hidden" name="nome_crianca[]" value="' + attr(d.nome_crianca) + '">';
+            fields += '<input type="hidden" name="nome_responsavel[]" value="' + attr(d.nome_responsavel) + '">';
+            fields += '<input type="hidden" name="idade[]" value="' + attr(d.idade) + '">';
+            fields += '<input type="hidden" name="telefone[]" value="' + attr(d.telefone) + '">';
+            fields += '<input type="hidden" name="comum[]" value="' + attr(d.comum) + '">';
+        }
+
+        resultItems.innerHTML = html;
+        resultBox.classList.add('show');
+        hiddenFields.innerHTML = fields;
+
+        // Mostrar botão LIDO
+        btnLido.classList.add('show');
     }
 
+    window.submitCadastro = function() {
+        formPortaria.value = portariaInput.value.toUpperCase();
+        if (!formPortaria.value) {
+            showToast('Defina a Portaria!', 'error');
+            return;
+        }
+        document.getElementById('formMobile').submit();
+    };
+
+    function esc(s) {
+        const d = document.createElement('div');
+        d.textContent = s;
+        return d.innerHTML;
+    }
+    function attr(s) {
+        return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
 })();
 </script>
 </body>
