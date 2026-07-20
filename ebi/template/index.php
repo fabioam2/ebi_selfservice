@@ -120,4 +120,10 @@ if (($_GET['acao'] ?? '') === 'stats') {
     exit;
 }
 
+// ── View mobile (smartphone) ──────────────────────────────────────────────────
+if (($_GET['acao'] ?? '') === 'mobile') {
+    require __DIR__ . '/views/mobile.php';
+    exit;
+}
+
 require __DIR__ . '/views/main.php';
