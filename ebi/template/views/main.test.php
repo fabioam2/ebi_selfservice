@@ -428,6 +428,7 @@
                             <th style="width: auto;">Nome do Responsável</th>
                             <th style="width: 12%;">Telefone</th>
                             <th style="width: 6%;">Idade</th>
+                            <th style="width: 5%;" title="Data de Nascimento">DT</th>
                             <th style="width: 12%;">Comum</th>
                             <th style="width: 8%;" class="no-print">Ações</th>
                         </tr>
@@ -464,6 +465,10 @@
                                     <td><?php echo sanitize_for_html($crianca['nomeResponsavel']); ?></td>
                                     <td style="text-align: center;"><?php echo sanitize_for_html($crianca['telefone']); ?></td>
                                     <td style="text-align: center;"><?php echo sanitize_for_html($crianca['idade']); ?></td>
+                                    <td style="text-align: center; font-size:0.75rem;" title="<?php echo sanitize_for_html($crianca['dataNascimento'] ?? ''); ?>"><?php
+                                        $dn = $crianca['dataNascimento'] ?? '';
+                                        echo $dn ? sanitize_for_html(substr($dn, 0, 5)) : '';
+                                    ?></td>
                                     <td><?php echo sanitize_for_html($crianca['comum']); ?></td>
                                     <td style="text-align: center;" class="no-print">
                                         <button type="button" class="btn btn-sm btn-danger-linha" onclick="confirmarApagarLinha(<?php echo sanitize_for_html($crianca['id']); ?>, '<?php echo addslashes(sanitize_for_html($crianca['nomeCrianca'])); ?>')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16"><path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/></svg></button>
@@ -471,7 +476,7 @@
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
-                            <tr><td colspan="11" class="text-center py-4">Nenhuma criança cadastrada ainda.</td></tr>
+                            <tr><td colspan="12" class="text-center py-4">Nenhuma criança cadastrada ainda.</td></tr>
                         <?php endif; ?>
                     </tbody>
                 </table>
