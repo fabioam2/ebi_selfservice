@@ -338,6 +338,18 @@
     const scanStatus = document.getElementById('scanStatus');
     const btnScan = document.getElementById('btnScan');
     const qrReader = document.getElementById('qr-reader');
+    const portariaInput = document.getElementById('portaria_mobile');
+
+    // Persistir portaria no localStorage
+    const savedPortaria = localStorage.getItem('ebi_mobile_portaria');
+    if (savedPortaria) {
+        portariaInput.value = savedPortaria;
+    }
+    portariaInput.addEventListener('input', function() {
+        const val = this.value.toUpperCase();
+        this.value = val;
+        if (val) localStorage.setItem('ebi_mobile_portaria', val);
+    });
 
     function showToast(msg, type) {
         const t = document.getElementById('msgToast');
