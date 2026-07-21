@@ -410,7 +410,14 @@
                             <span id="errorNomeFilho1" class="error"></span>
                         </div>
                         <div class="form-row">
-                            <div class="form-group col-7">
+                            <div class="form-group col-4">
+                                <label for="sexoFilho1">Sexo</label>
+                                <select class="form-control" id="sexoFilho1">
+                                    <option value="M">Menino</option>
+                                    <option value="F">Menina</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-5">
                                 <label for="dataNascimentoMaskFilho1">Data de Nascimento</label>
                                 <input type="text" inputmode="numeric" class="form-control" id="dataNascimentoMaskFilho1" name="dataNascimentoMaskFilho1" placeholder="dd/mm/aaaa" maxlength="10">
                             </div>
@@ -552,7 +559,14 @@
                         <span id="errorNomeFilho${childCount}" class="error"></span>
                     </div>
                     <div class="form-row">
-                        <div class="form-group col-7">
+                        <div class="form-group col-4">
+                            <label for="sexoFilho${childCount}">Sexo</label>
+                            <select class="form-control" id="sexoFilho${childCount}">
+                                <option value="M">Menino</option>
+                                <option value="F">Menina</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-5">
                             <label for="dataNascimentoMaskFilho${childCount}">Data de Nascimento</label>
                             <input type="text" inputmode="numeric" class="form-control" id="dataNascimentoMaskFilho${childCount}" name="dataNascimentoMaskFilho${childCount}" placeholder="dd/mm/aaaa" maxlength="10">
                         </div>
@@ -678,11 +692,10 @@
                 }
 
                 if (isValid && nomeFilho && idade !== null) {
-                    // Estrutura de dados por linha (uma criança) — formato v2, com data de nascimento:
-                    // NomeFilho \t NomePai \t IdadeFilho \t TelefonePai \t ComumPai \t DataNascimentoFilho
-                    // A data de nascimento (dd/mm/aaaa) permite identificar aniversários e
-                    // recalcular a idade exata na leitura do QR Code.
-                    qrData += `${nomeFilho}\t${nomePai}\t${idade}\t${telefone}\t${comum}\t${dataNascimentoMaskValue}`;
+                    // Estrutura de dados por linha (uma criança) — formato v2:
+                    // NomeFilho \t NomePai \t IdadeFilho \t TelefonePai \t ComumPai \t Sexo \t DataNascimentoFilho
+                    const sexoFilho = document.getElementById(`sexoFilho${i}`).value || 'M';
+                    qrData += `${nomeFilho}\t${nomePai}\t${idade}\t${telefone}\t${comum}\t${sexoFilho}\t${dataNascimentoMaskValue}`;
 
                     if (i < childCount) {
                         qrData += '\r'; // Separador de registros (crianças)
