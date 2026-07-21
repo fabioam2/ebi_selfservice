@@ -1,0 +1,56 @@
+=====================================================================
+ CERTIFICADO QZ TRAY — EBI Self Service
+=====================================================================
+
+Este pacote contém o certificado digital usado pelo sistema EBI para
+assinar as requisições de impressão enviadas ao QZ Tray.
+
+ARQUIVO INCLUÍDO:
+  - digital-certificate.txt  → Certificado público (X.509 / PEM)
+
+  Impressão digital (SHA-256) para conferência, caso o QZ Tray exiba
+  o certificado na tela de permissão:
+  BC:02:B2:E2:33:5E:15:23:C9:86:39:20:AF:B5:99:0A:AE:AD:66:97:EC:76:72:72:EB:F2:F2:15:75:45:30:A7
+
+  Emissor / Titular: CN=EBI Signing Cert, O=EBI Self Service
+
+---------------------------------------------------------------------
+INSTALAÇÃO DO QZ TRAY (se ainda não estiver instalado)
+---------------------------------------------------------------------
+1. Baixe o instalador oficial do QZ Tray (Windows 64-bit) em:
+   https://qz.io/download/
+   (Este pacote não inclui o instalador — apenas o certificado do EBI.)
+2. Instale normalmente e deixe o QZ Tray em execução (ícone na bandeja
+   do sistema, próximo ao relógio).
+
+---------------------------------------------------------------------
+CONFIANÇA NO CERTIFICADO (fluxo automático — recomendado)
+---------------------------------------------------------------------
+O sistema EBI já envia este certificado automaticamente ao navegador
+ao conectar no QZ Tray. Na primeira conexão em cada computador:
+
+1. O QZ Tray exibirá uma janela "Action Required" / "Permitir conexão".
+2. Confira se o nome do site/certificado corresponde a "EBI Signing Cert".
+3. Marque "Remember this decision" (Lembrar desta decisão).
+4. Clique em "Allow" (Permitir).
+
+Isso só precisa ser feito uma vez por computador. Não é necessário
+importar manualmente o arquivo digital-certificate.txt deste zip para
+o funcionamento normal do sistema.
+
+---------------------------------------------------------------------
+INSTALAÇÃO MANUAL (opcional — apenas para TI/implantação em massa)
+---------------------------------------------------------------------
+Para evitar a janela de permissão em várias máquinas de uma vez, o QZ
+Tray permite configurar certificados confiáveis previamente via um
+arquivo de "override" na pasta de instalação/dados do QZ Tray. Consulte
+a documentação oficial do fabricante para o procedimento e caminho
+exatos da versão do QZ Tray instalada:
+   https://qz.io/wiki/
+
+---------------------------------------------------------------------
+Este certificado é gerado e mantido pelo próprio sistema EBI
+(ebi/template/assets/signing/). Se o certificado do sistema for
+renovado/trocado, este pacote deve ser atualizado com o novo arquivo
+digital-certificate.txt para refletir o certificado em uso.
+=====================================================================

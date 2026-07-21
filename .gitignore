@@ -164,7 +164,7 @@ cache/
 dist/
 build/
 *.zip
-!/ebi/drive QZtray/*.zip
+!/ebi/driveQZtray/*.zip
 *.tar
 *.tar.gz
 *.rar
