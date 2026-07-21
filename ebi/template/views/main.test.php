@@ -1122,12 +1122,20 @@
                     return;
                 }
 
-                // Enter: fecha o registro da criança atual (5 ou 6 colunas preenchidas)
-                // e vai direto para a coluna 0 da próxima linha.
+                // Enter: fecha o registro da criança atual e decide próxima ação
                 if (currentLinha < NUM_LINHAS_FORM_CADASTRO - 1) {
+                    // Auto-cadastrar: se auto-imprimir ON, portaria preenchida, e próxima linha vazia
+                    if (localStorage.getItem('autoImpressao') === 'true') {
+                        var portariaVal = $('#portaria_cadastro').val().trim();
+                        var proximaLinhaVazia = $('#input_' + (currentLinha + 1) + '_0').val().trim() === '';
+                        if (portariaVal.length === 1 && proximaLinhaVazia && $('#input_0_0').val().trim() !== '') {
+                            $('#btnCadastrar').click();
+                            return;
+                        }
+                    }
                     $('#input_' + (currentLinha + 1) + '_0').focus();
                 } else {
-                    // Auto-cadastrar: se portaria já está preenchida e auto-imprimir ON
+                    // Última linha: auto-cadastrar se condições atendidas
                     var portariaVal = $('#portaria_cadastro').val().trim();
                     if (localStorage.getItem('autoImpressao') === 'true' && portariaVal.length === 1 && $('#input_0_0').val().trim() !== '') {
                         $('#btnCadastrar').click();
