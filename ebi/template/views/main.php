@@ -1579,7 +1579,7 @@
 
         qz.security.setSignaturePromise(function(toSign) {
             return function(resolve, reject) {
-                fetch('assets/signing/sign-message.php?request=' + toSign, {
+                fetch('assets/signing/sign-message.php?request=' + encodeURIComponent(toSign), {
                     cache: 'no-store',
                     headers: { 'Content-Type': 'text/plain' }
                 }).then(function(data) {
