@@ -106,3 +106,73 @@ Seguir o padrão `tipo(escopo): mensagem`:
   - `php -l` no(s) arquivo(s) alterado(s)
   - `find . -name '*.php' -print0 | xargs -0 -I{} php -l '{}'` em mudanças amplas
 - Em buscas de código no repositório, ignorar diretórios temporários (`.claude/worktrees/`) para evitar falso positivo de código duplicado.
+
+---
+
+## QZ Tray — Impressão e Certificados
+
+### Arquitetura do Signing
+
+O QZ Tray exige assinatura digital para impressão silenciosa (sem pop-ups). O sistema usa:
+
+| Arquivo | Local | Função |
+|---|---|---|
+| `digital-certificate.txt` | `ebi/template/assets/signing/` | Certificado público (acessível via AJAX) |
+| `private-key.pem` | `ebi/template/assets/signing/` | Chave privada (NÃO vai no git, protegida pelo .htaccess) |
+| `sign-message.php` | `ebi/template/assets/signing/` | Backend que assina mensagens com SHA512 |
+| `override.crt` | `C:\Program Files\QZ Tray\` (cada desktop) | Certificado raiz que o QZ Tray confia |
+
+### Como gerar e instalar certificados (passo a passo)
+
+#### 1. Gerar chaves DEMO em UM computador
+
+1. Abrir QZ Tray no desktop (ícone na bandeja do sistema)
+2. Clicar com botão direito → **Advanced** → **Site Manager**
+3. Clicar no botão **"+"** → **Create New**
+4. Clicar **"Yes"** para criar as chaves
+5. Clicar **"Yes"** para instalar automaticamente
+6. Clicar **"Yes"** para copiar para `override.crt`
+7. Aceitar o UAC (Windows) se solicitado
+
+Uma pasta **"QZ Tray Demo Cert"** aparecerá na Área de Trabalho com:
+- `digital-certificate.txt`
+- `private-key.pem`
+
+#### 2. Copiar arquivos para o SERVIDOR
+
+Copiar os 2 arquivos gerados para o servidor:
+```
+ebi/template/assets/signing/digital-certificate.txt   ← substituir
+ebi/template/assets/signing/private-key.pem           ← substituir
+```
+
+**Importante**: o `digital-certificate.txt` deve ser commitado no git. A `private-key.pem` NÃO vai no git (copiada manualmente).
+
+#### 3. Distribuir override.crt para TODOS os desktops
+
+O arquivo `override.crt` gerado no passo 1 está em:
+```
+C:\Program Files\QZ Tray\override.crt
+```
+
+Copiar este arquivo para **todos os outros computadores** que usarão a impressora, no mesmo caminho:
+```
+C:\Program Files\QZ Tray\override.crt
+```
+
+Após copiar, **reiniciar o QZ Tray** em cada máquina (fechar no tray e reabrir).
+
+#### 4. Verificação
+
+Testar no navegador:
+- `https://SEU-SERVIDOR/ebi/template/assets/signing/digital-certificate.txt` → deve retornar o certificado (200 OK)
+- `https://SEU-SERVIDOR/ebi/template/assets/signing/sign-message.php?request=teste` → deve retornar string base64
+
+Se ambos retornam OK, o QZ Tray mostrará o nome do certificado no pop-up (ex: "EBI Signing Cert") com opção "Allow" + "Remember this decision" para impressão silenciosa.
+
+### Regras de segurança
+
+- `private-key.pem` **NUNCA** deve ser commitada no git
+- `.htaccess` em `assets/signing/` bloqueia acesso à chave privada (`Require all denied`)
+- `.htaccess` permite acesso ao `digital-certificate.txt` (`Require all granted`)
+- `.htaccess` permite apenas `sign-message.php` como PHP executável na pasta
