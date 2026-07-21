@@ -283,6 +283,27 @@ VERIFICAR_INTEGRIDADE = true
             copy($templateHtaccess, $userInstanceDir . '.htaccess');
         }
 
+        // 4b. Copiar assets/signing (certificado + chave do QZ Tray).
+        //     Necessário porque o fetch() do QZ Tray no navegador é relativo à URL
+        //     da instância (ebi/i/user_XXX/assets/signing/...), não ao require do PHP.
+        $templateSigningDir = rtrim($templateDir, '/') . '/assets/signing';
+        if (is_dir($templateSigningDir)) {
+            $instanceSigningDir = $userInstanceDir . 'assets/signing';
+            mkdir($instanceSigningDir, 0755, true);
+            foreach (scandir($templateSigningDir) as $arquivo) {
+                if ($arquivo === '.' || $arquivo === '..') {
+                    continue;
+                }
+                $origem = $templateSigningDir . '/' . $arquivo;
+                if (is_file($origem)) {
+                    copy($origem, $instanceSigningDir . '/' . $arquivo);
+                    if ($arquivo === 'private-key.pem') {
+                        @chmod($instanceSigningDir . '/' . $arquivo, 0600);
+                    }
+                }
+            }
+        }
+
         // 5. .htaccess adicional dentro de data/ (defesa em profundidade)
         $htaccessData = "Require all denied\n<IfModule !mod_authz_core.c>\n    Order allow,deny\n    Deny from all\n</IfModule>\n";
         file_put_contents($dataDir . '.htaccess', $htaccessData);
