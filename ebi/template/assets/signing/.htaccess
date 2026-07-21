@@ -8,11 +8,10 @@
     Require all denied
 </Files>
 
-# Bloqueia acesso ao certificado público (opcional, mas recomendado)
-# Se quiser que o certificado seja acessível via fetch(), remova este bloco
-# <Files "digital-certificate.txt">
-#     Require all denied
-# </Files>
+# Permitir acesso ao certificado público (necessário para QZ Tray via fetch/AJAX)
+<Files "digital-certificate.txt">
+    Require all granted
+</Files>
 
 # Apenas sign-message.php pode ser chamado externamente
 <FilesMatch "^(?!sign-message\.php$).*\.php$">
