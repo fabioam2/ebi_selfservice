@@ -1042,24 +1042,34 @@
             <?php if ($focarPrimeiroCampoAposCadastro): ?>
                 focarPrimeiroCampoCadastro();
                 $('#formNovoCadastro .cadastro-input').val('');
-                // Auto-imprimir: selecionar não impressos e submeter
-                if (localStorage.getItem('autoImpressao') === 'true' && typeof qzConnected !== 'undefined' && qzConnected) {
-                    setTimeout(function() {
+                // Auto-imprimir: aguardar conexão QZ e imprimir não-impressos
+                if (localStorage.getItem('autoImpressao') === 'true') {
+                    function tentarAutoImprimir() {
                         // Selecionar todos os cadastros não impressos
+                        var checkboxes = [];
                         $('#lista-criancas tr').each(function() {
                             var impresso = $(this).find('.status-icon svg[fill="green"]').length > 0;
                             if (!impresso) {
                                 $(this).find('.checkbox-crianca').prop('checked', true);
+                                checkboxes.push(true);
                             }
                         });
-                        // Submeter impressão
-                        var selecionados = $('input.checkbox-crianca:checked').length;
-                        if (selecionados > 0) {
+                        if (checkboxes.length > 0) {
                             $('#formListaCriancas').find('input[name="imprimir"]').remove();
                             $('#formListaCriancas').append('<input type="hidden" name="imprimir" value="1">');
                             $('#formListaCriancas').submit();
                         }
-                    }, 500);
+                    }
+                    // Aguardar QZ Tray conectar (até 5s) ou imprimir direto se já conectado
+                    if (typeof qzReadyPromise !== 'undefined' && qzReadyPromise) {
+                        qzReadyPromise.then(function() {
+                            if (qzConnected) tentarAutoImprimir();
+                        });
+                    } else {
+                        setTimeout(function() {
+                            tentarAutoImprimir();
+                        }, 2000);
+                    }
                 }
             <?php elseif ($focarAposAcao): ?>
                 focarPrimeiroCampoCadastro();
