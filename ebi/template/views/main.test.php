@@ -1122,6 +1122,15 @@
             $('#portaria_cadastro').on('keydown', function(e) {
                 if (e.key === 'Enter' || (e.key === 'Tab' && !e.shiftKey)) {
                     e.preventDefault();
+                    var portariaVal = $(this).val().trim();
+                    // Auto-cadastrar: se auto-imprimir está ON e portaria preenchida e há dados no formulário
+                    if (localStorage.getItem('autoImpressao') === 'true' && portariaVal.length === 1) {
+                        var temDados = $('#input_0_0').val().trim() !== '';
+                        if (temDados) {
+                            $('#btnCadastrar').click();
+                            return;
+                        }
+                    }
                     if ($('#btnLimparCadastro').is(':visible') && !$('#btnLimparCadastro').is(':disabled')) { 
                         $('#btnLimparCadastro').focus();
                     } else {
