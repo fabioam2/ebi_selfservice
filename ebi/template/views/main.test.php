@@ -28,11 +28,12 @@
         #formNovoCadastro .form-registro-linha .form-group { margin-bottom: 0.1rem; padding-left: 5px; padding-right: 5px; }
         #formNovoCadastro .form-control-sm { font-size: 0.85rem; }
 
-        .col-nome-crianca { flex: 0 0 22%; max-width: 22%; }
-        .col-responsavel { flex: 0 0 22%; max-width: 22%; }
-        .col-idade { flex: 0 0 8%; max-width: 8%; }
-        .col-telefone { flex: 0 0 16%; max-width: 16%; }
-        .col-comum { flex: 0 0 16%; max-width: 16%; }
+        .col-nome-crianca { flex: 0 0 20%; max-width: 20%; }
+        .col-responsavel { flex: 0 0 20%; max-width: 20%; }
+        .col-idade { flex: 0 0 7%; max-width: 7%; }
+        .col-telefone { flex: 0 0 15%; max-width: 15%; }
+        .col-comum { flex: 0 0 14%; max-width: 14%; }
+        .col-sexo { flex: 0 0 5%; max-width: 5%; }
         .col-nascimento { flex: 0 0 7%; max-width: 7%; }
         .col-acao { flex: 0 0 9%; max-width: 9%; }
         .badge-teste-v2 { font-size: .65rem; vertical-align: middle; }
@@ -305,6 +306,7 @@
                 <div class="col col-idade text-center">Idade</div>
                 <div class="col col-telefone">Telefone</div>
                 <div class="col col-comum">Comum</div>
+                <div class="col col-sexo text-center" title="Sexo (M/F)">Sx</div>
                 <div class="col col-nascimento text-center" title="Data de Nascimento">DT</div>
                 <div class="col col-acao text-center">Ação</div>
             </div>
@@ -331,9 +333,17 @@
                     <label for="input_<?php echo $linha; ?>_4" class="d-md-none">Comum <?php echo $linha + 1; ?>:</label>
                     <input type="text" class="form-control form-control-sm cadastro-input" id="input_<?php echo $linha; ?>_4" name="comum[]" data-linha="<?php echo $linha; ?>" data-col="4" placeholder="Comum">
                 </div>
+                <div class="form-group col-md col-sexo">
+                    <label for="input_<?php echo $linha; ?>_5" class="d-md-none" title="Sexo">Sx <?php echo $linha + 1; ?>:</label>
+                    <select class="form-control form-control-sm cadastro-input text-center" id="input_<?php echo $linha; ?>_5" name="sexo[]" data-linha="<?php echo $linha; ?>" data-col="5" title="Sexo" style="font-size:0.7rem;padding:0.2rem;">
+                        <option value=""></option>
+                        <option value="M">M</option>
+                        <option value="F">F</option>
+                    </select>
+                </div>
                 <div class="form-group col-md col-nascimento">
-                    <label for="input_<?php echo $linha; ?>_5" class="d-md-none" title="Data de Nascimento">DT <?php echo $linha + 1; ?>:</label>
-                    <input type="text" inputmode="numeric" class="form-control form-control-sm data-nascimento-mask cadastro-input text-center" id="input_<?php echo $linha; ?>_5" name="data_nascimento[]" data-linha="<?php echo $linha; ?>" data-col="5" title="Data de Nascimento" placeholder="dd/mm" maxlength="10" style="font-size:0.7rem;padding:0.2rem;">
+                    <label for="input_<?php echo $linha; ?>_6" class="d-md-none" title="Data de Nascimento">DT <?php echo $linha + 1; ?>:</label>
+                    <input type="text" inputmode="numeric" class="form-control form-control-sm data-nascimento-mask cadastro-input text-center" id="input_<?php echo $linha; ?>_6" name="data_nascimento[]" data-linha="<?php echo $linha; ?>" data-col="6" title="Data de Nascimento" placeholder="dd/mm" maxlength="10" style="font-size:0.7rem;padding:0.2rem;">
                 </div>
                 <div class="form-group col-md col-acao px-1 d-flex align-items-center justify-content-center">
                     <?php if ($linha > 0): ?>
@@ -1001,7 +1011,7 @@
         const NUM_LINHAS_FORM_CADASTRO = <?php echo NUM_LINHAS_FORMULARIO_CADASTRO; ?>;
         // TESTE v2: agora suporta 6 colunas por linha (a 6ª é a data de nascimento,
         // presente apenas no novo formato de QR Code gerado por qrcode/qrcode.2.php).
-        const NUM_CAMPOS_POR_LINHA_CADASTRO = 6;
+        const NUM_CAMPOS_POR_LINHA_CADASTRO = 7;
 
         function focarPrimeiroCampoCadastro() {
             $('#input_0_0').focus();

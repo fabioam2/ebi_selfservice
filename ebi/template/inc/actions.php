@@ -17,6 +17,7 @@ if (isset($_POST['cadastrar'])) {
     $telefones         = $_POST['telefone']          ?? [];
     $comuns            = $_POST['comum']             ?? [];
     $datasNascimento   = $_POST['data_nascimento']   ?? [];
+    $sexos             = $_POST['sexo']              ?? [];
     $portariaCadastro  = strtoupper(trim($_POST['portaria_cadastro'] ?? ''));
 
     $cadastrosOk  = 0;
@@ -41,6 +42,7 @@ if (isset($_POST['cadastrar'])) {
                 $tel      = trim($telefones[$i]         ?? '');
                 $comum    = trim($comuns[$i]            ?? '');
                 $dataNasc = trim($datasNascimento[$i]   ?? '');
+                $sexo     = trim($sexos[$i]             ?? '');
 
                 if ($nome === '' && $resp === '' && $idade === '' && $tel === '' && $comum === '') {
                     continue;
@@ -63,7 +65,8 @@ if (isset($_POST['cadastrar'])) {
                     sanitize_for_file($comum),
                     $portariaCadastro,
                     $codResp,
-                    sanitize_for_file($dataNasc)
+                    sanitize_for_file($dataNasc),
+                    sanitize_for_file($sexo)
                 );
 
                 $novosParaStats[] = [
