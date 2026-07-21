@@ -252,6 +252,10 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear mr-1" viewBox="0 0 16 16"><path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"/><path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115z"/></svg>
                         Configurar Impressora e Instância
                     </button>
+                    <button class="dropdown-item" type="button" onclick="toggleAutoImpressao()" id="btnToggleAutoImpressao">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-lightning mr-1" viewBox="0 0 16 16"><path d="M5.52.359A.5.5 0 0 1 6 0h4a.5.5 0 0 1 .474.658L8.694 6H12.5a.5.5 0 0 1 .395.807l-7 9a.5.5 0 0 1-.873-.454L6.823 9.5H3.5a.5.5 0 0 1-.48-.641z"/></svg>
+                        <span id="labelAutoImpressao">Auto-Imprimir: OFF</span>
+                    </button>
                     <button class="dropdown-item" type="button" onclick="abrirModalAlterarSenha()">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-key-fill mr-1" viewBox="0 0 16 16"><path d="M3 8a4 4 0 1 1 7.937.5H14a1 1 0 0 1 1 1v1h-1v1h-1v1h-2.062A4.001 4.001 0 0 1 3 8m4-3a3 3 0 1 0 2.83 4H11v1h1v1h1v-1h1V9h-3.17A3.001 3.001 0 0 0 7 5"/></svg>
                         Alterar Senha
@@ -1037,7 +1041,26 @@
 
             <?php if ($focarPrimeiroCampoAposCadastro): ?>
                 focarPrimeiroCampoCadastro();
-                $('#formNovoCadastro .cadastro-input').val(''); 
+                $('#formNovoCadastro .cadastro-input').val('');
+                // Auto-imprimir: selecionar não impressos e submeter
+                if (localStorage.getItem('autoImpressao') === 'true' && typeof qzConnected !== 'undefined' && qzConnected) {
+                    setTimeout(function() {
+                        // Selecionar todos os cadastros não impressos
+                        $('#lista-criancas tr').each(function() {
+                            var impresso = $(this).find('.status-icon svg[fill="green"]').length > 0;
+                            if (!impresso) {
+                                $(this).find('.checkbox-crianca').prop('checked', true);
+                            }
+                        });
+                        // Submeter impressão
+                        var selecionados = $('input.checkbox-crianca:checked').length;
+                        if (selecionados > 0) {
+                            $('#formListaCriancas').find('input[name="imprimir"]').remove();
+                            $('#formListaCriancas').append('<input type="hidden" name="imprimir" value="1">');
+                            $('#formListaCriancas').submit();
+                        }
+                    }, 500);
+                }
             <?php elseif ($focarAposAcao): ?>
                 focarPrimeiroCampoCadastro();
             <?php elseif (!empty($mensagemErro)): ?>
@@ -1456,6 +1479,40 @@
                 painel.addClass('d-none');
             }
         }
+
+        // ============ AUTO-IMPRIMIR APÓS CADASTRO ============
+
+        var autoImpressaoAtiva = localStorage.getItem('autoImpressao') === 'true';
+
+        function toggleAutoImpressao() {
+            autoImpressaoAtiva = !autoImpressaoAtiva;
+            localStorage.setItem('autoImpressao', autoImpressaoAtiva);
+            atualizarEstadoAutoImpressao();
+            if (autoImpressaoAtiva) {
+                alert('Auto-Imprimir ATIVADO!\n\nApós cadastrar, o sistema imprimirá automaticamente as pulseiras.');
+            } else {
+                alert('Auto-Imprimir DESATIVADO.\nApós cadastrar, será necessário imprimir manualmente.');
+            }
+        }
+
+        function atualizarEstadoAutoImpressao() {
+            var label = document.getElementById('labelAutoImpressao');
+            var btn = document.getElementById('btnToggleAutoImpressao');
+            if (autoImpressaoAtiva) {
+                label.textContent = 'Auto-Imprimir: ON';
+                label.style.fontWeight = 'bold';
+                label.style.color = '#1b5e20';
+                btn.style.backgroundColor = '#c8e6c9';
+            } else {
+                label.textContent = 'Auto-Imprimir: OFF';
+                label.style.fontWeight = 'normal';
+                label.style.color = '';
+                btn.style.backgroundColor = '';
+            }
+        }
+
+        // Inicializar estado visual
+        atualizarEstadoAutoImpressao();
 
         function salvarConfigTeste() {
             localStorage.setItem('testeX',        $('#testeX').val()        || '140');
