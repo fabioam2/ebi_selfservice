@@ -424,12 +424,6 @@
                     </div>
                 </div>
 
-                <div class="form-group" style="margin-top:16px;">
-                    <label for="portariaQR" style="font-weight:600;font-size:0.85rem;">Portaria (opcional — auto-cadastra ao ler):</label>
-                    <input type="text" id="portariaQR" maxlength="1" style="width:50px;text-align:center;text-transform:uppercase;font-weight:700;font-size:1.1rem;border:2px solid var(--brand, #0e7490);border-radius:8px;padding:6px;" placeholder="A">
-                    <small style="color:#666;display:block;margin-top:4px;">Se preenchido, o QR Code incluirá a portaria e o cadastro será automático ao ler com a pistola.</small>
-                </div>
-
                 <button type="button" class="btn btn-add-child" onclick="addChildField()">
                     <i class="fas fa-plus mr-1"></i>Adicionar Criança
                 </button>
@@ -694,12 +688,6 @@
                         qrData += '\r'; // Separador de registros (crianças)
                     }
                 }
-            }
-
-            // Incluir portaria no final do QR (permite cadastro automático ao ler)
-            var portariaQR = document.getElementById('portariaQR').value.toUpperCase().trim();
-            if (portariaQR && qrData) {
-                qrData += '\r' + portariaQR; // Enter + Portaria após última criança
             }
 
             applyPhoneMask();
