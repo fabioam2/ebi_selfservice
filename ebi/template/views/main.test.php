@@ -1042,25 +1042,27 @@
             <?php if ($focarPrimeiroCampoAposCadastro): ?>
                 focarPrimeiroCampoCadastro();
                 $('#formNovoCadastro .cadastro-input').val('');
-                // Auto-imprimir: aguardar conexão QZ e imprimir não-impressos
+                // Auto-imprimir: apenas os cadastros recém-feitos (últimos N)
                 if (localStorage.getItem('autoImpressao') === 'true') {
+                    var cadastrosRecentes = <?php echo (int)$cadastrosRecentesCount; ?>;
                     function tentarAutoImprimir() {
-                        // Selecionar todos os cadastros não impressos
-                        var checkboxes = [];
+                        if (cadastrosRecentes <= 0) return;
+                        // Selecionar apenas os primeiros N não-impressos no topo da tabela
+                        var count = 0;
                         $('#lista-criancas tr').each(function() {
+                            if (count >= cadastrosRecentes) return false;
                             var impresso = $(this).find('.status-icon svg[fill="green"]').length > 0;
                             if (!impresso) {
                                 $(this).find('.checkbox-crianca').prop('checked', true);
-                                checkboxes.push(true);
+                                count++;
                             }
                         });
-                        if (checkboxes.length > 0) {
+                        if (count > 0) {
                             $('#formListaCriancas').find('input[name="imprimir"]').remove();
                             $('#formListaCriancas').append('<input type="hidden" name="imprimir" value="1">');
                             $('#formListaCriancas').submit();
                         }
                     }
-                    // Aguardar QZ Tray conectar (até 5s) ou imprimir direto se já conectado
                     if (typeof qzReadyPromise !== 'undefined' && qzReadyPromise) {
                         qzReadyPromise.then(function() {
                             if (qzConnected) tentarAutoImprimir();

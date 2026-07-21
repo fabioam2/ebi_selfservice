@@ -101,6 +101,7 @@ if (isset($_POST['cadastrar'])) {
     } elseif ($cadastrosOk > 0) {
         $_SESSION['mensagemSucesso']          = $cadastrosOk . ' cadastro(s) realizado(s)!';
         $_SESSION['cadastro_realizado_sucesso'] = true;
+        $_SESSION['cadastros_ok_count'] = $cadastrosOk;
     }
 
     // Redirect: se veio do mobile, voltar para ?acao=mobile
