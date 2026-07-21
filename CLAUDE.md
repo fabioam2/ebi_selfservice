@@ -33,6 +33,22 @@ Estas regras são padrão obrigatório para toda IA que trabalhar aqui.
 - Arquivos SQLite devem ter `chmod(0600)` aplicado na criação
 - `sanitize_for_html()` em toda saída HTML
 
+## Certificado de assinatura QZ Tray
+
+- **Localização**: `ebi/template/assets/signing/` — `private-key.pem` (chave, sem senha) + `digital-certificate.txt` (certificado X.509 autoassinado). Usados por `views/main.php`, `calibrar.php` e `sign-message.php` para assinar (SHA512) as requisições de impressão enviadas ao QZ Tray via `qz.security.setCertificatePromise` / `setSignaturePromise`.
+- `private-key.pem` está no `.gitignore` (`*.pem`) — **nunca deve ser commitado**.
+- `criar_instancia.php` copia `assets/signing/` inteiro para cada `ebi/i/user_XXX/` na criação da instância. Isso é necessário porque o `fetch()` do QZ Tray no navegador é relativo à URL da instância, não ao `require` do PHP — sem essa cópia o certificado não é encontrado fora do template.
+- **Pacote de distribuição**: `ebi/driveQZtray/QZTrayCertificados.zip` — contém uma cópia do `digital-certificate.txt` atual + `LEIA-ME.txt` com instruções de instalação/confiança no QZ Tray e a fingerprint SHA-256 do certificado. Servido via `ebi/template/download.php`. É a única exceção liberada no `.gitignore` à regra geral `*.zip` (`!/ebi/driveQZtray/*.zip`).
+
+### ⚠️ REGRA OBRIGATÓRIA — se pedirem para alterar/regenerar este certificado
+
+Antes de trocar, regenerar ou rotacionar o certificado/chave do QZ Tray, **alerte o usuário** sobre os efeitos abaixo antes de agir:
+
+1. **Instâncias já criadas não são atualizadas automaticamente.** Cada `ebi/i/user_XXX/` tem sua própria cópia de `assets/signing/`, feita no momento da criação. Trocar o template não propaga para instâncias existentes — seria necessário recopiar manualmente (ou reexecutar essa etapa) para cada uma.
+2. **O zip `ebi/driveQZtray/QZTrayCertificados.zip` precisa ser regerado** com o novo `digital-certificate.txt` e a fingerprint SHA-256 atualizada no `LEIA-ME.txt`, senão o pacote de download fica inconsistente com o certificado realmente em uso.
+3. **Rotacionar o certificado invalida a confiança já concedida** em cada máquina cliente — os operadores verão de novo a janela "Action Required" do QZ Tray na próxima conexão e precisarão marcar "Remember" novamente.
+4. **Confirme com `git status` antes de commitar** qualquer mudança em `assets/signing/` — `private-key.pem` nunca deve aparecer staged.
+
 ## Versionamento de páginas — REGRA OBRIGATÓRIA
 
 **Sempre que modificar ou criar uma página PHP que gera HTML**, adicionar no final do `<body>` (antes de `</body>`) o seguinte rodapé de versão:

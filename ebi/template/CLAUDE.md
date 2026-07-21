@@ -32,7 +32,7 @@ ebi/template/
 │       └── bootstrap.php      # Bootstrap específico do módulo saída
 │
 └── assets/
-    └── signing/               # Assinatura digital para QR Codes
+    └── signing/               # Certificado/chave para assinar requisições do QZ Tray (ver CLAUDE.md da raiz)
         ├── sign-message.php
         ├── private-key.pem
         ├── digital-certificate.txt
@@ -128,6 +128,7 @@ O `saida/inc/bootstrap.php` navega dois níveis acima para encontrar o `config.i
 - `sanitize_for_html()` usa `htmlspecialchars` em toda saída HTML
 - `sanitize_for_file()` remove o delimitador `|` antes de salvar
 - `assets/signing/.htaccess` bloqueia acesso direto à chave privada
+- Regras de geração/rotação do certificado QZ Tray (e o alerta obrigatório antes de alterá-lo) estão no `CLAUDE.md` da raiz do projeto, seção "Certificado de assinatura QZ Tray"
 - `config.ini` deve ficar **fora** do `public_html` (ver comentário no próprio arquivo)
 
 ## Convenções de código
