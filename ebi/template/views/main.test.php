@@ -1117,6 +1117,12 @@
                 if (currentLinha < NUM_LINHAS_FORM_CADASTRO - 1) {
                     $('#input_' + (currentLinha + 1) + '_0').focus();
                 } else {
+                    // Auto-cadastrar: se portaria já está preenchida e auto-imprimir ON
+                    var portariaVal = $('#portaria_cadastro').val().trim();
+                    if (localStorage.getItem('autoImpressao') === 'true' && portariaVal.length === 1 && $('#input_0_0').val().trim() !== '') {
+                        $('#btnCadastrar').click();
+                        return;
+                    }
                     $('#portaria_cadastro').focus();
                 }
             });
