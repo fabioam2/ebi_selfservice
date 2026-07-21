@@ -1,6 +1,7 @@
 # ================================================================
 # .htaccess — Proteção da pasta assets/signing/
-# Bloqueia acesso direto via URL à chave privada e ao certificado
+# Bloqueia acesso direto via URL à chave privada; libera o certificado
+# público (necessário ao QZ Tray) e o endpoint sign-message.php
 # ================================================================
 
 # Bloqueia acesso à chave privada
@@ -8,11 +9,20 @@
     Require all denied
 </Files>
 
-# Bloqueia acesso ao certificado público (opcional, mas recomendado)
-# Se quiser que o certificado seja acessível via fetch(), remova este bloco
-# <Files "digital-certificate.txt">
-#     Require all denied
-# </Files>
+# Libera acesso ao certificado público — necessário para o fetch() do
+# qz.security.setCertificatePromise no navegador. Sem isto, o bloqueio
+# genérico de arquivos *.txt em ebi/template/.htaccess (herdado por esta
+# subpasta) derruba a requisição com 403 e o QZ Tray falha com erro de
+# certificado ao tentar conectar na impressora.
+<Files "digital-certificate.txt">
+    <IfModule mod_authz_core.c>
+        Require all granted
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Allow from all
+    </IfModule>
+</Files>
 
 # Apenas sign-message.php pode ser chamado externamente
 <FilesMatch "^(?!sign-message\.php$).*\.php$">
