@@ -1,6 +1,17 @@
 # Proteção de arquivos sensíveis (EBI template)
 Options -Indexes
 
+# Permitir acesso ao certificado público do QZ Tray (necessário para impressão)
+<Files "digital-certificate.txt">
+    <IfModule mod_authz_core.c>
+        Require all granted
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Allow from all
+    </IfModule>
+</Files>
+
 # Bloqueia acesso direto a configs, dumps de dados e backups
 <FilesMatch "(?i)\.(ini|txt|log|bak|sql|sqlite|env|md)$">
     <IfModule mod_authz_core.c>
