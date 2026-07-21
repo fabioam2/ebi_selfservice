@@ -99,9 +99,12 @@ if ($exibirModalRecuperacao) {
 }
 
 $focarPrimeiroCampoAposCadastro = false;
+$cadastrosRecentesCount = 0;
 if (!empty($_SESSION['cadastro_realizado_sucesso'])) {
     $focarPrimeiroCampoAposCadastro = true;
+    $cadastrosRecentesCount = (int)($_SESSION['cadastros_ok_count'] ?? 0);
     unset($_SESSION['cadastro_realizado_sucesso']);
+    unset($_SESSION['cadastros_ok_count']);
 }
 
 $focarAposAcao = false;
