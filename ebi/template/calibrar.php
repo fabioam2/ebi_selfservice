@@ -447,6 +447,12 @@
                 <strong>Pré-requisito:</strong> O <a href="https://qz.io/download/" target="_blank" style="color:var(--info)">QZ Tray</a> deve estar instalado e rodando no computador Windows com a impressora USB.
                 A leitura de parâmetros é feita via etiqueta impressa (<code style="color:var(--accent-light)">~WC</code>). Como o QZ Tray é one-way via spooler, os parâmetros devem ser preenchidos manualmente ou carregados de um backup JSON salvo anteriormente.
             </div>
+
+            <div class="btn-group" style="margin-top:10px;">
+                <button class="btn btn-accent btn-block" onclick="runFullWorkflow()" id="btnFullTop">
+                    🚀 Calibrar Tudo Automaticamente
+                </button>
+            </div>
         </div>
     </div>
 
