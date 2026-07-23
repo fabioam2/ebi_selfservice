@@ -60,10 +60,15 @@ $todosOsCadastros      = lerTodosCadastros();
 $totalDeCadastrosGeral = count($todosOsCadastros);
 
 $totalCriancas3Anos = 0;
+$totalMeninos = 0;
+$totalMeninas = 0;
 foreach ($todosOsCadastros as $c) {
     if (in_array(trim((string)($c['idade'] ?? '')), ['3', '03'], true)) {
         $totalCriancas3Anos++;
     }
+    $sexo = strtoupper(trim($c['sexo'] ?? ''));
+    if ($sexo === 'M') $totalMeninos++;
+    elseif ($sexo === 'F') $totalMeninas++;
 }
 
 // ── Contador "Comum destaque" ─────────────────────────────────────────────────

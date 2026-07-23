@@ -428,6 +428,9 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-cake2" viewBox="0 0 16 16"><path d="M11.05 4.05a2.5 2.5 0 1 0-4.999.058A2.5 2.5 0 0 0 11.05 4.05zm-4.01-.034a1.5 1.5 0 1 1 2.998-.033A1.5 1.5 0 0 1 7.04 4.016z"/><path d="M6.536 6.072L5.85 7.305A.5.5 0 0 0 6.29 8h3.42a.5.5 0 0 0 .44-.695l-.686-1.233L13.617 5.25a.5.5 0 0 0-.39-.867H2.773a.5.5 0 0 0-.39.867l4.153.822z"/><path d="M12.572 6.092L12 6.224v4.248c.782.396 1.595.24 2.222-.457.628-.698.782-1.61.396-2.393-.386-.783-1.2-.937-1.932-.783zm-1.03 4.355V6.35H4.458v4.097c-.782-.396-1.595-.24-2.222.457-.628-.698-.782-1.61-.396-2.393.386.783 1.2.937 1.932.783A2.91 2.91 0 0 0 4.3 12.57a2.91 2.91 0 0 0 3.572 1.818c.782.396 1.595.24 2.222-.457.628-.698.782-1.61.396-2.393-.386-.783-1.2-.937-1.932-.783A2.91 2.91 0 0 0 11.542 10.447zM4.907 11.32c-.185.059-.354.15-.495.271-.14.12-.242.265-.304.423l-.066.165c-.073.188-.098.388-.066.58.03.18.113.348.235.485.122.137.28.238.458.29.178.053.368.057.546.013l.126-.03.11-.042.108-.054.092-.06a1.08 1.08 0 0 1 .23-.167c.05-.04.094-.085.132-.133.09-.114.155-.245.19-.383.036-.137.043-.28.023-.416a.97.97 0 0 0-.133-.437c-.08-.14-.19-.26-.32-.35-.13-.09-.27-.14-.41-.16l-.112-.01z"/></svg>
                         3 Anos: <?php echo $totalCriancas3Anos; ?>
                     </div>
+                    <div class="total-cadastros-info" title="Meninos / Meninas" style="background-color:#17a2b8;border-color:#117a8b;">
+                        ♂ <?php echo $totalMeninos; ?> / ♀ <?php echo $totalMeninas; ?>
+                    </div>
                     <?php if (!empty($palavrasChaveComumDestaque)): ?>
                     <div class="total-cadastros-info" title="Total de cadastros da comum configurada (<?php echo sanitize_for_html($nomeComumDestaque); ?>)">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-house-heart-fill" viewBox="0 0 16 16">
@@ -458,15 +461,16 @@
                             <th style="width: 4%;" class="no-print"><input type="checkbox" id="selecionarTodos" title="Selecionar todos" aria-label="Selecionar todos"></th>
                             <th style="width: 6%;">Impresso</th>
                             <th style="width: 6%;">Portaria</th>
-                            <th style="width: 7%;">Código</th>
-                            <th style="width: 7%;">Cod Resp</th>
+                            <th style="width: 6%;">Código</th>
+                            <th style="width: 6%;">Cod Resp</th>
                             <th style="width: auto;">Nome da Criança</th>
                             <th style="width: auto;">Nome do Responsável</th>
-                            <th style="width: 12%;">Telefone</th>
-                            <th style="width: 6%;">Idade</th>
+                            <th style="width: 10%;">Telefone</th>
+                            <th style="width: 5%;">Idade</th>
+                            <th style="width: 4%;" title="Sexo">Sx</th>
                             <th style="width: 5%;" title="Data de Nascimento">DT</th>
-                            <th style="width: 12%;">Comum</th>
-                            <th style="width: 8%;" class="no-print">Ações</th>
+                            <th style="width: 10%;">Comum</th>
+                            <th style="width: 4%;" class="no-print" title="Excluir">🗑️</th>
                         </tr>
                     </thead>
                     <tbody id="lista-criancas">
@@ -487,20 +491,21 @@
                                     <td data-campo="portaria" style="text-align: center;"><?php echo sanitize_for_html($crianca['portaria'] ?? ''); ?></td>
                                     <td style="text-align: center;"><?php echo sanitize_for_html($crianca['id']); ?></td>
                                     <td style="text-align: center;"><?php echo sanitize_for_html($crianca['cod_resp'] ?? ''); ?></td>
-                                    <td><?php
+                                    <td data-nome="<?php echo sanitize_for_html($crianca['nomeCrianca']); ?>"><?php
                                         echo sanitize_for_html($crianca['nomeCrianca']);
                                         if (function_exists('verificarAniversario')) {
                                             $tagAniv = verificarAniversario($crianca['dataNascimento'] ?? '');
                                             if ($tagAniv === 'hoje') {
-                                                echo ' <span class="badge badge-warning" title="Aniversário HOJE!">🎂 Hoje</span>';
+                                                echo ' <span class="badge badge-warning no-print" title="Aniversário HOJE!">*</span>';
                                             } elseif ($tagAniv === 'semana') {
-                                                echo ' <span class="badge badge-info" title="Aniversário esta semana">🎈 Semana</span>';
+                                                echo ' <span class="badge badge-info no-print" title="Aniversário esta semana">~</span>';
                                             }
                                         }
                                     ?></td>
                                     <td><?php echo sanitize_for_html($crianca['nomeResponsavel']); ?></td>
                                     <td style="text-align: center;"><?php echo sanitize_for_html($crianca['telefone']); ?></td>
                                     <td style="text-align: center;"><?php echo sanitize_for_html($crianca['idade']); ?></td>
+                                    <td style="text-align: center;"><?php echo sanitize_for_html($crianca['sexo'] ?? ''); ?></td>
                                     <td style="text-align: center; font-size:0.75rem;" title="<?php echo sanitize_for_html($crianca['dataNascimento'] ?? ''); ?>"><?php
                                         $dn = $crianca['dataNascimento'] ?? '';
                                         echo $dn ? sanitize_for_html(substr($dn, 0, 5)) : '';
@@ -512,7 +517,7 @@
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
-                            <tr><td colspan="12" class="text-center py-4">Nenhuma criança cadastrada ainda.</td></tr>
+                            <tr><td colspan="13" class="text-center py-4">Nenhuma criança cadastrada ainda.</td></tr>
                         <?php endif; ?>
                     </tbody>
                 </table>
@@ -1346,23 +1351,27 @@
 
             // Função auxiliar para extrair dados visíveis da tabela
             function extrairDadosTabelaVisivel() {
-                var headers = ['Impresso', 'Portaria', 'Codigo', 'Cod Resp', 'Nome da Crianca', 'Nome do Responsavel', 'Telefone', 'Idade', 'Comum'];
+                var headers = ['Impresso', 'Portaria', 'Codigo', 'Cod Resp', 'Nome da Crianca', 'Nome do Responsavel', 'Telefone', 'Idade', 'Sexo', 'DT', 'Comum'];
                 var rows = [];
                 $('#lista-criancas tr').each(function() {
                     if ($(this).is(':visible')) {
                         var $cells = $(this).find('td');
                         if ($cells.length === 0) return;
                         var impresso = $cells.eq(1).find('svg').length > 0 ? 'Sim' : 'Nao';
+                        // Usar data-nome para evitar emojis de aniversário
+                        var nomeCrianca = $cells.eq(5).attr('data-nome') || $cells.eq(5).text().trim();
                         var row = [
                             impresso,
                             $cells.eq(2).text().trim(),
                             $cells.eq(3).text().trim(),
                             $cells.eq(4).text().trim(),
-                            $cells.eq(5).text().trim(),
+                            nomeCrianca,
                             $cells.eq(6).text().trim(),
                             $cells.eq(7).text().trim(),
                             $cells.eq(8).text().trim(),
-                            $cells.eq(9).text().trim()
+                            $cells.eq(9).text().trim(),
+                            $cells.eq(10).text().trim(),
+                            $cells.eq(11).text().trim()
                         ];
                         rows.push(row);
                     }
