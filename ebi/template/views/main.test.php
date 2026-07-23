@@ -496,9 +496,9 @@
                                         if (function_exists('verificarAniversario')) {
                                             $tagAniv = verificarAniversario($crianca['dataNascimento'] ?? '');
                                             if ($tagAniv === 'hoje') {
-                                                echo ' <span class="badge badge-warning no-print" title="Aniversário HOJE!">*</span>';
+                                                echo ' <span class="badge badge-warning no-print" title="Aniversário HOJE!">🎂</span>';
                                             } elseif ($tagAniv === 'semana') {
-                                                echo ' <span class="badge badge-info no-print" title="Aniversário esta semana">~</span>';
+                                                echo ' <span class="badge badge-info no-print" title="Aniversário esta semana">🥳</span>';
                                             }
                                         }
                                     ?></td>
