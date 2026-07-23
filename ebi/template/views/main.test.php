@@ -1097,16 +1097,20 @@
             // coluna na mesma linha, e o Enter sempre pula para a coluna 0 da próxima linha —
             // independentemente de quantas colunas (5 ou 6) foram preenchidas antes do Enter.
             // Isso permite que a mesma tela funcione com os dois tipos de QR Code sem
-            // precisar saber de antemão qual formato está sendo lido.
-            // Com QR v2: todos os campos separados por Tab, Enter só no final (sufixo do scanner)
+            // Suporta QR antigo (Enter entre crianças) e QR novo (só Tab)
+            // Debounce: Enter agenda submit em 300ms; se mais dados chegarem, cancela
+            var autoSubmitTimer = null;
+
             $('.cadastro-input').on('keydown', function(e) {
                 const key = e.key;
                 if (key !== 'Enter' && key !== 'Tab') {
-                    // Qualquer tecla de dados cancela o timer de auto-submit
+                    // Dados chegando: cancelar auto-submit pendente
                     if (autoSubmitTimer) { clearTimeout(autoSubmitTimer); autoSubmitTimer = null; }
                     return;
                 }
                 e.preventDefault();
+                // Tab/Enter também cancela timer anterior (nova navegação)
+                if (autoSubmitTimer) { clearTimeout(autoSubmitTimer); autoSubmitTimer = null; }
 
                 const target = e.target;
                 const currentLinha = parseInt($(target).data('linha'));
@@ -1123,19 +1127,23 @@
                     return;
                 }
 
-                // Enter: auto-cadastrar se condições atendidas (Enter = final do QR)
-                if (localStorage.getItem('autoImpressao') === 'true') {
-                    var portariaVal = $('#portaria_cadastro').val().trim();
-                    if (portariaVal.length === 1 && $('#input_0_0').val().trim() !== '') {
-                        $('#btnCadastrar').click();
-                        return;
-                    }
-                }
-                // Sem auto-imprimir: mover para próxima linha ou portaria
+                // Enter: mover para próxima linha (suporte QR antigo com \r entre crianças)
                 if (currentLinha < NUM_LINHAS_FORM_CADASTRO - 1) {
                     $('#input_' + (currentLinha + 1) + '_0').focus();
                 } else {
                     $('#portaria_cadastro').focus();
+                }
+
+                // Agendar auto-submit com debounce (300ms)
+                // Se mais dados chegarem (próxima criança), o timer é cancelado acima
+                if (localStorage.getItem('autoImpressao') === 'true') {
+                    autoSubmitTimer = setTimeout(function() {
+                        var portariaVal = $('#portaria_cadastro').val().trim();
+                        if (portariaVal.length === 1 && $('#input_0_0').val().trim() !== '') {
+                            $('#btnCadastrar').click();
+                        }
+                        autoSubmitTimer = null;
+                    }, 300);
                 }
             });
 
