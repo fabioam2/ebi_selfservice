@@ -429,7 +429,7 @@
                         3 Anos: <?php echo $totalCriancas3Anos; ?>
                     </div>
                     <div class="total-cadastros-info" title="Meninos / Meninas" style="background-color:#17a2b8;border-color:#117a8b;">
-                        ♂ <?php echo $totalMeninos; ?> / ♀ <?php echo $totalMeninas; ?>
+                        👦 <?php echo $totalMeninos; ?> / 👧 <?php echo $totalMeninas; ?>
                     </div>
                     <?php if (!empty($palavrasChaveComumDestaque)): ?>
                     <div class="total-cadastros-info" title="Total de cadastros da comum configurada (<?php echo sanitize_for_html($nomeComumDestaque); ?>)">
