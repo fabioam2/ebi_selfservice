@@ -50,6 +50,16 @@ foreach ($comumAgr as $c => $cnt) {
 $totalForaComum  = max(0, $periodoTotais['cadastros'] - $totalDaComum);
 $totalIdades     = array_sum(array_intersect_key($periodoTotais, array_flip(['age_0_3','age_4_7','age_8_11','age_12_14','age_15_17']))) ?: 1;
 
+// Sexo (M/F) — contagem direta dos cadastros atuais
+$totalMeninos = 0;
+$totalMeninas = 0;
+foreach ($todosOsCadastros as $c) {
+    $sexo = strtoupper(trim($c['sexo'] ?? ''));
+    if ($sexo === 'M') $totalMeninos++;
+    elseif ($sexo === 'F') $totalMeninas++;
+}
+$totalSexo = max(1, $totalMeninos + $totalMeninas);
+
 // Hoje
 $todayRow = null;
 foreach ($diasRows as $r) { if ($r['date'] === $hoje) { $todayRow = $r; break; } }
@@ -150,7 +160,7 @@ $instNome = (defined('INSTANCE_COMUM') && INSTANCE_COMUM ? ucfirst(INSTANCE_COMU
 
     <div class="row">
         <!-- Faixas etárias -->
-        <div class="col-md-5 mb-3">
+        <div class="col-md-4 mb-3">
             <div class="card border-0 shadow-sm p-3" style="border-radius:12px">
                 <div class="section-title">Faixa Etária (<?php echo $periodo; ?>d)</div>
                 <?php
@@ -231,6 +241,35 @@ $instNome = (defined('INSTANCE_COMUM') && INSTANCE_COMUM ? ucfirst(INSTANCE_COMU
                     </div>
                     <?php endforeach; ?>
                 <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- Sexo (Meninos/Meninas) -->
+        <div class="col-md-2 mb-3">
+            <div class="card border-0 shadow-sm p-3 h-100" style="border-radius:12px">
+                <div class="section-title">Sexo</div>
+                <div class="text-center mb-3">
+                    <div style="font-size:2rem;font-weight:700;color:#17a2b8"><?php echo $totalMeninos + $totalMeninas; ?></div>
+                    <div class="text-muted" style="font-size:.75rem">com sexo informado</div>
+                </div>
+                <div class="mb-2">
+                    <div class="d-flex justify-content-between mb-1">
+                        <small>👦 Meninos</small>
+                        <small class="font-weight-bold"><?php echo $totalMeninos; ?></small>
+                    </div>
+                    <div class="bar-wrap">
+                        <div class="bar-fill" style="width:<?php echo round($totalMeninos / $totalSexo * 100); ?>%;background:#4e73df"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <small>👧 Meninas</small>
+                        <small class="font-weight-bold"><?php echo $totalMeninas; ?></small>
+                    </div>
+                    <div class="bar-wrap">
+                        <div class="bar-fill" style="width:<?php echo round($totalMeninas / $totalSexo * 100); ?>%;background:#e74a9a"></div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
