@@ -698,7 +698,7 @@
                     qrData += `${nomeFilho}\t${nomePai}\t${idade}\t${telefone}\t${comum}\t${sexoFilho}\t${dataNascimentoMaskValue}`;
 
                     if (i < childCount) {
-                        qrData += '\r'; // Separador de registros (crianças)
+                        qrData += '\t'; // Tab entre crianças (Enter só no final pelo scanner)
                     }
                 }
             }
