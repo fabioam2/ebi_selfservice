@@ -1102,6 +1102,8 @@
             $('.cadastro-input').on('keydown', function(e) {
                 const key = e.key;
                 if (key !== 'Enter' && key !== 'Tab') {
+                    // Qualquer tecla de dados cancela o timer de auto-submit
+                    if (autoSubmitTimer) { clearTimeout(autoSubmitTimer); autoSubmitTimer = null; }
                     return;
                 }
                 e.preventDefault();
