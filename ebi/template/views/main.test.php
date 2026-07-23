@@ -1127,6 +1127,15 @@
 
                 // Enter: mover para próxima linha e agendar auto-submit com debounce
                 if (currentLinha < NUM_LINHAS_FORM_CADASTRO - 1) {
+                    // Auto-cadastrar: se auto-imprimir ON, portaria preenchida, e próxima linha vazia
+                    if (localStorage.getItem('autoImpressao') === 'true') {
+                        var portariaVal = $('#portaria_cadastro').val().trim();
+                        var proximaLinhaVazia = $('#input_' + (currentLinha + 1) + '_0').val().trim() === '';
+                        if (portariaVal.length === 1 && proximaLinhaVazia && $('#input_0_0').val().trim() !== '') {
+                            $('#btnCadastrar').click();
+                            return;
+                        }
+                    }
                     $('#input_' + (currentLinha + 1) + '_0').focus();
                     // Agendar auto-submit: se nenhum dado chegar em 200ms, é o Enter final
                     if (localStorage.getItem('autoImpressao') === 'true') {
