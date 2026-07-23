@@ -5,28 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastro de Crianças (TESTE v2 — QR Code)</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #eef2f7; }
-        .container { margin-top: 20px; padding: 20px; background-color: #ffffff; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); max-width: 1300px; }
-        .tabela-scrollable { max-height: 400px; overflow-y: auto; margin-bottom: 20px; border: 1px solid #dee2e6; border-radius: 8px; }
+        :root {
+            --bg-1: #0f766e; --bg-2: #0b4f8a;
+            --brand: #0e7490; --brand-strong: #0b5f76;
+            --surface: rgba(255,255,255,0.97);
+            --text-main: #10273b; --text-soft: #4b647c;
+        }
+        body { font-family: 'Manrope', sans-serif; background: linear-gradient(135deg, var(--bg-1) 0%, var(--bg-2) 60%, #083358 100%); min-height: 100vh; }
+        .container { margin-top: 16px; padding: 20px; background: var(--surface); border-radius: 18px; box-shadow: 0 12px 40px rgba(1,27,49,0.25); max-width: 1340px; border: 1px solid rgba(15,23,42,0.06); }
+        .tabela-scrollable { max-height: 400px; overflow-y: auto; margin-bottom: 20px; border: 1px solid #e2e8f0; border-radius: 12px; }
         .tabela-scrollable table { width: 100%; margin-bottom: 0; }
-        .tabela-scrollable th { background-color: #007bff; color: white; position: sticky; top: 0; z-index: 10; font-size: 0.9rem; padding: 0.5rem; text-align: center; }
-        .tabela-scrollable td { font-size: 0.85rem; padding: 0.4rem; vertical-align: middle; }
-        .tabela-scrollable th:nth-child(6), .tabela-scrollable th:nth-child(7), .tabela-scrollable th:nth-child(10) { text-align: left;}
-        .tabela-scrollable td:nth-child(6), .tabela-scrollable td:nth-child(7), .tabela-scrollable td:nth-child(10) { text-align: left;}
+        .tabela-scrollable th { background: linear-gradient(135deg, var(--brand), var(--brand-strong)); color: white; position: sticky; top: 0; z-index: 10; font-size: 0.82rem; padding: 0.5rem; text-align: center; font-weight: 600; }
+        .tabela-scrollable td { font-size: 0.82rem; padding: 0.4rem; vertical-align: middle; }
+        .tabela-scrollable th:nth-child(6), .tabela-scrollable th:nth-child(7), .tabela-scrollable th:nth-child(11) { text-align: left;}
+        .tabela-scrollable td:nth-child(6), .tabela-scrollable td:nth-child(7), .tabela-scrollable td:nth-child(11) { text-align: left;}
+        .tabela-scrollable tbody tr:hover { background-color: rgba(14,116,144,0.06); }
 
-        .form-control-sm { height: calc(1.5em + .5rem + 2px); padding: .25rem .5rem; font-size: .875rem; line-height: 1.5; border-radius: .2rem; }
-        .btn { margin-right: 8px; border-radius: 5px; padding: 8px 15px; transition: all 0.2s ease-in-out; }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        .alert { border-radius: 8px; margin-bottom: 15px; }
-        header h1 img { border: 2px solid #007bff; }
-        .form-control { border-radius: 5px; border-color: #ced4da; }
-        .form-control:focus { border-color: #80bdff; box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25); }
+        .form-control-sm { height: calc(1.5em + .5rem + 2px); padding: .25rem .5rem; font-size: .85rem; line-height: 1.5; border-radius: 6px; }
+        .btn { margin-right: 6px; border-radius: 8px; padding: 7px 14px; transition: all 0.15s ease; font-weight: 600; }
+        .btn:hover { transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.15); }
+        .alert { border-radius: 10px; margin-bottom: 14px; }
+        header h1 img { border: 2px solid var(--brand); }
+        .form-control { border-radius: 6px; border-color: #d1d5db; }
+        .form-control:focus { border-color: var(--brand); box-shadow: 0 0 0 0.2rem rgba(14,116,144,0.2); }
 
-        #formNovoCadastro .form-labels .col { font-weight: bold; color: #495057; padding-bottom: 0.2rem; font-size: 0.85rem; white-space: nowrap; }
+        #formNovoCadastro { background: linear-gradient(180deg, #f8fafc, #f1f5f9) !important; border-color: #e2e8f0 !important; border-radius: 14px !important; }
+        #formNovoCadastro .form-labels .col { font-weight: 600; color: var(--text-main); padding-bottom: 0.2rem; font-size: 0.8rem; white-space: nowrap; }
         #formNovoCadastro .form-registro-linha { margin-bottom: 0.25rem; padding: 0.15rem 0; }
-        #formNovoCadastro .form-registro-linha .form-group { margin-bottom: 0.1rem; padding-left: 5px; padding-right: 5px; }
-        #formNovoCadastro .form-control-sm { font-size: 0.85rem; }
+        #formNovoCadastro .form-registro-linha .form-group { margin-bottom: 0.1rem; padding-left: 4px; padding-right: 4px; }
+        #formNovoCadastro .form-control-sm { font-size: 0.82rem; }
 
         .col-nome-crianca { flex: 0 0 20%; max-width: 20%; }
         .col-responsavel { flex: 0 0 20%; max-width: 20%; }
@@ -36,20 +45,22 @@
         .col-sexo { flex: 0 0 5%; max-width: 5%; }
         .col-nascimento { flex: 0 0 7%; max-width: 7%; }
         .col-acao { flex: 0 0 9%; max-width: 9%; }
-        .badge-teste-v2 { font-size: .65rem; vertical-align: middle; }
+        .badge-teste-v2 { font-size: .6rem; vertical-align: middle; background: linear-gradient(135deg, #f59e0b, #d97706); border: none; }
 
-
-        .dropdown-menu button.dropdown-item, .dropdown-menu a.dropdown-item { cursor: pointer; }
-        /* Submenu aninhado */
+        .dropdown-menu { border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); border: 1px solid #e2e8f0; }
+        .dropdown-menu button.dropdown-item, .dropdown-menu a.dropdown-item { cursor: pointer; font-size: 0.85rem; border-radius: 6px; margin: 2px 6px; padding: 6px 12px; }
+        .dropdown-item:hover { background-color: rgba(14,116,144,0.08); }
+        .dropdown-header { font-size: 0.7rem; font-weight: 700; color: var(--brand); text-transform: uppercase; letter-spacing: 0.05em; }
         .dropdown-submenu { position: relative; }
         .dropdown-submenu .dropdown-menu { top: 0; left: 100%; margin-top: -4px; display: none; }
         .dropdown-submenu:hover .dropdown-menu { display: block; }
         .dropdown-submenu > a::after { float: right; margin-top: 5px; }
-        /* Botão Como Usar */
-        .btn-ajuda { font-size: .8rem; padding: 4px 10px; }
+        .btn-ajuda { font-size: .78rem; padding: 4px 10px; }
         .modal-backdrop.show { opacity: .5; }
         .modal.show { display: block; }
-        #backupPreviewContent { font-size: 0.8em; white-space: pre-wrap; max-height: 100px; overflow-y: auto; background-color: #f8f9fa; border: 1px solid #dee2e6; padding: 5px; margin-top: 10px; border-radius: .2rem;}
+        .modal-content { border-radius: 14px; border: none; box-shadow: 0 16px 48px rgba(0,0,0,0.2); }
+        .modal-header { border-radius: 14px 14px 0 0; }
+        #backupPreviewContent { font-size: 0.8em; white-space: pre-wrap; max-height: 100px; overflow-y: auto; background-color: #f8f9fa; border: 1px solid #dee2e6; padding: 5px; margin-top: 10px; border-radius: 6px;}
         .status-icon svg { vertical-align: middle; }
 
         .filtro-portaria-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
@@ -80,17 +91,18 @@
         }
 
         .total-cadastros-info {
-            font-size: 0.9rem;
+            font-size: 0.82rem;
             color: #fff;
-            background-color: #007bff; 
-            border: 1px solid #007bff;
-            padding: 0.375rem 0.75rem;
-            border-radius: .2rem;
-            margin-left: 10px;
-            margin-right: 10px; 
+            background: linear-gradient(135deg, var(--brand), var(--brand-strong));
+            padding: 0.35rem 0.7rem;
+            border-radius: 20px;
+            margin-left: 6px;
+            margin-right: 6px; 
             align-self: center; 
             display: inline-flex; 
-            align-items: center; 
+            align-items: center;
+            font-weight: 600;
+            box-shadow: 0 2px 6px rgba(14,116,144,0.25);
         }
         .total-cadastros-info svg {
             margin-right: 0.35rem;
@@ -104,10 +116,10 @@
         .portaria-cadastro-group {
             display: flex;
             align-items: center;
-            background-color: #17a2b8; 
+            background: linear-gradient(135deg, var(--brand), var(--brand-strong));
             padding: 0.375rem 0.75rem;
-            border-radius: .25rem;
-            border: 1px solid #117a8b; 
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(14,116,144,0.2);
         }
         .portaria-cadastro-group label {
             margin-bottom: 0;
@@ -154,26 +166,26 @@
 
         .instancia-info-topo {
             text-align: center;
-            font-size: 0.72rem;
-            letter-spacing: 0.04em;
-            color: #6c757d;
+            font-size: 0.7rem;
+            letter-spacing: 0.05em;
+            color: rgba(255,255,255,0.7);
             margin-bottom: 0.4rem;
             text-transform: uppercase;
+            font-weight: 600;
         }
 
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
-        <div class="instancia-info-topo">
-            <?php
-            $cidadeTopo = defined('INSTANCE_CIDADE') ? trim((string)INSTANCE_CIDADE) : '';
-            $comumTopo  = defined('INSTANCE_COMUM') ? trim((string)INSTANCE_COMUM) : '';
-            $cabecalhoInstancia = trim($cidadeTopo . ' - ' . $comumTopo, ' -');
+    <div class="instancia-info-topo">
+        <?php
+        $cidadeTopo = defined('INSTANCE_CIDADE') ? trim((string)INSTANCE_CIDADE) : '';
+        $comumTopo  = defined('INSTANCE_COMUM') ? trim((string)INSTANCE_COMUM) : '';
+        $cabecalhoInstancia = trim($cidadeTopo . ' - ' . $comumTopo, ' -');
             echo sanitize_for_html($cabecalhoInstancia !== '' ? $cabecalhoInstancia : 'Cidade - Comum');
             ?>
-        </div>
+    </div>
+    <div class="container">
         <header class="d-flex align-items-center justify-content-between mb-3">
             <div class="dropdown" style="min-width: 220px;">
                 <button class="btn btn-light border" type="button" id="dropdownMenuAdmin" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Menu Administração" style="line-height:1; padding: 6px 10px;">
