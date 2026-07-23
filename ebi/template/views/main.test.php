@@ -1098,9 +1098,13 @@
             // independentemente de quantas colunas (5 ou 6) foram preenchidas antes do Enter.
             // Isso permite que a mesma tela funcione com os dois tipos de QR Code sem
             // precisar saber de antemão qual formato está sendo lido.
+            var autoSubmitTimer = null;
+
             $('.cadastro-input').on('keydown', function(e) {
                 const key = e.key;
                 if (key !== 'Enter' && key !== 'Tab') {
+                    // Qualquer tecla de dados cancela o timer de auto-submit
+                    if (autoSubmitTimer) { clearTimeout(autoSubmitTimer); autoSubmitTimer = null; }
                     return;
                 }
                 e.preventDefault();
@@ -1110,8 +1114,7 @@
                 const currentCol = parseInt($(target).data('col'));
 
                 if (key === 'Tab') {
-                    // Avança um campo dentro da mesma criança (ou pula pra próxima linha/portaria
-                    // se já estiver no último campo — comportamento normal de Tab do formulário).
+                    if (autoSubmitTimer) { clearTimeout(autoSubmitTimer); autoSubmitTimer = null; }
                     if (currentCol < NUM_CAMPOS_POR_LINHA_CADASTRO - 1) {
                         $('#input_' + currentLinha + '_' + (currentCol + 1)).focus();
                     } else if (currentLinha < NUM_LINHAS_FORM_CADASTRO - 1) {
@@ -1122,7 +1125,7 @@
                     return;
                 }
 
-                // Enter: fecha o registro da criança atual e decide próxima ação
+                // Enter: mover para próxima linha e agendar auto-submit com debounce
                 if (currentLinha < NUM_LINHAS_FORM_CADASTRO - 1) {
                     // Auto-cadastrar: se auto-imprimir ON, portaria preenchida, e próxima linha vazia
                     if (localStorage.getItem('autoImpressao') === 'true') {
@@ -1134,8 +1137,19 @@
                         }
                     }
                     $('#input_' + (currentLinha + 1) + '_0').focus();
+                    // Agendar auto-submit: se nenhum dado chegar em 200ms, é o Enter final
+                    if (localStorage.getItem('autoImpressao') === 'true') {
+                        if (autoSubmitTimer) clearTimeout(autoSubmitTimer);
+                        autoSubmitTimer = setTimeout(function() {
+                            var portariaVal = $('#portaria_cadastro').val().trim();
+                            if (portariaVal.length === 1 && $('#input_0_0').val().trim() !== '') {
+                                $('#btnCadastrar').click();
+                            }
+                            autoSubmitTimer = null;
+                        }, 200);
+                    }
                 } else {
-                    // Última linha: auto-cadastrar se condições atendidas
+                    // Última linha: auto-cadastrar direto
                     var portariaVal = $('#portaria_cadastro').val().trim();
                     if (localStorage.getItem('autoImpressao') === 'true' && portariaVal.length === 1 && $('#input_0_0').val().trim() !== '') {
                         $('#btnCadastrar').click();
