@@ -269,6 +269,11 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-lightning mr-1" viewBox="0 0 16 16"><path d="M5.52.359A.5.5 0 0 1 6 0h4a.5.5 0 0 1 .474.658L8.694 6H12.5a.5.5 0 0 1 .395.807l-7 9a.5.5 0 0 1-.873-.454L6.823 9.5H3.5a.5.5 0 0 1-.48-.641z"/></svg>
                         <span id="labelAutoImpressao">Auto-Imprimir: OFF</span>
                     </button>
+                    <button class="dropdown-item" type="button" onclick="toggleAutoCadastro()" id="btnToggleAutoCadastro">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2-square mr-1" viewBox="0 0 16 16"><path d="M3 14.5A1.5 1.5 0 0 1 1.5 13V3A1.5 1.5 0 0 1 3 1.5h8a.5.5 0 0 1 0 1H3a.5.5 0 0 0-.5.5v10a.5.5 0 0 0 .5.5h10a.5.5 0 0 0 .5-.5V8a.5.5 0 0 1 1 0v5a1.5 1.5 0 0 1-1.5 1.5z"/><path d="m8.354 10.354 7-7a.5.5 0 0 0-.708-.708L8 9.293 5.354 6.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0"/></svg>
+                        <span id="labelAutoCadastro">Auto-Cadastrar: OFF</span>
+                    </button>
+                    </button>
                     <button class="dropdown-item" type="button" onclick="abrirModalAlterarSenha()">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-key-fill mr-1" viewBox="0 0 16 16"><path d="M3 8a4 4 0 1 1 7.937.5H14a1 1 0 0 1 1 1v1h-1v1h-1v1h-2.062A4.001 4.001 0 0 1 3 8m4-3a3 3 0 1 0 2.83 4H11v1h1v1h1v-1h1V9h-3.17A3.001 3.001 0 0 0 7 5"/></svg>
                         Alterar Senha
@@ -1153,7 +1158,7 @@
 
                 // Agendar auto-submit com debounce (300ms)
                 // Se mais dados chegarem (próxima criança), o timer é cancelado acima
-                if (localStorage.getItem('autoImpressao') === 'true') {
+                if (localStorage.getItem('autoImpressao') === 'true' || localStorage.getItem('autoCadastro') === 'true') {
                     autoSubmitTimer = setTimeout(function() {
                         var portariaVal = $('#portaria_cadastro').val().trim();
                         if (portariaVal.length === 1 && $('#input_0_0').val().trim() !== '') {
@@ -1168,8 +1173,8 @@
                 if (e.key === 'Enter' || (e.key === 'Tab' && !e.shiftKey)) {
                     e.preventDefault();
                     var portariaVal = $(this).val().trim();
-                    // Auto-cadastrar: se auto-imprimir está ON e portaria preenchida e há dados no formulário
-                    if (localStorage.getItem('autoImpressao') === 'true' && portariaVal.length === 1) {
+                    // Auto-cadastrar: se auto-imprimir OU auto-cadastro ON
+                    if ((localStorage.getItem('autoImpressao') === 'true' || localStorage.getItem('autoCadastro') === 'true') && portariaVal.length === 1) {
                         var temDados = $('#input_0_0').val().trim() !== '';
                         if (temDados) {
                             $('#btnCadastrar').click();
@@ -1581,6 +1586,59 @@
 
         // Inicializar estado visual
         atualizarEstadoAutoImpressao();
+
+        // ============ AUTO-CADASTRAR (sem imprimir) ============
+
+        var autoCadastroAtivo = localStorage.getItem('autoCadastro') === 'true';
+
+        function toggleAutoCadastro() {
+            autoCadastroAtivo = !autoCadastroAtivo;
+            localStorage.setItem('autoCadastro', autoCadastroAtivo);
+            atualizarEstadoAutoCadastro();
+            if (autoCadastroAtivo) {
+                // Desligar auto-imprimir se ligar auto-cadastrar (são exclusivos)
+                if (autoImpressaoAtiva) {
+                    autoImpressaoAtiva = false;
+                    localStorage.setItem('autoImpressao', false);
+                    atualizarEstadoAutoImpressao();
+                }
+                alert('Auto-Cadastrar ATIVADO!\n\nApós ler o QR Code, cadastra automaticamente (sem imprimir).');
+            } else {
+                alert('Auto-Cadastrar DESATIVADO.');
+            }
+        }
+
+        function atualizarEstadoAutoCadastro() {
+            var label = document.getElementById('labelAutoCadastro');
+            var btn = document.getElementById('btnToggleAutoCadastro');
+            if (autoCadastroAtivo) {
+                label.textContent = 'Auto-Cadastrar: ON';
+                label.style.fontWeight = 'bold';
+                label.style.color = '#0b5f76';
+                btn.style.backgroundColor = '#b2ebf2';
+            } else {
+                label.textContent = 'Auto-Cadastrar: OFF';
+                label.style.fontWeight = 'normal';
+                label.style.color = '';
+                btn.style.backgroundColor = '';
+            }
+        }
+        atualizarEstadoAutoCadastro();
+
+        // ============ FOCO AUTOMÁTICO (inatividade 10s) ============
+
+        var inactivityTimer = null;
+
+        function resetInactivityTimer() {
+            if (inactivityTimer) clearTimeout(inactivityTimer);
+            inactivityTimer = setTimeout(function() {
+                focarPrimeiroCampoCadastro();
+            }, 10000);
+        }
+
+        // Iniciar timer e resetar em qualquer interação
+        $(document).on('keydown click', function() { resetInactivityTimer(); });
+        resetInactivityTimer();
 
         function salvarConfigTeste() {
             localStorage.setItem('testeX',        $('#testeX').val()        || '140');
