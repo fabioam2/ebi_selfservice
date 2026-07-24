@@ -7,7 +7,11 @@
  */
 
 $periodo = (int)($_GET['periodo'] ?? 30);
-if (!in_array($periodo, [7, 30, 90, 365], true)) $periodo = 30;
+if (!in_array($periodo, [1, 7, 30, 90, 365], true)) $periodo = 30;
+
+// Data selecionada (padrão: hoje)
+$dataSelecionada = $_GET['data'] ?? date('Y-m-d');
+if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $dataSelecionada)) $dataSelecionada = date('Y-m-d');
 
 $diasRows     = db_stats_listar_diario($periodo);
 $totais       = db_stats_totais_instancia();
@@ -53,12 +57,34 @@ $totalIdades     = array_sum(array_intersect_key($periodoTotais, array_flip(['ag
 // Sexo (M/F) — contagem direta dos cadastros atuais
 $totalMeninos = 0;
 $totalMeninas = 0;
+$cadastrosHoje = 0;
+$meninosHoje = 0;
+$meninasHoje = 0;
+$portariaHoje = [];
+$idadesHoje = ['0-3'=>0,'4-7'=>0,'8-11'=>0,'12-14'=>0,'15-17'=>0];
 foreach ($todosOsCadastros as $c) {
     $sexo = strtoupper(trim($c['sexo'] ?? ''));
     if ($sexo === 'M') $totalMeninos++;
     elseif ($sexo === 'F') $totalMeninas++;
+
+    // Dados do dia (em tempo real) — usa $dataSelecionada
+    $criadoEm = $c['created_at'] ?? '';
+    if (strpos($criadoEm, $dataSelecionada) === 0) {
+        $cadastrosHoje++;
+        if ($sexo === 'M') $meninosHoje++;
+        elseif ($sexo === 'F') $meninasHoje++;
+        $port = strtoupper(trim($c['portaria'] ?? ''));
+        if ($port) $portariaHoje[$port] = ($portariaHoje[$port] ?? 0) + 1;
+        $idade = (int)($c['idade'] ?? 0);
+        if ($idade <= 3) $idadesHoje['0-3']++;
+        elseif ($idade <= 7) $idadesHoje['4-7']++;
+        elseif ($idade <= 11) $idadesHoje['8-11']++;
+        elseif ($idade <= 14) $idadesHoje['12-14']++;
+        else $idadesHoje['15-17']++;
+    }
 }
 $totalSexo = max(1, $totalMeninos + $totalMeninas);
+arsort($portariaHoje);
 
 // Hoje
 $todayRow = null;
@@ -109,7 +135,7 @@ $instNome = (defined('INSTANCE_COMUM') && INSTANCE_COMUM ? ucfirst(INSTANCE_COMU
             <?php endif; ?>
         </div>
         <div class="ml-auto">
-            <?php foreach ([7=>'7d',30=>'30d',90=>'90d',365=>'1 ano'] as $v=>$l): ?>
+            <?php foreach ([1=>'1D',7=>'7d',30=>'30d',90=>'90d',365=>'1 ano'] as $v=>$l): ?>
                 <a href="?acao=stats&periodo=<?php echo $v; ?>"
                    class="btn btn-sm mr-1 periodo-btn <?php echo $periodo===$v ? 'btn-primary active' : 'btn-outline-secondary'; ?>">
                     <?php echo $l; ?>
@@ -146,17 +172,46 @@ $instNome = (defined('INSTANCE_COMUM') && INSTANCE_COMUM ? ucfirst(INSTANCE_COMU
         </div>
     </div>
 
-    <!-- Hoje -->
-    <?php if ($todayRow): ?>
+    <!-- Dados do dia (tempo real) com seletor de data -->
     <div class="card border-0 shadow-sm mb-3 p-3" style="border-radius:12px;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff">
-        <div class="section-title" style="color:rgba(255,255,255,.7)">Hoje — <?php echo date('d/m/Y'); ?></div>
-        <div class="row text-center">
-            <div class="col-4"><div style="font-size:1.8rem;font-weight:700"><?php echo (int)$todayRow['total_cadastros']; ?></div><div style="font-size:.75rem;opacity:.8">Cadastros</div></div>
-            <div class="col-4"><div style="font-size:1.8rem;font-weight:700"><?php echo (int)$todayRow['total_impressoes']; ?></div><div style="font-size:.75rem;opacity:.8">Pulseiras</div></div>
-            <div class="col-4"><div style="font-size:1.8rem;font-weight:700"><?php echo (int)$todayRow['total_saidas']; ?></div><div style="font-size:.75rem;opacity:.8">Saídas</div></div>
+        <div class="d-flex align-items-center justify-content-between mb-2">
+            <div class="section-title mb-0" style="color:rgba(255,255,255,.7)">
+                <?php echo $dataSelecionada === $hoje ? 'Hoje' : date('d/m/Y', strtotime($dataSelecionada)); ?> (tempo real)
+            </div>
+            <form class="d-inline-flex align-items-center" method="get" style="gap:6px;">
+                <input type="hidden" name="acao" value="stats">
+                <input type="hidden" name="periodo" value="<?php echo $periodo; ?>">
+                <input type="date" name="data" value="<?php echo $dataSelecionada; ?>" max="<?php echo $hoje; ?>"
+                       style="border:none;border-radius:6px;padding:3px 8px;font-size:.78rem;background:rgba(255,255,255,.9);color:#333;"
+                       onchange="this.form.submit()">
+                <?php if ($dataSelecionada !== $hoje): ?>
+                    <a href="?acao=stats&periodo=<?php echo $periodo; ?>" style="color:#fff;font-size:.75rem;text-decoration:underline;">Hoje</a>
+                <?php endif; ?>
+            </form>
         </div>
+        <div class="row text-center mb-2">
+            <div class="col-3"><div style="font-size:1.8rem;font-weight:700"><?php echo $cadastrosHoje; ?></div><div style="font-size:.72rem;opacity:.8">Cadastros</div></div>
+            <div class="col-3"><div style="font-size:1.8rem;font-weight:700"><?php echo $meninosHoje; ?></div><div style="font-size:.72rem;opacity:.8">👦 Meninos</div></div>
+            <div class="col-3"><div style="font-size:1.8rem;font-weight:700"><?php echo $meninasHoje; ?></div><div style="font-size:.72rem;opacity:.8">👧 Meninas</div></div>
+            <div class="col-3"><div style="font-size:1.8rem;font-weight:700"><?php echo $todayRow ? (int)$todayRow['total_saidas'] : 0; ?></div><div style="font-size:.72rem;opacity:.8">Saídas</div></div>
+        </div>
+        <?php if (!empty($portariaHoje)): ?>
+        <div style="font-size:.75rem;opacity:.85;border-top:1px solid rgba(255,255,255,.2);padding-top:8px;">
+            <strong>Portarias:</strong>
+            <?php foreach ($portariaHoje as $p => $cnt): ?>
+                <span class="mr-2"><?php echo sanitize_for_html($p); ?>: <?php echo $cnt; ?></span>
+            <?php endforeach; ?>
+            &nbsp;|&nbsp;
+            <strong>Idades:</strong>
+            <?php foreach ($idadesHoje as $faixa => $cnt): if ($cnt > 0): ?>
+                <span class="mr-2"><?php echo $faixa; ?>: <?php echo $cnt; ?></span>
+            <?php endif; endforeach; ?>
+        </div>
+        <?php endif; ?>
+        <?php if ($cadastrosHoje === 0): ?>
+        <div style="font-size:.8rem;opacity:.7;text-align:center;padding:8px 0;">Nenhum cadastro nesta data.</div>
+        <?php endif; ?>
     </div>
-    <?php endif; ?>
 
     <div class="row">
         <!-- Faixas etárias -->

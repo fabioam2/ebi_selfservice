@@ -1667,7 +1667,7 @@
         atualizarLabelTempo();
 
         // Iniciar timer e resetar em qualquer interação
-        $(document).on('keydown click', function() { resetInactivityTimer(); });
+        $(document).on('keydown keyup click mousemove scroll input', function() { resetInactivityTimer(); });
         resetInactivityTimer();
 
         function salvarConfigTeste() {
