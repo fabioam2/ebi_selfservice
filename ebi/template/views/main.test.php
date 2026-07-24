@@ -1799,6 +1799,8 @@
             if (confirm("Tem certeza que deseja apagar o cadastro de '" + nomeCrianca + "' (ID: " + id + ")?\nEsta ação não pode ser desfeita. Um backup do arquivo atual será criado.")) {
                 document.getElementById('id_para_apagar_input').value = id;
                 document.getElementById('formApagarLinha').submit();
+            } else {
+                focarPrimeiroCampoCadastro();
             }
         }
 
