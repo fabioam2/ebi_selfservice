@@ -269,9 +269,9 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-lightning mr-1" viewBox="0 0 16 16"><path d="M5.52.359A.5.5 0 0 1 6 0h4a.5.5 0 0 1 .474.658L8.694 6H12.5a.5.5 0 0 1 .395.807l-7 9a.5.5 0 0 1-.873-.454L6.823 9.5H3.5a.5.5 0 0 1-.48-.641z"/></svg>
                         <span id="labelAutoImpressao">Auto-Imprimir: OFF</span>
                     </button>
-                    <button class="dropdown-item" type="button" onclick="toggleAutoCadastro()" id="btnToggleAutoCadastro">
+                    <button class="dropdown-item disabled" type="button" id="btnToggleAutoCadastro" disabled aria-disabled="true" title="Funcao temporariamente desabilitada">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2-square mr-1" viewBox="0 0 16 16"><path d="M3 14.5A1.5 1.5 0 0 1 1.5 13V3A1.5 1.5 0 0 1 3 1.5h8a.5.5 0 0 1 0 1H3a.5.5 0 0 0-.5.5v10a.5.5 0 0 0 .5.5h10a.5.5 0 0 0 .5-.5V8a.5.5 0 0 1 1 0v5a1.5 1.5 0 0 1-1.5 1.5z"/><path d="m8.354 10.354 7-7a.5.5 0 0 0-.708-.708L8 9.293 5.354 6.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0"/></svg>
-                        <span id="labelAutoCadastro">Auto-Cadastrar: OFF</span>
+                        <span id="labelAutoCadastro">Auto-Cadastrar: desabilitado</span>
                     </button>
                     <button class="dropdown-item" type="button" onclick="configTempoInatividade()" id="btnConfigTempo">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clock mr-1" viewBox="0 0 16 16"><path d="M8 3.5a.5.5 0 0 0-1 0V8a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 7.71z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0"/></svg>
@@ -1643,33 +1643,21 @@
 
         // ============ AUTO-CADASTRAR (sem imprimir) ============
 
-        var autoCadastroAtivo = localStorage.getItem('autoCadastro') === 'true';
+        var autoCadastroAtivo = false;
+        localStorage.removeItem('autoCadastro');
 
         function toggleAutoCadastro() {
-            autoCadastroAtivo = !autoCadastroAtivo;
-            localStorage.setItem('autoCadastro', autoCadastroAtivo);
-            atualizarEstadoAutoCadastro();
-            if (autoCadastroAtivo) {
-                alert('Auto-Cadastrar ATIVADO!\n\nApós ler o QR Code com a pistola, cadastra automaticamente.');
-            } else {
-                alert('Auto-Cadastrar DESATIVADO.\nApós ler QR, precisará clicar Cadastrar manualmente.');
-            }
+            return;
         }
 
         function atualizarEstadoAutoCadastro() {
             var label = document.getElementById('labelAutoCadastro');
             var btn = document.getElementById('btnToggleAutoCadastro');
-            if (autoCadastroAtivo) {
-                label.textContent = 'Auto-Cadastrar: ON';
-                label.style.fontWeight = 'bold';
-                label.style.color = '#0b5f76';
-                btn.style.backgroundColor = '#b2ebf2';
-            } else {
-                label.textContent = 'Auto-Cadastrar: OFF';
-                label.style.fontWeight = 'normal';
-                label.style.color = '';
-                btn.style.backgroundColor = '';
-            }
+            label.textContent = 'Auto-Cadastrar: desabilitado';
+            label.style.fontWeight = 'normal';
+            label.style.color = '#6c757d';
+            btn.disabled = true;
+            btn.setAttribute('aria-disabled', 'true');
         }
         atualizarEstadoAutoCadastro();
 
