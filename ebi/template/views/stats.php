@@ -9,6 +9,10 @@
 $periodo = (int)($_GET['periodo'] ?? 30);
 if (!in_array($periodo, [7, 30, 90, 365], true)) $periodo = 30;
 
+// Data selecionada (padrão: hoje)
+$dataSelecionada = $_GET['data'] ?? date('Y-m-d');
+if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $dataSelecionada)) $dataSelecionada = date('Y-m-d');
+
 $diasRows     = db_stats_listar_diario($periodo);
 $totais       = db_stats_totais_instancia();
 $mensalRows   = db_stats_mensal_instancia(12);
@@ -63,9 +67,9 @@ foreach ($todosOsCadastros as $c) {
     if ($sexo === 'M') $totalMeninos++;
     elseif ($sexo === 'F') $totalMeninas++;
 
-    // Dados do dia (em tempo real)
+    // Dados do dia (em tempo real) — usa $dataSelecionada
     $criadoEm = $c['created_at'] ?? '';
-    if (strpos($criadoEm, $hoje) === 0) {
+    if (strpos($criadoEm, $dataSelecionada) === 0) {
         $cadastrosHoje++;
         if ($sexo === 'M') $meninosHoje++;
         elseif ($sexo === 'F') $meninasHoje++;
@@ -168,9 +172,23 @@ $instNome = (defined('INSTANCE_COMUM') && INSTANCE_COMUM ? ucfirst(INSTANCE_COMU
         </div>
     </div>
 
-    <!-- Hoje (dados em tempo real) -->
+    <!-- Dados do dia (tempo real) com seletor de data -->
     <div class="card border-0 shadow-sm mb-3 p-3" style="border-radius:12px;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff">
-        <div class="section-title" style="color:rgba(255,255,255,.7)">Hoje — <?php echo date('d/m/Y'); ?> (tempo real)</div>
+        <div class="d-flex align-items-center justify-content-between mb-2">
+            <div class="section-title mb-0" style="color:rgba(255,255,255,.7)">
+                <?php echo $dataSelecionada === $hoje ? 'Hoje' : date('d/m/Y', strtotime($dataSelecionada)); ?> (tempo real)
+            </div>
+            <form class="d-inline-flex align-items-center" method="get" style="gap:6px;">
+                <input type="hidden" name="acao" value="stats">
+                <input type="hidden" name="periodo" value="<?php echo $periodo; ?>">
+                <input type="date" name="data" value="<?php echo $dataSelecionada; ?>" max="<?php echo $hoje; ?>"
+                       style="border:none;border-radius:6px;padding:3px 8px;font-size:.78rem;background:rgba(255,255,255,.9);color:#333;"
+                       onchange="this.form.submit()">
+                <?php if ($dataSelecionada !== $hoje): ?>
+                    <a href="?acao=stats&periodo=<?php echo $periodo; ?>" style="color:#fff;font-size:.75rem;text-decoration:underline;">Hoje</a>
+                <?php endif; ?>
+            </form>
+        </div>
         <div class="row text-center mb-2">
             <div class="col-3"><div style="font-size:1.8rem;font-weight:700"><?php echo $cadastrosHoje; ?></div><div style="font-size:.72rem;opacity:.8">Cadastros</div></div>
             <div class="col-3"><div style="font-size:1.8rem;font-weight:700"><?php echo $meninosHoje; ?></div><div style="font-size:.72rem;opacity:.8">👦 Meninos</div></div>
@@ -189,6 +207,9 @@ $instNome = (defined('INSTANCE_COMUM') && INSTANCE_COMUM ? ucfirst(INSTANCE_COMU
                 <span class="mr-2"><?php echo $faixa; ?>: <?php echo $cnt; ?></span>
             <?php endif; endforeach; ?>
         </div>
+        <?php endif; ?>
+        <?php if ($cadastrosHoje === 0): ?>
+        <div style="font-size:.8rem;opacity:.7;text-align:center;padding:8px 0;">Nenhum cadastro nesta data.</div>
         <?php endif; ?>
     </div>
 
