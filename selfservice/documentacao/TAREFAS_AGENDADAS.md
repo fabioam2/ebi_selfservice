@@ -51,6 +51,6 @@ Quando a instancia entra em quarentena, a pasta inteira e movida para `QUARANTIN
 
 ## Monitoramento
 
-Em **Administracao > Tarefas Agendadas**, o painel mostra a ultima execucao, estado e resumo agregado de cada rotina. Os logs ficam em `selfservice/data/tarefas_agendadas.log` e `selfservice/data/instance_lifecycle.log`.
+Em **Administracao > Tarefas Agendadas**, o painel mostra a ultima execucao, estado e resumo agregado de cada rotina. O botao **Ver logs de execucao** abre as ultimas 200 linhas do log do cron. Os logs ficam em `selfservice/data/tarefas_agendadas.log` e `selfservice/data/instance_lifecycle.log`.
 
 Os resumos nao armazenam ou exibem nomes de criancas.
