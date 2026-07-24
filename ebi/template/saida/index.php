@@ -5,6 +5,15 @@
  */
 
 require __DIR__ . '/inc/bootstrap.php';
+require_once dirname(__DIR__) . '/inc/db_instance.php';
+
+// Buscar portarias já cadastradas no banco
+$portariasDB = [];
+try {
+    $rows = ebi_db()->query("SELECT DISTINCT UPPER(portaria) as p FROM cadastros WHERE portaria != '' ORDER BY p")->fetchAll();
+    foreach ($rows as $r) { $portariasDB[] = $r['p']; }
+} catch (Throwable $e) {}
+if (empty($portariasDB)) $portariasDB = ['A'];
 
 $mensagemLoginErro = '';
 $loginPageMensagemSucesso = '';
@@ -425,12 +434,8 @@ if (!isset($_SESSION['logado_saida']) || $_SESSION['logado_saida'] !== true) {
             <div class="entry-section">
                 <label for="portaria">Portaria:</label>
                 <select id="portaria">
-                    <option value="">-- Selecione --</option>
-                    <?php
-                    $portarias = ['A','B','C','D','E','F','G','H','I','J'];
-                    foreach ($portarias as $p):
-                    ?>
-                    <option value="<?php echo $p; ?>"><?php echo $p; ?></option>
+                    <?php foreach ($portariasDB as $p): ?>
+                    <option value="<?php echo sanitize_for_html($p); ?>"><?php echo sanitize_for_html($p); ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>

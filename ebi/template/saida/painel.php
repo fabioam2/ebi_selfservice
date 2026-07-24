@@ -90,10 +90,17 @@ try {
             --brand-strong: #0b5f76;
             --brand-soft: rgba(14, 116, 144, 0.14);
             --danger: #b91c1c;
-            --portaria-m-bg: #e3f2fd;
-            --portaria-m-border: #1565c0;
-            --portaria-f-bg: #fce4ec;
-            --portaria-f-border: #ad1457;
+            /* Cores por portaria (A-J) */
+            --port-a-bg: #e3f2fd; --port-a-border: #1565c0;
+            --port-b-bg: #e8f5e9; --port-b-border: #2e7d32;
+            --port-c-bg: #fff3e0; --port-c-border: #e65100;
+            --port-d-bg: #f3e5f5; --port-d-border: #6a1b9a;
+            --port-e-bg: #e0f7fa; --port-e-border: #00838f;
+            --port-f-bg: #fce4ec; --port-f-border: #ad1457;
+            --port-g-bg: #f1f8e9; --port-g-border: #558b2f;
+            --port-h-bg: #ede7f6; --port-h-border: #4527a0;
+            --port-i-bg: #fff8e1; --port-i-border: #f9a825;
+            --port-j-bg: #efebe9; --port-j-border: #4e342e;
         }
         * { box-sizing: border-box; }
         body {
@@ -174,8 +181,17 @@ try {
             border-left: 5px solid var(--brand);
             background: #f8fafc;
         }
-        .saida-item.portaria-m { background: var(--portaria-m-bg); border-left-color: var(--portaria-m-border); }
-        .saida-item.portaria-f { background: var(--portaria-f-bg); border-left-color: var(--portaria-f-border); }
+        .saida-item.port-a { background: var(--port-a-bg); border-left-color: var(--port-a-border); }
+        .saida-item.port-b { background: var(--port-b-bg); border-left-color: var(--port-b-border); }
+        .saida-item.port-c { background: var(--port-c-bg); border-left-color: var(--port-c-border); }
+        .saida-item.port-d { background: var(--port-d-bg); border-left-color: var(--port-d-border); }
+        .saida-item.port-e { background: var(--port-e-bg); border-left-color: var(--port-e-border); }
+        .saida-item.port-f { background: var(--port-f-bg); border-left-color: var(--port-f-border); }
+        .saida-item.port-g { background: var(--port-g-bg); border-left-color: var(--port-g-border); }
+        .saida-item.port-h { background: var(--port-h-bg); border-left-color: var(--port-h-border); }
+        .saida-item.port-i { background: var(--port-i-bg); border-left-color: var(--port-i-border); }
+        .saida-item.port-j { background: var(--port-j-bg); border-left-color: var(--port-j-border); }
+        .port-badge { font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 4px; color: #fff; min-width: 22px; text-align: center; }
         .saida-time {
             font-size: 0.85rem;
             font-weight: 700;
@@ -269,17 +285,16 @@ try {
             <div class="saida-list">
                 <?php foreach ($entradas_agrupadas as $codigo_qr => $entrada): ?>
                     <?php
-                        $cor_classe = '';
-                        if ($entrada['portaria'] === 'M') {
-                            $cor_classe = 'portaria-m';
-                        } elseif ($entrada['portaria'] === 'F') {
-                            $cor_classe = 'portaria-f';
-                        }
+                        $portLetra = strtolower($entrada['portaria']);
+                        $cor_classe = 'port-' . (in_array($portLetra, ['a','b','c','d','e','f','g','h','i','j']) ? $portLetra : 'a');
+                        $portBorderColors = ['a'=>'#1565c0','b'=>'#2e7d32','c'=>'#e65100','d'=>'#6a1b9a','e'=>'#00838f','f'=>'#ad1457','g'=>'#558b2f','h'=>'#4527a0','i'=>'#f9a825','j'=>'#4e342e'];
+                        $badgeColor = $portBorderColors[$portLetra] ?? '#666';
                     ?>
                     <div class="saida-item <?php echo $cor_classe; ?>">
                         <span class="saida-time"><?php echo date('H:i', strtotime($entrada['timestamp'])); ?></span>
                         <span class="saida-criancas"><?php echo !empty($entrada['criancas']) ? implode(', ', $entrada['criancas']) : '—'; ?></span>
                         <span class="saida-responsavel">Responsável: <strong><?php echo $entrada['responsavel']; ?></strong></span>
+                        <span class="port-badge" style="background:<?php echo $badgeColor; ?>;"><?php echo sanitize_for_html(strtoupper($entrada['portaria'])); ?></span>
                     </div>
                 <?php endforeach; ?>
             </div>
