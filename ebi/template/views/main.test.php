@@ -1625,17 +1625,23 @@
 
         var tempoInatividade = parseInt(localStorage.getItem('tempoInatividade')) || 10;
         var inactivityTimer = null;
+        var edicaoManualAtiva = false;
 
-        function campoEditavelEstaAtivo() {
+        function focoEstaEmControle() {
             var elementoAtivo = document.activeElement;
-            return elementoAtivo && elementoAtivo.matches('input:not([type="hidden"]), textarea, select, [contenteditable="true"]');
+            return elementoAtivo && elementoAtivo !== document.body && elementoAtivo !== document.documentElement;
+        }
+
+        function campoCadastroEstaAtivo() {
+            var elementoAtivo = document.activeElement;
+            return elementoAtivo && elementoAtivo.matches('#formNovoCadastro input:not([type="hidden"]), #formNovoCadastro textarea, #formNovoCadastro select');
         }
 
         function resetInactivityTimer() {
             if (inactivityTimer) clearTimeout(inactivityTimer);
             if (tempoInatividade > 0) {
                 inactivityTimer = setTimeout(function() {
-                    if (campoEditavelEstaAtivo()) {
+                    if (edicaoManualAtiva || focoEstaEmControle()) {
                         resetInactivityTimer();
                         return;
                     }
@@ -1665,6 +1671,17 @@
             }
         }
         atualizarLabelTempo();
+
+        $('#formNovoCadastro').on('focusin input', 'input, textarea, select', function() {
+            edicaoManualAtiva = true;
+            resetInactivityTimer();
+        });
+
+        $('#formNovoCadastro').on('focusout', 'input, textarea, select', function() {
+            setTimeout(function() {
+                edicaoManualAtiva = campoCadastroEstaAtivo();
+            }, 0);
+        });
 
         // Iniciar timer e resetar em qualquer interação
         $(document).on('keydown keyup click mousemove scroll input', function() { resetInactivityTimer(); });
