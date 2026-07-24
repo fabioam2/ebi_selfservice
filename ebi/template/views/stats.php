@@ -7,7 +7,7 @@
  */
 
 $periodo = (int)($_GET['periodo'] ?? 30);
-if (!in_array($periodo, [7, 30, 90, 365], true)) $periodo = 30;
+if (!in_array($periodo, [1, 7, 30, 90, 365], true)) $periodo = 30;
 
 // Data selecionada (padrão: hoje)
 $dataSelecionada = $_GET['data'] ?? date('Y-m-d');
@@ -135,7 +135,7 @@ $instNome = (defined('INSTANCE_COMUM') && INSTANCE_COMUM ? ucfirst(INSTANCE_COMU
             <?php endif; ?>
         </div>
         <div class="ml-auto">
-            <?php foreach ([7=>'7d',30=>'30d',90=>'90d',365=>'1 ano'] as $v=>$l): ?>
+            <?php foreach ([1=>'1D',7=>'7d',30=>'30d',90=>'90d',365=>'1 ano'] as $v=>$l): ?>
                 <a href="?acao=stats&periodo=<?php echo $v; ?>"
                    class="btn btn-sm mr-1 periodo-btn <?php echo $periodo===$v ? 'btn-primary active' : 'btn-outline-secondary'; ?>">
                     <?php echo $l; ?>
