@@ -1129,12 +1129,11 @@
             $('.cadastro-input').on('keydown', function(e) {
                 const key = e.key;
                 if (key !== 'Enter' && key !== 'Tab') {
-                    // Dados chegando: cancelar auto-submit pendente
-                    if (autoSubmitTimer) { clearTimeout(autoSubmitTimer); autoSubmitTimer = null; }
+                    // Caracteres normais: NÃO cancelar timer (são dados do campo atual)
                     return;
                 }
                 e.preventDefault();
-                // Tab/Enter cancela timer anterior
+                // Tab/Enter cancela timer anterior (novo campo/linha vindo)
                 if (autoSubmitTimer) { clearTimeout(autoSubmitTimer); autoSubmitTimer = null; }
 
                 const target = e.target;
@@ -1149,7 +1148,7 @@
                     } else {
                         $('#portaria_cadastro').focus();
                     }
-                    // Agendar auto-submit após Tab (para QR novo sem Enter final)
+                    // Agendar auto-submit: próximo Tab ou Enter cancela
                     if (localStorage.getItem('autoCadastro') === 'true') {
                         autoSubmitTimer = setTimeout(function() {
                             var portariaVal = $('#portaria_cadastro').val().trim();
@@ -1162,14 +1161,14 @@
                     return;
                 }
 
-                // Enter: mover para próxima linha (suporte QR antigo com \r entre crianças)
+                // Enter: mover para próxima linha (suporte QR antigo com \r)
                 if (currentLinha < NUM_LINHAS_FORM_CADASTRO - 1) {
                     $('#input_' + (currentLinha + 1) + '_0').focus();
                 } else {
                     $('#portaria_cadastro').focus();
                 }
 
-                // Agendar auto-submit com debounce (300ms) — só se Auto-Cadastrar ON
+                // Agendar auto-submit após Enter (QR antigo)
                 if (localStorage.getItem('autoCadastro') === 'true') {
                     autoSubmitTimer = setTimeout(function() {
                         var portariaVal = $('#portaria_cadastro').val().trim();
