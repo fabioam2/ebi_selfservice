@@ -226,13 +226,7 @@ $totalHoje = count($cadastrosHojeMobile);
     }
 
     function onRead(text) {
-        const lines = text.split(/\r|\n/).filter(l=>l.trim());
-        const parsed = [];
-        for(const line of lines){
-            const p = line.split('\t');
-            if(p.length<5) continue;
-            parsed.push({ nome:p[0].trim(), resp:p[1].trim(), idade:p[2].trim(), tel:p[3].trim(), comum:p[4].trim(), nasc:p[5]?p[5].trim():'' });
-        }
+        const parsed = parseQrPayload(text);
         if(!parsed.length){ status.textContent='QR inválido'; status.className='scan-status err'; return; }
         data = parsed;
         stop();
@@ -262,11 +256,70 @@ $totalHoje = count($cadastrosHojeMobile);
             f+='<input type="hidden" name="idade[]" value="'+attr(d.idade)+'">';
             f+='<input type="hidden" name="telefone[]" value="'+attr(d.tel)+'">';
             f+='<input type="hidden" name="comum[]" value="'+attr(d.comum)+'">';
+            f+='<input type="hidden" name="sexo[]" value="'+attr(d.sexo)+'">';
             f+='<input type="hidden" name="data_nascimento[]" value="'+attr(d.nasc)+'">';
         }
         frmFields.innerHTML=f;
         el('frm').submit();
     };
+
+    function parseQrPayload(text) {
+        const records = text.split(/\r\n|\r|\n/).map(record => record.trim()).filter(Boolean);
+
+        // QR antigo: cada criança fica em uma linha com cinco campos separados por Tab.
+        if (records.length > 1) {
+            return records.map(parseQrRecord).filter(Boolean);
+        }
+
+        const fields = text.split('\t').map(field => field.trim());
+
+        // QR v2: o gerador concatena crianças em uma única linha, em blocos de
+        // sete campos: nome, responsável, idade, telefone, comum, sexo e nascimento.
+        if (fields.length >= 7 && fields.length % 7 === 0 && isQrV2(fields)) {
+            const children = [];
+            for (let index = 0; index < fields.length; index += 7) {
+                children.push({
+                    nome: fields[index],
+                    resp: fields[index + 1],
+                    idade: fields[index + 2],
+                    tel: fields[index + 3],
+                    comum: fields[index + 4],
+                    sexo: fields[index + 5].toUpperCase(),
+                    nasc: fields[index + 6],
+                });
+            }
+            return children;
+        }
+
+        const record = parseQrRecord(text);
+        return record ? [record] : [];
+    }
+
+    function isQrV2(fields) {
+        for (let index = 0; index < fields.length; index += 7) {
+            if (!/^[MF]$/i.test(fields[index + 5]) || !/^\d{2}\/\d{2}\/\d{4}$/.test(fields[index + 6])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function parseQrRecord(record) {
+        const fields = record.split('\t').map(field => field.trim());
+        if (fields.length < 5) return null;
+
+        const sexo = /^[MF]$/i.test(fields[5] || '') ? fields[5].toUpperCase() : '';
+        const nascimento = /^\d{2}\/\d{2}\/\d{4}$/.test(fields[6] || '') ? fields[6] : '';
+        return {
+            nome: fields[0],
+            resp: fields[1],
+            idade: fields[2],
+            tel: fields[3],
+            comum: fields[4],
+            sexo: sexo,
+            nasc: nascimento,
+        };
+    }
 
     function esc(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
     function attr(s){ return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
