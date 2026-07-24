@@ -1134,7 +1134,7 @@
                     return;
                 }
                 e.preventDefault();
-                // Tab/Enter também cancela timer anterior (nova navegação)
+                // Tab/Enter cancela timer anterior
                 if (autoSubmitTimer) { clearTimeout(autoSubmitTimer); autoSubmitTimer = null; }
 
                 const target = e.target;
@@ -1149,6 +1149,16 @@
                     } else {
                         $('#portaria_cadastro').focus();
                     }
+                    // Agendar auto-submit após Tab (para QR novo sem Enter final)
+                    if (localStorage.getItem('autoCadastro') === 'true') {
+                        autoSubmitTimer = setTimeout(function() {
+                            var portariaVal = $('#portaria_cadastro').val().trim();
+                            if (portariaVal.length === 1 && $('#input_0_0').val().trim() !== '') {
+                                $('#btnCadastrar').click();
+                            }
+                            autoSubmitTimer = null;
+                        }, 500);
+                    }
                     return;
                 }
 
@@ -1160,7 +1170,6 @@
                 }
 
                 // Agendar auto-submit com debounce (300ms) — só se Auto-Cadastrar ON
-                // Se mais dados chegarem (próxima criança), o timer é cancelado acima
                 if (localStorage.getItem('autoCadastro') === 'true') {
                     autoSubmitTimer = setTimeout(function() {
                         var portariaVal = $('#portaria_cadastro').val().trim();
