@@ -53,7 +53,7 @@ function _stats_push_central(array $adminDelta): void {
 
 /**
  * Registra novos cadastros.
- * $cadastros: array de ['idade'=>int, 'comum'=>string, 'portaria'=>string]
+ * $cadastros: array de ['idade'=>int, 'comum'=>string, 'portaria'=>string, 'sexo'=>string]
  */
 function stats_on_cadastro(array $cadastros): void {
     if (empty($cadastros)) return;
@@ -64,6 +64,7 @@ function stats_on_cadastro(array $cadastros): void {
         'impressoes' => 0,
         'saidas'     => 0,
         'age_0_3' => 0, 'age_4_7' => 0, 'age_8_11' => 0, 'age_12_14' => 0, 'age_15_17' => 0,
+        'total_meninos' => 0, 'total_meninas' => 0,
         'portaria_counts' => [],
         'comum_counts'    => [],
     ];
@@ -72,9 +73,12 @@ function stats_on_cadastro(array $cadastros): void {
         $idade   = (int)($c['idade']    ?? 0);
         $portaria = strtoupper(trim($c['portaria'] ?? ''));
         $comum    = trim($c['comum']    ?? '');
+        $sexo     = strtoupper(trim($c['sexo'] ?? ''));
 
         $bucket = _stats_age_bucket($idade);
         $delta[$bucket]++;
+        if ($sexo === 'M') $delta['total_meninos']++;
+        elseif ($sexo === 'F') $delta['total_meninas']++;
 
         if ($portaria) {
             $delta['portaria_counts'][$portaria] = ($delta['portaria_counts'][$portaria] ?? 0) + 1;
@@ -99,6 +103,8 @@ function stats_on_cadastro(array $cadastros): void {
         'age_8_11'        => $delta['age_8_11'],
         'age_12_14'       => $delta['age_12_14'],
         'age_15_17'       => $delta['age_15_17'],
+        'total_meninos'   => $delta['total_meninos'],
+        'total_meninas'   => $delta['total_meninas'],
         'portaria_counts' => $delta['portaria_counts'],
         'comum_counts'    => $delta['comum_counts'],
     ]);
@@ -114,6 +120,7 @@ function stats_on_impressao(int $quantidade = 1): void {
     $delta = [
         'cadastros' => 0, 'impressoes' => $quantidade, 'saidas' => 0,
         'age_0_3' => 0, 'age_4_7' => 0, 'age_8_11' => 0, 'age_12_14' => 0, 'age_15_17' => 0,
+        'total_meninos' => 0, 'total_meninas' => 0,
         'portaria_counts' => [], 'comum_counts' => [],
     ];
 
@@ -125,6 +132,7 @@ function stats_on_impressao(int $quantidade = 1): void {
 
     _stats_push_central(['cadastros' => 0, 'impressoes' => $quantidade, 'saidas' => 0,
         'age_0_3' => 0, 'age_4_7' => 0, 'age_8_11' => 0, 'age_12_14' => 0, 'age_15_17' => 0,
+        'total_meninos' => 0, 'total_meninas' => 0,
         'portaria_counts' => [], 'comum_counts' => []]);
 }
 
@@ -137,6 +145,7 @@ function stats_on_saida(string $portaria): void {
     $delta = [
         'cadastros' => 0, 'impressoes' => 0, 'saidas' => 1,
         'age_0_3' => 0, 'age_4_7' => 0, 'age_8_11' => 0, 'age_12_14' => 0, 'age_15_17' => 0,
+        'total_meninos' => 0, 'total_meninas' => 0,
         'portaria_counts' => $portaria ? [$portaria => 1] : [],
         'comum_counts' => [],
     ];
@@ -149,5 +158,6 @@ function stats_on_saida(string $portaria): void {
 
     _stats_push_central(['cadastros' => 0, 'impressoes' => 0, 'saidas' => 1,
         'age_0_3' => 0, 'age_4_7' => 0, 'age_8_11' => 0, 'age_12_14' => 0, 'age_15_17' => 0,
+        'total_meninos' => 0, 'total_meninas' => 0,
         'portaria_counts' => $portaria ? [$portaria => 1] : [], 'comum_counts' => []]);
 }

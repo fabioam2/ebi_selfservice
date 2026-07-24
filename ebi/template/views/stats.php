@@ -20,7 +20,8 @@ $hoje         = date('Y-m-d');
 
 // ── Agregações do período ─────────────────────────────────────────────────────
 $periodoTotais = ['cadastros' => 0, 'impressoes' => 0, 'saidas' => 0,
-    'age_0_3' => 0, 'age_4_7' => 0, 'age_8_11' => 0, 'age_12_14' => 0, 'age_15_17' => 0];
+    'age_0_3' => 0, 'age_4_7' => 0, 'age_8_11' => 0, 'age_12_14' => 0, 'age_15_17' => 0,
+    'total_meninos' => 0, 'total_meninas' => 0];
 $portariaAgr = [];
 $comumAgr    = [];
 
@@ -31,6 +32,8 @@ foreach ($diasRows as $row) {
     foreach (['age_0_3','age_4_7','age_8_11','age_12_14','age_15_17'] as $b) {
         $periodoTotais[$b] += (int)($row[$b] ?? 0);
     }
+    $periodoTotais['total_meninos'] += (int)($row['total_meninos'] ?? 0);
+    $periodoTotais['total_meninas'] += (int)($row['total_meninas'] ?? 0);
     foreach ((json_decode($row['portaria_data'] ?? '{}', true) ?: []) as $p => $cnt) {
         $portariaAgr[$p] = ($portariaAgr[$p] ?? 0) + (int)$cnt;
     }
@@ -54,23 +57,20 @@ foreach ($comumAgr as $c => $cnt) {
 $totalForaComum  = max(0, $periodoTotais['cadastros'] - $totalDaComum);
 $totalIdades     = array_sum(array_intersect_key($periodoTotais, array_flip(['age_0_3','age_4_7','age_8_11','age_12_14','age_15_17']))) ?: 1;
 
-// Sexo (M/F) — contagem direta dos cadastros atuais
-$totalMeninos = 0;
-$totalMeninas = 0;
+// Sexo (M/F) — agregado do período selecionado
+$totalMeninos = $periodoTotais['total_meninos'];
+$totalMeninas = $periodoTotais['total_meninas'];
 $cadastrosHoje = 0;
 $meninosHoje = 0;
 $meninasHoje = 0;
 $portariaHoje = [];
 $idadesHoje = ['0-3'=>0,'4-7'=>0,'8-11'=>0,'12-14'=>0,'15-17'=>0];
 foreach ($todosOsCadastros as $c) {
-    $sexo = strtoupper(trim($c['sexo'] ?? ''));
-    if ($sexo === 'M') $totalMeninos++;
-    elseif ($sexo === 'F') $totalMeninas++;
-
     // Dados do dia (em tempo real) — usa $dataSelecionada
     $criadoEm = $c['created_at'] ?? '';
     if (strpos($criadoEm, $dataSelecionada) === 0) {
         $cadastrosHoje++;
+        $sexo = strtoupper(trim($c['sexo'] ?? ''));
         if ($sexo === 'M') $meninosHoje++;
         elseif ($sexo === 'F') $meninasHoje++;
         $port = strtoupper(trim($c['portaria'] ?? ''));
@@ -302,7 +302,7 @@ $instNome = (defined('INSTANCE_COMUM') && INSTANCE_COMUM ? ucfirst(INSTANCE_COMU
         <!-- Sexo (Meninos/Meninas) -->
         <div class="col-md-2 mb-3">
             <div class="card border-0 shadow-sm p-3 h-100" style="border-radius:12px">
-                <div class="section-title">Sexo</div>
+                <div class="section-title">Sexo (<?php echo $periodo; ?>d)</div>
                 <div class="text-center mb-3">
                     <div style="font-size:2rem;font-weight:700;color:#17a2b8"><?php echo $totalMeninos + $totalMeninas; ?></div>
                     <div class="text-muted" style="font-size:.75rem">com sexo informado</div>

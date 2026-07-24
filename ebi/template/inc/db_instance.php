@@ -69,6 +69,8 @@ function _ebi_db_init(PDO $pdo): void {
             age_8_11         INTEGER NOT NULL DEFAULT 0,
             age_12_14        INTEGER NOT NULL DEFAULT 0,
             age_15_17        INTEGER NOT NULL DEFAULT 0,
+            total_meninos    INTEGER NOT NULL DEFAULT 0,
+            total_meninas    INTEGER NOT NULL DEFAULT 0,
             portaria_data    TEXT    NOT NULL DEFAULT '{}',
             comum_data       TEXT    NOT NULL DEFAULT '{}',
             updated_at       TEXT
@@ -92,6 +94,13 @@ function _ebi_db_init(PDO $pdo): void {
     }
     if (!$hasSexo) {
         $pdo->exec("ALTER TABLE cadastros ADD COLUMN sexo TEXT NOT NULL DEFAULT ''");
+    }
+
+    $statsColumns = array_column($pdo->query('PRAGMA table_info(stats_daily)')->fetchAll(), 'name');
+    foreach (['total_meninos', 'total_meninas'] as $column) {
+        if (!in_array($column, $statsColumns, true)) {
+            $pdo->exec("ALTER TABLE stats_daily ADD COLUMN {$column} INTEGER NOT NULL DEFAULT 0");
+        }
     }
 }
 
@@ -296,6 +305,8 @@ function db_stats_upsert(string $date, array $delta): void {
                 age_8_11  = age_8_11  + ?,
                 age_12_14 = age_12_14 + ?,
                 age_15_17 = age_15_17 + ?,
+                total_meninos = total_meninos + ?,
+                total_meninas = total_meninas + ?,
                 portaria_data = ?,
                 comum_data    = ?,
                 updated_at    = ?
@@ -304,6 +315,7 @@ function db_stats_upsert(string $date, array $delta): void {
             $delta['cadastros']  ?? 0, $delta['impressoes'] ?? 0, $delta['saidas'] ?? 0,
             $delta['age_0_3']    ?? 0, $delta['age_4_7']    ?? 0,
             $delta['age_8_11']   ?? 0, $delta['age_12_14']  ?? 0, $delta['age_15_17'] ?? 0,
+            $delta['total_meninos'] ?? 0, $delta['total_meninas'] ?? 0,
             $pj, $cj, $now, $date,
         ]);
     } else {
@@ -311,13 +323,15 @@ function db_stats_upsert(string $date, array $delta): void {
             'INSERT INTO stats_daily
                 (date, total_cadastros, total_impressoes, total_saidas,
                  age_0_3, age_4_7, age_8_11, age_12_14, age_15_17,
+                 total_meninos, total_meninas,
                  portaria_data, comum_data, updated_at)
-             VALUES (?,?,?,?,?,?,?,?,?,?,?,?)'
+             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
         )->execute([
             $date,
             $delta['cadastros']  ?? 0, $delta['impressoes'] ?? 0, $delta['saidas'] ?? 0,
             $delta['age_0_3']    ?? 0, $delta['age_4_7']    ?? 0,
             $delta['age_8_11']   ?? 0, $delta['age_12_14']  ?? 0, $delta['age_15_17'] ?? 0,
+            $delta['total_meninos'] ?? 0, $delta['total_meninas'] ?? 0,
             $pj, $cj, $now,
         ]);
     }
@@ -356,7 +370,9 @@ function db_stats_totais_instancia(): array {
             COALESCE(SUM(age_4_7),  0) as age_4_7,
             COALESCE(SUM(age_8_11), 0) as age_8_11,
             COALESCE(SUM(age_12_14),0) as age_12_14,
-            COALESCE(SUM(age_15_17),0) as age_15_17
+                COALESCE(SUM(age_15_17),0) as age_15_17,
+                COALESCE(SUM(total_meninos),0) as total_meninos,
+                COALESCE(SUM(total_meninas),0) as total_meninas
          FROM stats_daily'
     )->fetch();
     return $row ?: [];

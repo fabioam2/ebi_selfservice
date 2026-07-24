@@ -57,10 +57,15 @@ $todosOsCadastros      = lerTodosCadastros();
 $totalDeCadastrosGeral = count($todosOsCadastros);
 
 $totalCriancas3Anos = 0;
+$totalMeninos = 0;
+$totalMeninas = 0;
 foreach ($todosOsCadastros as $c) {
     if (in_array(trim((string)($c['idade'] ?? '')), ['3', '03'], true)) {
         $totalCriancas3Anos++;
     }
+    $sexo = strtoupper(trim($c['sexo'] ?? ''));
+    if ($sexo === 'M') $totalMeninos++;
+    elseif ($sexo === 'F') $totalMeninas++;
 }
 
 // ── Contador "Comum destaque" ─────────────────────────────────────────────────
@@ -96,9 +101,12 @@ if ($exibirModalRecuperacao) {
 }
 
 $focarPrimeiroCampoAposCadastro = false;
+$cadastrosRecentesCount = 0;
 if (!empty($_SESSION['cadastro_realizado_sucesso'])) {
     $focarPrimeiroCampoAposCadastro = true;
+    $cadastrosRecentesCount = (int)($_SESSION['cadastros_ok_count'] ?? 0);
     unset($_SESSION['cadastro_realizado_sucesso']);
+    unset($_SESSION['cadastros_ok_count']);
 }
 
 $focarAposAcao = false;
@@ -124,6 +132,29 @@ if (($_GET['acao'] ?? '') === 'stats') {
 if (($_GET['acao'] ?? '') === 'mobile') {
     require __DIR__ . '/views/mobile.php';
     exit;
+}
+
+function verificarAniversario(string $dataNascimento): string {
+    if ($dataNascimento === '') return '';
+
+    $partes = explode('/', $dataNascimento);
+    if (count($partes) !== 3) return '';
+
+    $dia = (int)$partes[0];
+    $mes = (int)$partes[1];
+    if ($dia < 1 || $dia > 31 || $mes < 1 || $mes > 12) return '';
+
+    $hoje = new DateTime('today');
+    if ($dia === (int)$hoje->format('d') && $mes === (int)$hoje->format('m')) {
+        return 'hoje';
+    }
+
+    $anoAtual = (int)$hoje->format('Y');
+    $aniversario = DateTime::createFromFormat('Y-m-d', "$anoAtual-$mes-$dia");
+    if ($aniversario === false) return '';
+
+    $diferenca = (int)$hoje->diff($aniversario)->format('%r%a');
+    return $diferenca >= -7 && $diferenca <= 7 ? 'semana' : '';
 }
 
 require __DIR__ . '/views/main.php';

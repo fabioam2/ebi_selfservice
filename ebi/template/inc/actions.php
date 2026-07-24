@@ -71,6 +71,7 @@ if (isset($_POST['cadastrar'])) {
                     'idade'    => (int)$idade,
                     'comum'    => sanitize_for_file($comum),
                     'portaria' => $portariaCadastro,
+                    'sexo'     => sanitize_for_file($sexo),
                 ];
                 $cadastrosOk++;
             }

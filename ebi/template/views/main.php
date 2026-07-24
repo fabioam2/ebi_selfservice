@@ -5,48 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastro de Crianças</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #eef2f7; }
-        .container { margin-top: 20px; padding: 20px; background-color: #ffffff; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); max-width: 1300px; }
-        .tabela-scrollable { max-height: 400px; overflow-y: auto; margin-bottom: 20px; border: 1px solid #dee2e6; border-radius: 8px; }
+        :root {
+            --bg-1: #0f766e; --bg-2: #0b4f8a;
+            --brand: #0e7490; --brand-strong: #0b5f76;
+            --surface: rgba(255,255,255,0.97);
+            --text-main: #10273b; --text-soft: #4b647c;
+        }
+        body { font-family: 'Manrope', sans-serif; background: linear-gradient(135deg, var(--bg-1) 0%, var(--bg-2) 60%, #083358 100%); min-height: 100vh; }
+        .container { margin-top: 16px; padding: 20px; background: var(--surface); border-radius: 18px; box-shadow: 0 12px 40px rgba(1,27,49,0.25); max-width: 1340px; border: 1px solid rgba(15,23,42,0.06); }
+        .tabela-scrollable { max-height: 400px; overflow-y: auto; margin-bottom: 20px; border: 1px solid #e2e8f0; border-radius: 12px; }
         .tabela-scrollable table { width: 100%; margin-bottom: 0; }
-        .tabela-scrollable th { background-color: #007bff; color: white; position: sticky; top: 0; z-index: 10; font-size: 0.9rem; padding: 0.5rem; text-align: center; }
-        .tabela-scrollable td { font-size: 0.85rem; padding: 0.4rem; vertical-align: middle; }
-        .tabela-scrollable th:nth-child(6), .tabela-scrollable th:nth-child(7), .tabela-scrollable th:nth-child(10) { text-align: left;}
-        .tabela-scrollable td:nth-child(6), .tabela-scrollable td:nth-child(7), .tabela-scrollable td:nth-child(10) { text-align: left;}
+        .tabela-scrollable th { background: linear-gradient(135deg, var(--brand), var(--brand-strong)); color: white; position: sticky; top: 0; z-index: 10; font-size: 0.82rem; padding: 0.5rem; text-align: center; font-weight: 600; }
+        .tabela-scrollable td { font-size: 0.82rem; padding: 0.4rem; vertical-align: middle; }
+        .tabela-scrollable th:nth-child(6), .tabela-scrollable th:nth-child(7), .tabela-scrollable th:nth-child(11) { text-align: left;}
+        .tabela-scrollable td:nth-child(6), .tabela-scrollable td:nth-child(7), .tabela-scrollable td:nth-child(11) { text-align: left;}
+        .tabela-scrollable tbody tr:hover { background-color: rgba(14,116,144,0.06); }
 
-        .form-control-sm { height: calc(1.5em + .5rem + 2px); padding: .25rem .5rem; font-size: .875rem; line-height: 1.5; border-radius: .2rem; }
-        .btn { margin-right: 8px; border-radius: 5px; padding: 8px 15px; transition: all 0.2s ease-in-out; }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        .alert { border-radius: 8px; margin-bottom: 15px; }
-        header h1 img { border: 2px solid #007bff; }
-        .form-control { border-radius: 5px; border-color: #ced4da; }
-        .form-control:focus { border-color: #80bdff; box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25); }
+        .form-control-sm { height: calc(1.5em + .5rem + 2px); padding: .25rem .5rem; font-size: .85rem; line-height: 1.5; border-radius: 6px; }
+        .btn { margin-right: 6px; border-radius: 8px; padding: 7px 14px; transition: all 0.15s ease; font-weight: 600; }
+        .btn:hover { transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.15); }
+        .alert { border-radius: 10px; margin-bottom: 14px; }
+        header h1 img { border: 2px solid var(--brand); }
+        .form-control { border-radius: 6px; border-color: #d1d5db; }
+        .form-control:focus { border-color: var(--brand); box-shadow: 0 0 0 0.2rem rgba(14,116,144,0.2); }
 
-        #formNovoCadastro .form-labels .col { font-weight: bold; color: #495057; padding-bottom: 0.2rem; font-size: 0.85rem; white-space: nowrap; }
+        #formNovoCadastro { background: linear-gradient(180deg, #f8fafc, #f1f5f9) !important; border-color: #e2e8f0 !important; border-radius: 14px !important; }
+        #formNovoCadastro .form-labels .col { font-weight: 600; color: var(--text-main); padding-bottom: 0.2rem; font-size: 0.8rem; white-space: nowrap; }
         #formNovoCadastro .form-registro-linha { margin-bottom: 0.25rem; padding: 0.15rem 0; }
-        #formNovoCadastro .form-registro-linha .form-group { margin-bottom: 0.1rem; padding-left: 5px; padding-right: 5px; }
-        #formNovoCadastro .form-control-sm { font-size: 0.85rem; }
+        #formNovoCadastro .form-registro-linha .form-group { margin-bottom: 0.1rem; padding-left: 4px; padding-right: 4px; }
+        #formNovoCadastro .form-control-sm { font-size: 0.82rem; }
 
-        .col-nome-crianca { flex: 0 0 23%; max-width: 23%; }
-        .col-responsavel { flex: 0 0 23%; max-width: 23%; }
-        .col-idade { flex: 0 0 9%; max-width: 9%; }
-        .col-telefone { flex: 0 0 18%; max-width: 18%; }
-        .col-comum { flex: 0 0 18%; max-width: 18%; }
+        .col-nome-crianca { flex: 0 0 20%; max-width: 20%; }
+        .col-responsavel { flex: 0 0 20%; max-width: 20%; }
+        .col-idade { flex: 0 0 7%; max-width: 7%; }
+        .col-telefone { flex: 0 0 15%; max-width: 15%; }
+        .col-comum { flex: 0 0 14%; max-width: 14%; }
+        .col-sexo { flex: 0 0 5%; max-width: 5%; }
+        .col-nascimento { flex: 0 0 7%; max-width: 7%; }
         .col-acao { flex: 0 0 9%; max-width: 9%; }
+        .badge-teste-v2 { font-size: .6rem; vertical-align: middle; background: linear-gradient(135deg, #f59e0b, #d97706); border: none; }
 
-
-        .dropdown-menu button.dropdown-item, .dropdown-menu a.dropdown-item { cursor: pointer; }
-        /* Submenu aninhado */
+        .dropdown-menu { border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); border: 1px solid #e2e8f0; }
+        .dropdown-menu button.dropdown-item, .dropdown-menu a.dropdown-item { cursor: pointer; font-size: 0.85rem; border-radius: 6px; margin: 2px 6px; padding: 6px 12px; }
+        .dropdown-item:hover { background-color: rgba(14,116,144,0.08); }
+        .dropdown-header { font-size: 0.7rem; font-weight: 700; color: var(--brand); text-transform: uppercase; letter-spacing: 0.05em; }
         .dropdown-submenu { position: relative; }
         .dropdown-submenu .dropdown-menu { top: 0; left: 100%; margin-top: -4px; display: none; }
         .dropdown-submenu:hover .dropdown-menu { display: block; }
         .dropdown-submenu > a::after { float: right; margin-top: 5px; }
-        /* Botão Como Usar */
-        .btn-ajuda { font-size: .8rem; padding: 4px 10px; }
+        .btn-ajuda { font-size: .78rem; padding: 4px 10px; }
         .modal-backdrop.show { opacity: .5; }
         .modal.show { display: block; }
-        #backupPreviewContent { font-size: 0.8em; white-space: pre-wrap; max-height: 100px; overflow-y: auto; background-color: #f8f9fa; border: 1px solid #dee2e6; padding: 5px; margin-top: 10px; border-radius: .2rem;}
+        .modal-content { border-radius: 14px; border: none; box-shadow: 0 16px 48px rgba(0,0,0,0.2); }
+        .modal-header { border-radius: 14px 14px 0 0; }
+        #backupPreviewContent { font-size: 0.8em; white-space: pre-wrap; max-height: 100px; overflow-y: auto; background-color: #f8f9fa; border: 1px solid #dee2e6; padding: 5px; margin-top: 10px; border-radius: 6px;}
         .status-icon svg { vertical-align: middle; }
 
         .filtro-portaria-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
@@ -77,17 +91,18 @@
         }
 
         .total-cadastros-info {
-            font-size: 0.9rem;
+            font-size: 0.82rem;
             color: #fff;
-            background-color: #007bff; 
-            border: 1px solid #007bff;
-            padding: 0.375rem 0.75rem;
-            border-radius: .2rem;
-            margin-left: 10px;
-            margin-right: 10px; 
-            align-self: center; 
-            display: inline-flex; 
-            align-items: center; 
+            background: linear-gradient(135deg, var(--brand), var(--brand-strong));
+            padding: 0.35rem 0.7rem;
+            border-radius: 20px;
+            margin-left: 6px;
+            margin-right: 6px;
+            align-self: center;
+            display: inline-flex;
+            align-items: center;
+            font-weight: 600;
+            box-shadow: 0 2px 6px rgba(14,116,144,0.25);
         }
         .total-cadastros-info svg {
             margin-right: 0.35rem;
@@ -101,10 +116,10 @@
         .portaria-cadastro-group {
             display: flex;
             align-items: center;
-            background-color: #17a2b8; 
+            background: linear-gradient(135deg, var(--brand), var(--brand-strong));
             padding: 0.375rem 0.75rem;
-            border-radius: .25rem;
-            border: 1px solid #117a8b; 
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(14,116,144,0.2);
         }
         .portaria-cadastro-group label {
             margin-bottom: 0;
@@ -151,26 +166,26 @@
 
         .instancia-info-topo {
             text-align: center;
-            font-size: 0.72rem;
-            letter-spacing: 0.04em;
-            color: #6c757d;
+            font-size: 0.7rem;
+            letter-spacing: 0.05em;
+            color: rgba(255,255,255,0.7);
             margin-bottom: 0.4rem;
             text-transform: uppercase;
+            font-weight: 600;
         }
 
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
-        <div class="instancia-info-topo">
-            <?php
-            $cidadeTopo = defined('INSTANCE_CIDADE') ? trim((string)INSTANCE_CIDADE) : '';
-            $comumTopo  = defined('INSTANCE_COMUM') ? trim((string)INSTANCE_COMUM) : '';
-            $cabecalhoInstancia = trim($cidadeTopo . ' - ' . $comumTopo, ' -');
+    <div class="instancia-info-topo">
+        <?php
+        $cidadeTopo = defined('INSTANCE_CIDADE') ? trim((string)INSTANCE_CIDADE) : '';
+        $comumTopo  = defined('INSTANCE_COMUM') ? trim((string)INSTANCE_COMUM) : '';
+        $cabecalhoInstancia = trim($cidadeTopo . ' - ' . $comumTopo, ' -');
             echo sanitize_for_html($cabecalhoInstancia !== '' ? $cabecalhoInstancia : 'Cidade - Comum');
             ?>
-        </div>
+    </div>
+    <div class="container">
         <header class="d-flex align-items-center justify-content-between mb-3">
             <div class="dropdown" style="min-width: 220px;">
                 <button class="btn btn-light border" type="button" id="dropdownMenuAdmin" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Menu Administração" style="line-height:1; padding: 6px 10px;">
@@ -207,14 +222,7 @@
                         </div>
                     </div>
                     <div class="dropdown-divider"></div>
-                    <button class="dropdown-item" type="button" onclick="abrirModalConfigImpressora()">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer mr-1" viewBox="0 0 16 16"><path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/><path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/></svg>
-                        Configurar Impressora e Instância
-                    </button>
-                    <button class="dropdown-item" type="button" onclick="abrirModalAlterarSenha()">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-key-fill mr-1" viewBox="0 0 16 16"><path d="M3 8a4 4 0 1 1 7.937.5H14a1 1 0 0 1 1 1v1h-1v1h-1v1h-2.062A4.001 4.001 0 0 1 3 8m4-3a3 3 0 1 0 2.83 4H11v1h1v1h1v-1h1V9h-3.17A3.001 3.001 0 0 0 7 5"/></svg>
-                        Alterar Senha
-                    </button>
+                    <h6 class="dropdown-header">Impressora</h6>
                     <button class="dropdown-item" type="button" onclick="toggleModoDebugImpressao()" id="btnToggleDebug">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bug mr-1" viewBox="0 0 16 16"><path d="M4.355.522a.5.5 0 0 1 .623.333l.291.956A4.979 4.979 0 0 1 8 1c1.007 0 1.946.298 2.731.811l.29-.956a.5.5 0 1 1 .957.29l-.41 1.352A4.985 4.985 0 0 1 13 6h.5a.5.5 0 0 0 0-1h-.538l-.853-2.56a.5.5 0 1 1 .957-.29l.956 2.87A2 2 0 0 1 15.5 7.5v1a2 2 0 0 1-2 2h-.5v.5a5 5 0 0 1-10 0V10h-.5a2 2 0 0 1-2-2v-1a2 2 0 0 1 1.478-1.93l.956-2.87a.5.5 0 1 1 .957.29L2.538 5H2a.5.5 0 0 0 0 1h.5a4.985 4.985 0 0 1 1.432-3.503l-.41-1.352a.5.5 0 0 1 .333-.623zM4 7v4a4 4 0 0 0 8 0V7a4 4 0 0 0-8 0z"/></svg>
                         <span id="labelDebugMode">Modo Debug: OFF</span>
@@ -223,15 +231,66 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tag mr-1" viewBox="0 0 16 16"><path d="M6 4.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm-1 0a.5.5 0 1 0-1 0 .5.5 0 0 0 1 0z"/><path d="M2 1h4.586a1 1 0 0 1 .707.293l7 7a1 1 0 0 1 0 1.414l-4.586 4.586a1 1 0 0 1-1.414 0l-7-7A1 1 0 0 1 1 6.586V2a1 1 0 0 1 1-1zm0 5.586 7 7L13.586 9l-7-7H2v4.586z"/></svg>
                         <span id="labelTesteMode">Testar Impressão: OFF</span>
                     </button>
-                    <div class="dropdown-divider"></div>
-                    <button class="dropdown-item" type="button" onclick="abrirModalQZTray()">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-usb-plug-fill mr-1" viewBox="0 0 16 16"><path d="M6.5 6a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z"/><path d="M3 10.5a.5.5 0 0 1 .5-.5H4V9H2V7H1.5a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 1 .5-.5H4V3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v1h2.5a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5H14v2h-1v1h.5a.5.5 0 0 1 0 1h-3l-1 1H7l-1-1H3.5a.5.5 0 0 1-.5-.5z"/></svg>
-                        Impressora QZ Tray
-                    </button>
                     <a class="dropdown-item" href="calibrar.php" target="_blank">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sliders mr-1" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3h9.05zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8h2.05zm9.45 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm-2.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1h9.05z"/></svg>
                         Calibrar
                     </a>
+                    <button class="dropdown-item" type="button" onclick="abrirModalQZTray()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-usb-plug-fill mr-1" viewBox="0 0 16 16"><path d="M6.5 6a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z"/><path d="M3 10.5a.5.5 0 0 1 .5-.5H4V9H2V7H1.5a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 1 .5-.5H4V3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v1h2.5a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5H14v2h-1v1h.5a.5.5 0 0 1 0 1h-3l-1 1H7l-1-1H3.5a.5.5 0 0 1-.5-.5z"/></svg>
+                        Impressora QZ Tray
+                    </button>
+                    <div class="dropdown-submenu">
+                        <a class="dropdown-item dropdown-toggle" href="#" id="menuInstalar">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download mr-1" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/></svg>
+                            Instalar
+                        </a>
+                        <div class="dropdown-menu">
+                            <?php
+                            $projectUrlPrefix = defined('INSTANCE_PROJECT_URL_PREFIX')
+                                ? INSTANCE_PROJECT_URL_PREFIX
+                                : '../../../';
+                            $qzDownload = defined('INSTANCE_DIR')
+                                ? $projectUrlPrefix . 'ebi/template/download.php'
+                                : 'download.php';
+                            $qrcodeUrl = defined('INSTANCE_DIR')
+                                ? $projectUrlPrefix . 'qrcode/qrcode.2.php'
+                                : '../../qrcode/qrcode.2.php';
+                            ?>
+                            <a class="dropdown-item" href="<?php echo $qzDownload; ?>?file=qztray">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-zip mr-1" viewBox="0 0 16 16"><path d="M5 7.5a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v.938l.4 1.599a1 1 0 0 1-.416 1.074l-.93.62a1 1 0 0 1-1.11 0l-.929-.62a1 1 0 0 1-.416-1.074L5 8.438zm2 0h-1v.938a1 1 0 0 1-.03.243l-.4 1.598.93.62.929-.62-.4-1.598A1 1 0 0 1 7 8.438z"/><path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5z"/></svg>
+                                QZ Tray + Certificados (.zip)
+                            </a>
+                            <a class="dropdown-item" href="<?php echo $qzDownload; ?>?file=cert">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-shield-lock mr-1" viewBox="0 0 16 16"><path d="M5.338 1.59a61 61 0 0 0-2.837.856.48.48 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.7 10.7 0 0 0 2.287 2.233c.346.244.652.42.893.533q.18.085.293.118a1 1 0 0 0 .101.025 1 1 0 0 0 .1-.025q.114-.034.294-.118c.24-.113.547-.29.893-.533a10.7 10.7 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.651-.213-1.75-.56-2.837-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524zM5.072.56C6.157.265 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.8 11.8 0 0 1-2.517 2.453 7 7 0 0 1-1.048.625c-.28.132-.581.24-.829.24s-.548-.108-.829-.24a7 7 0 0 1-1.048-.625 11.8 11.8 0 0 1-2.517-2.453C1.928 10.487.545 7.169 1.141 2.692A1.54 1.54 0 0 1 2.185 1.43 63 63 0 0 1 5.072.56"/><path d="M9.5 6.5a1.5 1.5 0 0 1-1 1.415l.385 1.99a.5.5 0 0 1-.491.595h-.788a.5.5 0 0 1-.49-.595l.384-1.99a1.5 1.5 0 1 1 2-1.415"/></svg>
+                                Certificado (.zip)
+                            </a>
+                            <a class="dropdown-item" href="https://github.com/qzind/tray/releases/download/v2.2.5/qz-tray-2.2.5-x86_64.exe" target="_blank">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download mr-1" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/></svg>
+                                QZ Tray 2.2.5 x64 (.exe)
+                            </a>
+                        </div>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <button class="dropdown-item" type="button" onclick="abrirModalConfigImpressora()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear mr-1" viewBox="0 0 16 16"><path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"/><path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115z"/></svg>
+                        Configurar Impressora e Instância
+                    </button>
+                    <button class="dropdown-item" type="button" onclick="toggleAutoImpressao()" id="btnToggleAutoImpressao">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-lightning mr-1" viewBox="0 0 16 16"><path d="M5.52.359A.5.5 0 0 1 6 0h4a.5.5 0 0 1 .474.658L8.694 6H12.5a.5.5 0 0 1 .395.807l-7 9a.5.5 0 0 1-.873-.454L6.823 9.5H3.5a.5.5 0 0 1-.48-.641z"/></svg>
+                        <span id="labelAutoImpressao">Auto-Imprimir: OFF</span>
+                    </button>
+                    <button class="dropdown-item" type="button" onclick="toggleAutoCadastro()" id="btnToggleAutoCadastro">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2-square mr-1" viewBox="0 0 16 16"><path d="M3 14.5A1.5 1.5 0 0 1 1.5 13V3A1.5 1.5 0 0 1 3 1.5h8a.5.5 0 0 1 0 1H3a.5.5 0 0 0-.5.5v10a.5.5 0 0 0 .5.5h10a.5.5 0 0 0 .5-.5V8a.5.5 0 0 1 1 0v5a1.5 1.5 0 0 1-1.5 1.5z"/><path d="m8.354 10.354 7-7a.5.5 0 0 0-.708-.708L8 9.293 5.354 6.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0"/></svg>
+                        <span id="labelAutoCadastro">Auto-Cadastrar: OFF</span>
+                    </button>
+                    <button class="dropdown-item" type="button" onclick="configTempoInatividade()" id="btnConfigTempo">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clock mr-1" viewBox="0 0 16 16"><path d="M8 3.5a.5.5 0 0 0-1 0V8a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 7.71z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0"/></svg>
+                        <span id="labelTempoInatividade">Foco: 10s</span>
+                    </button>
+                    <button class="dropdown-item" type="button" onclick="abrirModalAlterarSenha()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-key-fill mr-1" viewBox="0 0 16 16"><path d="M3 8a4 4 0 1 1 7.937.5H14a1 1 0 0 1 1 1v1h-1v1h-1v1h-2.062A4.001 4.001 0 0 1 3 8m4-3a3 3 0 1 0 2.83 4H11v1h1v1h1v-1h1V9h-3.17A3.001 3.001 0 0 0 7 5"/></svg>
+                        Alterar Senha
+                    </button>
                     <div class="dropdown-divider"></div>
                     <button class="dropdown-item" type="button" onclick="abrirModalZerarArquivo()">Zerar Arquivo</button>
                     <button class="dropdown-item" type="submit" name="preparar_recuperacao" form="formListaCriancas">Recuperar Backup <small class="text-muted">(.bkp.1 é o mais recente)</small></button>
@@ -246,7 +305,7 @@
             <div class="d-flex align-items-center" style="min-width: 220px; justify-content: flex-end;">
                 <a href="./saida/index.php" class="btn btn-outline-secondary btn-sm mr-1" target="_blank">Saída</a>
                 <a href="./saida/painel.php" class="btn btn-outline-secondary btn-sm mr-1" target="_blank">Painel Saída</a>
-                <a href="<?php echo defined('INSTANCE_DIR') ? '../../../qrcode/default.php' : '../../qrcode/default.php'; ?>" class="btn btn-outline-secondary btn-sm mr-1" target="_blank">QrCode</a>
+                <a href="<?php echo sanitize_for_html($qrcodeUrl); ?>" class="btn btn-outline-secondary btn-sm mr-1" target="_blank">QrCode</a>
                 <a href="?acao=mobile" class="btn btn-outline-success btn-sm mr-1" target="_blank" title="Versão para Smartphone"><i class="fas fa-mobile-alt mr-1"></i>Mobile</a>
                 <button type="button" class="btn btn-outline-info btn-sm btn-ajuda" onclick="abrirModalAjuda()" title="Como usar o sistema">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-question-circle mr-1" viewBox="0 0 16 16"><path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/></svg>
@@ -276,6 +335,8 @@
                 <div class="col col-idade text-center">Idade</div>
                 <div class="col col-telefone">Telefone</div>
                 <div class="col col-comum">Comum</div>
+                <div class="col col-sexo text-center" title="Sexo (M/F)">Sx</div>
+                <div class="col col-nascimento text-center" title="Data de Nascimento">DT</div>
                 <div class="col col-acao text-center">Ação</div>
             </div>
 
@@ -300,6 +361,18 @@
                 <div class="form-group col-md col-comum">
                     <label for="input_<?php echo $linha; ?>_4" class="d-md-none">Comum <?php echo $linha + 1; ?>:</label>
                     <input type="text" class="form-control form-control-sm cadastro-input" id="input_<?php echo $linha; ?>_4" name="comum[]" data-linha="<?php echo $linha; ?>" data-col="4" placeholder="Comum">
+                </div>
+                <div class="form-group col-md col-sexo">
+                    <label for="input_<?php echo $linha; ?>_5" class="d-md-none" title="Sexo">Sx <?php echo $linha + 1; ?>:</label>
+                    <select class="form-control form-control-sm cadastro-input text-center" id="input_<?php echo $linha; ?>_5" name="sexo[]" data-linha="<?php echo $linha; ?>" data-col="5" title="Sexo" style="font-size:0.7rem;padding:0.2rem;">
+                        <option value=""></option>
+                        <option value="M">M</option>
+                        <option value="F">F</option>
+                    </select>
+                </div>
+                <div class="form-group col-md col-nascimento">
+                    <label for="input_<?php echo $linha; ?>_6" class="d-md-none" title="Data de Nascimento">DT <?php echo $linha + 1; ?>:</label>
+                    <input type="text" inputmode="numeric" class="form-control form-control-sm data-nascimento-mask cadastro-input text-center" id="input_<?php echo $linha; ?>_6" name="data_nascimento[]" data-linha="<?php echo $linha; ?>" data-col="6" title="Data de Nascimento" placeholder="dd/mm" maxlength="10" style="font-size:0.7rem;padding:0.2rem;">
                 </div>
                 <div class="form-group col-md col-acao px-1 d-flex align-items-center justify-content-center">
                     <?php if ($linha > 0): ?>
@@ -384,6 +457,9 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-cake2" viewBox="0 0 16 16"><path d="M11.05 4.05a2.5 2.5 0 1 0-4.999.058A2.5 2.5 0 0 0 11.05 4.05zm-4.01-.034a1.5 1.5 0 1 1 2.998-.033A1.5 1.5 0 0 1 7.04 4.016z"/><path d="M6.536 6.072L5.85 7.305A.5.5 0 0 0 6.29 8h3.42a.5.5 0 0 0 .44-.695l-.686-1.233L13.617 5.25a.5.5 0 0 0-.39-.867H2.773a.5.5 0 0 0-.39.867l4.153.822z"/><path d="M12.572 6.092L12 6.224v4.248c.782.396 1.595.24 2.222-.457.628-.698.782-1.61.396-2.393-.386-.783-1.2-.937-1.932-.783zm-1.03 4.355V6.35H4.458v4.097c-.782-.396-1.595-.24-2.222.457-.628-.698-.782-1.61-.396-2.393.386.783 1.2.937 1.932.783A2.91 2.91 0 0 0 4.3 12.57a2.91 2.91 0 0 0 3.572 1.818c.782.396 1.595.24 2.222-.457.628-.698.782-1.61.396-2.393-.386-.783-1.2-.937-1.932-.783A2.91 2.91 0 0 0 11.542 10.447zM4.907 11.32c-.185.059-.354.15-.495.271-.14.12-.242.265-.304.423l-.066.165c-.073.188-.098.388-.066.58.03.18.113.348.235.485.122.137.28.238.458.29.178.053.368.057.546.013l.126-.03.11-.042.108-.054.092-.06a1.08 1.08 0 0 1 .23-.167c.05-.04.094-.085.132-.133.09-.114.155-.245.19-.383.036-.137.043-.28.023-.416a.97.97 0 0 0-.133-.437c-.08-.14-.19-.26-.32-.35-.13-.09-.27-.14-.41-.16l-.112-.01z"/></svg>
                         3 Anos: <?php echo $totalCriancas3Anos; ?>
                     </div>
+                    <div class="total-cadastros-info" title="Meninos / Meninas" style="background-color:#17a2b8;border-color:#117a8b;">
+                        👦 <?php echo $totalMeninos; ?> / 👧 <?php echo $totalMeninas; ?>
+                    </div>
                     <?php if (!empty($palavrasChaveComumDestaque)): ?>
                     <div class="total-cadastros-info" title="Total de cadastros da comum configurada (<?php echo sanitize_for_html($nomeComumDestaque); ?>)">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-house-heart-fill" viewBox="0 0 16 16">
@@ -414,14 +490,16 @@
                             <th style="width: 4%;" class="no-print"><input type="checkbox" id="selecionarTodos" title="Selecionar todos" aria-label="Selecionar todos"></th>
                             <th style="width: 6%;">Impresso</th>
                             <th style="width: 6%;">Portaria</th>
-                            <th style="width: 7%;">Código</th>
-                            <th style="width: 7%;">Cod Resp</th>
+                            <th style="width: 6%;">Código</th>
+                            <th style="width: 6%;">Cod Resp</th>
                             <th style="width: auto;">Nome da Criança</th>
                             <th style="width: auto;">Nome do Responsável</th>
-                            <th style="width: 12%;">Telefone</th>
-                            <th style="width: 6%;">Idade</th>
-                            <th style="width: 12%;">Comum</th>
-                            <th style="width: 8%;" class="no-print">Ações</th>
+                            <th style="width: 10%;">Telefone</th>
+                            <th style="width: 5%;">Idade</th>
+                            <th style="width: 4%;" title="Sexo">Sx</th>
+                            <th style="width: 5%;" title="Data de Nascimento">DT</th>
+                            <th style="width: 10%;">Comum</th>
+                            <th style="width: 4%;" class="no-print" title="Excluir">🗑️</th>
                         </tr>
                     </thead>
                     <tbody id="lista-criancas">
@@ -442,10 +520,25 @@
                                     <td data-campo="portaria" style="text-align: center;"><?php echo sanitize_for_html($crianca['portaria'] ?? ''); ?></td>
                                     <td style="text-align: center;"><?php echo sanitize_for_html($crianca['id']); ?></td>
                                     <td style="text-align: center;"><?php echo sanitize_for_html($crianca['cod_resp'] ?? ''); ?></td>
-                                    <td><?php echo sanitize_for_html($crianca['nomeCrianca']); ?></td>
+                                    <td data-nome="<?php echo sanitize_for_html($crianca['nomeCrianca']); ?>"><?php
+                                        echo sanitize_for_html($crianca['nomeCrianca']);
+                                        if (function_exists('verificarAniversario')) {
+                                            $tagAniv = verificarAniversario($crianca['dataNascimento'] ?? '');
+                                            if ($tagAniv === 'hoje') {
+                                                echo ' <span class="badge badge-warning no-print" title="Aniversário HOJE!">🎂</span>';
+                                            } elseif ($tagAniv === 'semana') {
+                                                echo ' <span class="badge badge-info no-print" title="Aniversário esta semana">🥳</span>';
+                                            }
+                                        }
+                                    ?></td>
                                     <td><?php echo sanitize_for_html($crianca['nomeResponsavel']); ?></td>
                                     <td style="text-align: center;"><?php echo sanitize_for_html($crianca['telefone']); ?></td>
                                     <td style="text-align: center;"><?php echo sanitize_for_html($crianca['idade']); ?></td>
+                                    <td style="text-align: center;"><?php echo sanitize_for_html($crianca['sexo'] ?? ''); ?></td>
+                                    <td style="text-align: center; font-size:0.75rem;" title="<?php echo sanitize_for_html($crianca['dataNascimento'] ?? ''); ?>"><?php
+                                        $dn = $crianca['dataNascimento'] ?? '';
+                                        echo $dn ? sanitize_for_html(substr($dn, 0, 5)) : '';
+                                    ?></td>
                                     <td><?php echo sanitize_for_html($crianca['comum']); ?></td>
                                     <td style="text-align: center;" class="no-print">
                                         <button type="button" class="btn btn-sm btn-danger-linha" onclick="confirmarApagarLinha(<?php echo sanitize_for_html($crianca['id']); ?>, '<?php echo addslashes(sanitize_for_html($crianca['nomeCrianca'])); ?>')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16"><path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/></svg></button>
@@ -453,7 +546,7 @@
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
-                            <tr><td colspan="11" class="text-center py-4">Nenhuma criança cadastrada ainda.</td></tr>
+                            <tr><td colspan="13" class="text-center py-4">Nenhuma criança cadastrada ainda.</td></tr>
                         <?php endif; ?>
                     </tbody>
                 </table>
@@ -843,7 +936,7 @@
                                         <li>Os dados são preenchidos automaticamente</li>
                                     </ul>
                                     <div class="alert alert-success mb-0 p-2 small">
-                                        <strong>Gerar QR Codes:</strong> Acesse o botão <strong>QrCode</strong> no canto superior direito ou clique <a href="<?php echo defined('INSTANCE_DIR') ? '../../../qrcode/default.php' : '../../qrcode/default.php'; ?>" target="_blank">aqui</a> para criar os QR Codes dos responsáveis com seus dados pré-preenchidos.
+                                        <strong>Gerar QR Codes:</strong> Acesse o botão <strong>QrCode</strong> no canto superior direito ou clique <a href="<?php echo sanitize_for_html($qrcodeUrl); ?>" target="_blank">aqui</a> para criar os QR Codes dos responsáveis com seus dados pré-preenchidos.
                                     </div>
                                 </div>
                             </div>
@@ -940,22 +1033,25 @@
     <script>
         var csrfToken = <?php echo json_encode(csrf_token()); ?>;
         const NUM_LINHAS_FORM_CADASTRO = <?php echo NUM_LINHAS_FORMULARIO_CADASTRO; ?>;
-        const NUM_CAMPOS_POR_LINHA_CADASTRO = 5; 
+        // QR v2 usa sete colunas por linha, incluindo sexo e data de nascimento.
+        const NUM_CAMPOS_POR_LINHA_CADASTRO = 7;
 
         function focarPrimeiroCampoCadastro() {
             $('#input_0_0').focus();
         }
 
         function limparLinhaCadastro(linha) {
-            $('#input_' + linha + '_0').val(''); 
-            $('#input_' + linha + '_1').val(''); 
-            $('#input_' + linha + '_2').val(''); 
-            $('#input_' + linha + '_3').val('').trigger('input'); 
-            $('#input_' + linha + '_4').val(''); 
+            $('#input_' + linha + '_0').val('');
+            $('#input_' + linha + '_1').val('');
+            $('#input_' + linha + '_2').val('');
+            $('#input_' + linha + '_3').val('').trigger('input');
+            $('#input_' + linha + '_4').val('');
+            $('#input_' + linha + '_5').val('').trigger('input');
         }
 
         $(document).ready(function(){
             $('.telefone-mask').mask('(00) 00000-0000');
+            $('.data-nascimento-mask').mask('00/00/0000');
 
             const portariaInputCadastro = $('#portaria_cadastro');
             const storedPortaria = localStorage.getItem('ultimaPortariaCadastro');
@@ -978,48 +1074,172 @@
 
             <?php if ($focarPrimeiroCampoAposCadastro): ?>
                 focarPrimeiroCampoCadastro();
-                $('#formNovoCadastro .cadastro-input').val(''); 
+                $('#formNovoCadastro .cadastro-input').val('');
+                // Auto-imprimir: apenas os cadastros recém-feitos (últimos N)
+                if (localStorage.getItem('autoImpressao') === 'true') {
+                    var cadastrosRecentes = <?php echo (int)$cadastrosRecentesCount; ?>;
+                    function tentarAutoImprimir() {
+                        if (cadastrosRecentes <= 0) return;
+                        // Selecionar apenas os primeiros N não-impressos no topo da tabela
+                        var count = 0;
+                        $('#lista-criancas tr').each(function() {
+                            if (count >= cadastrosRecentes) return false;
+                            var impresso = $(this).find('.status-icon svg[fill="green"]').length > 0;
+                            if (!impresso) {
+                                $(this).find('.checkbox-crianca').prop('checked', true);
+                                count++;
+                            }
+                        });
+                        if (count > 0) {
+                            $('#formListaCriancas').find('input[name="imprimir"]').remove();
+                            $('#formListaCriancas').append('<input type="hidden" name="imprimir" value="1">');
+                            $('#formListaCriancas').submit();
+                        }
+                    }
+                    if (typeof qzReadyPromise !== 'undefined' && qzReadyPromise) {
+                        qzReadyPromise.then(function() {
+                            if (qzConnected) tentarAutoImprimir();
+                        });
+                    } else {
+                        setTimeout(function() {
+                            tentarAutoImprimir();
+                        }, 2000);
+                    }
+                }
             <?php elseif ($focarAposAcao): ?>
                 focarPrimeiroCampoCadastro();
             <?php elseif (!empty($mensagemErro)): ?>
             <?php endif; ?>
 
 
+            // Leitores QR enviam uma sequência de teclas muito mais rápida que a digitação manual.
+            // Só essa sequência pode acionar o Auto-Cadastrar; Tab e Enter manuais apenas navegam.
+            var autoSubmitTimer = null;
+            var leituraPistola = {
+                ultimoEventoEm: 0,
+                caracteresRapidos: 0,
+                separadoresRapidos: 0,
+                confirmada: false,
+                sequencia: 0
+            };
+            var LIMITE_INTERVALO_PISTOLA_MS = 65;
+            var MINIMO_CARACTERES_PISTOLA = 6;
+            var MINIMO_SEPARADORES_PISTOLA = 4;
+
+            function resetarLeituraPistola() {
+                leituraPistola.ultimoEventoEm = 0;
+                leituraPistola.caracteresRapidos = 0;
+                leituraPistola.separadoresRapidos = 0;
+                leituraPistola.confirmada = false;
+                leituraPistola.sequencia++;
+                if (autoSubmitTimer) {
+                    clearTimeout(autoSubmitTimer);
+                    autoSubmitTimer = null;
+                }
+            }
+
+            function registrarTeclaDaPistola(evento) {
+                if (evento.ctrlKey || evento.metaKey || evento.altKey) {
+                    resetarLeituraPistola();
+                    return false;
+                }
+
+                var agora = Date.now();
+                var ehCaractere = evento.key.length === 1;
+                var ehSeparador = evento.key === 'Tab' || evento.key === 'Enter';
+
+                if (!ehCaractere && !ehSeparador) {
+                    resetarLeituraPistola();
+                    return false;
+                }
+
+                if (leituraPistola.ultimoEventoEm === 0 || agora - leituraPistola.ultimoEventoEm > LIMITE_INTERVALO_PISTOLA_MS) {
+                    leituraPistola.caracteresRapidos = 0;
+                    leituraPistola.separadoresRapidos = 0;
+                    leituraPistola.confirmada = false;
+                    leituraPistola.sequencia++;
+                }
+
+                if (ehCaractere) {
+                    leituraPistola.caracteresRapidos++;
+                } else if (ehSeparador) {
+                    leituraPistola.separadoresRapidos++;
+                }
+
+                if (leituraPistola.caracteresRapidos >= MINIMO_CARACTERES_PISTOLA
+                    && leituraPistola.separadoresRapidos >= MINIMO_SEPARADORES_PISTOLA) {
+                    leituraPistola.confirmada = true;
+                }
+
+                leituraPistola.ultimoEventoEm = agora;
+                return leituraPistola.confirmada;
+            }
+
+            function agendarAutoCadastroPorPistola(atraso) {
+                if (localStorage.getItem('autoCadastro') !== 'true' || !leituraPistola.confirmada) {
+                    return;
+                }
+
+                var sequenciaAtual = leituraPistola.sequencia;
+                autoSubmitTimer = setTimeout(function() {
+                    if (leituraPistola.sequencia !== sequenciaAtual) {
+                        return;
+                    }
+                    var portariaVal = $('#portaria_cadastro').val().trim();
+                    if (portariaVal.length === 1 && $('#input_0_0').val().trim() !== '') {
+                        $('#btnCadastrar').click();
+                    }
+                    autoSubmitTimer = null;
+                }, atraso);
+            }
+
             $('.cadastro-input').on('keydown', function(e) {
                 const key = e.key;
-                const target = e.target;
-                if (key === 'Enter' || key === 'Tab') {
-                    e.preventDefault();
-                    const currentLinha = parseInt($(target).data('linha'));
-                    const currentCol = parseInt($(target).data('col'));
-                    let nextLinha = currentLinha;
-                    let nextCol = currentCol;
-
-                    if (currentCol < NUM_CAMPOS_POR_LINHA_CADASTRO - 1) {
-                        nextCol++;
-                    } else {
-                        if (currentLinha < NUM_LINHAS_FORM_CADASTRO - 1) {
-                            nextLinha++;
-                            nextCol = 0;
-                        } else {
-                            $('#portaria_cadastro').focus();
-                            return;
-                        }
-                    }
-                    $('#input_' + nextLinha + '_' + nextCol).focus();
+                registrarTeclaDaPistola(e);
+                if (key !== 'Enter' && key !== 'Tab') {
+                    return;
                 }
-            });
-            
-            $('#input_' + (NUM_LINHAS_FORM_CADASTRO - 1) + '_' + (NUM_CAMPOS_POR_LINHA_CADASTRO - 1)).on('keydown', function(e) {
-                if (e.key === 'Tab' && !e.shiftKey) {
-                    e.preventDefault();
+                e.preventDefault();
+                if (autoSubmitTimer) { clearTimeout(autoSubmitTimer); autoSubmitTimer = null; }
+
+                const target = e.target;
+                const currentLinha = parseInt($(target).data('linha'));
+                const currentCol = parseInt($(target).data('col'));
+
+                if (key === 'Tab') {
+                    if (currentCol < NUM_CAMPOS_POR_LINHA_CADASTRO - 1) {
+                        $('#input_' + currentLinha + '_' + (currentCol + 1)).focus();
+                    } else if (currentLinha < NUM_LINHAS_FORM_CADASTRO - 1) {
+                        $('#input_' + (currentLinha + 1) + '_0').focus();
+                    } else {
+                        $('#portaria_cadastro').focus();
+                    }
+                    agendarAutoCadastroPorPistola(500);
+                    return;
+                }
+
+                // Enter: mover para próxima linha (suporte QR antigo com \r)
+                if (currentLinha < NUM_LINHAS_FORM_CADASTRO - 1) {
+                    $('#input_' + (currentLinha + 1) + '_0').focus();
+                } else {
                     $('#portaria_cadastro').focus();
                 }
+
+                agendarAutoCadastroPorPistola(300);
             });
 
             $('#portaria_cadastro').on('keydown', function(e) {
+                registrarTeclaDaPistola(e);
                 if (e.key === 'Enter' || (e.key === 'Tab' && !e.shiftKey)) {
                     e.preventDefault();
+                    var portariaVal = $(this).val().trim();
+                    if (localStorage.getItem('autoCadastro') === 'true' && leituraPistola.confirmada && portariaVal.length === 1) {
+                        var temDados = $('#input_0_0').val().trim() !== '';
+                        if (temDados) {
+                            $('#btnCadastrar').click();
+                            return;
+                        }
+                    }
                     if ($('#btnLimparCadastro').is(':visible') && !$('#btnLimparCadastro').is(':disabled')) { 
                         $('#btnLimparCadastro').focus();
                     } else {
@@ -1027,6 +1247,8 @@
                     }
                 }
             });
+
+            $('#formNovoCadastro').on('mousedown touchstart paste', 'input, textarea, select', resetarLeituraPistola);
 
 
             $('#selecionarTodos').change(function() {
@@ -1207,23 +1429,27 @@
 
             // Função auxiliar para extrair dados visíveis da tabela
             function extrairDadosTabelaVisivel() {
-                var headers = ['Impresso', 'Portaria', 'Codigo', 'Cod Resp', 'Nome da Crianca', 'Nome do Responsavel', 'Telefone', 'Idade', 'Comum'];
+                var headers = ['Impresso', 'Portaria', 'Codigo', 'Cod Resp', 'Nome da Crianca', 'Nome do Responsavel', 'Telefone', 'Idade', 'Sexo', 'DT', 'Comum'];
                 var rows = [];
                 $('#lista-criancas tr').each(function() {
                     if ($(this).is(':visible')) {
                         var $cells = $(this).find('td');
                         if ($cells.length === 0) return;
                         var impresso = $cells.eq(1).find('svg').length > 0 ? 'Sim' : 'Nao';
+                        // Usar data-nome para evitar emojis de aniversário
+                        var nomeCrianca = $cells.eq(5).attr('data-nome') || $cells.eq(5).text().trim();
                         var row = [
                             impresso,
                             $cells.eq(2).text().trim(),
                             $cells.eq(3).text().trim(),
                             $cells.eq(4).text().trim(),
-                            $cells.eq(5).text().trim(),
+                            nomeCrianca,
                             $cells.eq(6).text().trim(),
                             $cells.eq(7).text().trim(),
                             $cells.eq(8).text().trim(),
-                            $cells.eq(9).text().trim()
+                            $cells.eq(9).text().trim(),
+                            $cells.eq(10).text().trim(),
+                            $cells.eq(11).text().trim()
                         ];
                         rows.push(row);
                     }
@@ -1389,6 +1615,138 @@
             }
         }
 
+        // ============ AUTO-IMPRIMIR APÓS CADASTRO ============
+
+        var autoImpressaoAtiva = localStorage.getItem('autoImpressao') === 'true';
+
+        function toggleAutoImpressao() {
+            autoImpressaoAtiva = !autoImpressaoAtiva;
+            localStorage.setItem('autoImpressao', autoImpressaoAtiva);
+            atualizarEstadoAutoImpressao();
+            if (autoImpressaoAtiva) {
+                alert('Auto-Imprimir ATIVADO!\n\nApós clicar Cadastrar, imprime automaticamente as pulseiras.');
+            } else {
+                alert('Auto-Imprimir DESATIVADO.\nApós cadastrar, será necessário imprimir manualmente.');
+            }
+        }
+
+        function atualizarEstadoAutoImpressao() {
+            var label = document.getElementById('labelAutoImpressao');
+            var btn = document.getElementById('btnToggleAutoImpressao');
+            if (autoImpressaoAtiva) {
+                label.textContent = 'Auto-Imprimir: ON';
+                label.style.fontWeight = 'bold';
+                label.style.color = '#1b5e20';
+                btn.style.backgroundColor = '#c8e6c9';
+            } else {
+                label.textContent = 'Auto-Imprimir: OFF';
+                label.style.fontWeight = 'normal';
+                label.style.color = '';
+                btn.style.backgroundColor = '';
+            }
+        }
+
+        // Inicializar estado visual
+        atualizarEstadoAutoImpressao();
+
+        // ============ AUTO-CADASTRAR (sem imprimir) ============
+
+        var autoCadastroAtivo = localStorage.getItem('autoCadastro') === 'true';
+
+        function toggleAutoCadastro() {
+            autoCadastroAtivo = !autoCadastroAtivo;
+            localStorage.setItem('autoCadastro', autoCadastroAtivo);
+            atualizarEstadoAutoCadastro();
+            if (autoCadastroAtivo) {
+                alert('Auto-Cadastrar ATIVADO!\n\nApós ler o QR Code com a pistola, cadastra automaticamente.');
+            } else {
+                alert('Auto-Cadastrar DESATIVADO.\nApós ler QR, precisará clicar Cadastrar manualmente.');
+            }
+        }
+
+        function atualizarEstadoAutoCadastro() {
+            var label = document.getElementById('labelAutoCadastro');
+            var btn = document.getElementById('btnToggleAutoCadastro');
+            if (autoCadastroAtivo) {
+                label.textContent = 'Auto-Cadastrar: ON';
+                label.style.fontWeight = 'bold';
+                label.style.color = '#0b5f76';
+                btn.style.backgroundColor = '#b2ebf2';
+            } else {
+                label.textContent = 'Auto-Cadastrar: OFF';
+                label.style.fontWeight = 'normal';
+                label.style.color = '';
+                btn.style.backgroundColor = '';
+            }
+        }
+        atualizarEstadoAutoCadastro();
+
+        // ============ FOCO AUTOMÁTICO (inatividade configurável) ============
+
+        var tempoInatividade = parseInt(localStorage.getItem('tempoInatividade')) || 10;
+        var inactivityTimer = null;
+        var edicaoManualAtiva = false;
+
+        function focoEstaEmControle() {
+            var elementoAtivo = document.activeElement;
+            return elementoAtivo && elementoAtivo !== document.body && elementoAtivo !== document.documentElement;
+        }
+
+        function campoCadastroEstaAtivo() {
+            var elementoAtivo = document.activeElement;
+            return elementoAtivo && elementoAtivo.matches('#formNovoCadastro input:not([type="hidden"]), #formNovoCadastro textarea, #formNovoCadastro select');
+        }
+
+        function resetInactivityTimer() {
+            if (inactivityTimer) clearTimeout(inactivityTimer);
+            if (tempoInatividade > 0) {
+                inactivityTimer = setTimeout(function() {
+                    if (edicaoManualAtiva || focoEstaEmControle()) {
+                        resetInactivityTimer();
+                        return;
+                    }
+                    focarPrimeiroCampoCadastro();
+                }, tempoInatividade * 1000);
+            }
+        }
+
+        function configTempoInatividade() {
+            var atual = localStorage.getItem('tempoInatividade') || '10';
+            var novo = prompt('Tempo de inatividade para voltar o cursor (em segundos).\nDigite 0 para desativar.', atual);
+            if (novo === null) return;
+            novo = parseInt(novo);
+            if (isNaN(novo) || novo < 0) novo = 10;
+            tempoInatividade = novo;
+            localStorage.setItem('tempoInatividade', novo);
+            atualizarLabelTempo();
+            resetInactivityTimer();
+        }
+
+        function atualizarLabelTempo() {
+            var label = document.getElementById('labelTempoInatividade');
+            if (tempoInatividade > 0) {
+                label.textContent = 'Foco: ' + tempoInatividade + 's';
+            } else {
+                label.textContent = 'Foco: OFF';
+            }
+        }
+        atualizarLabelTempo();
+
+        $('#formNovoCadastro').on('focusin input', 'input, textarea, select', function() {
+            edicaoManualAtiva = true;
+            resetInactivityTimer();
+        });
+
+        $('#formNovoCadastro').on('focusout', 'input, textarea, select', function() {
+            setTimeout(function() {
+                edicaoManualAtiva = campoCadastroEstaAtivo();
+            }, 0);
+        });
+
+        // Iniciar timer e resetar em qualquer interação
+        $(document).on('keydown keyup click mousemove scroll input', function() { resetInactivityTimer(); });
+        resetInactivityTimer();
+
         function salvarConfigTeste() {
             localStorage.setItem('testeX',        $('#testeX').val()        || '140');
             localStorage.setItem('testeY',        $('#testeY').val()        || '30');
@@ -1519,6 +1877,8 @@
             if (confirm("Tem certeza que deseja apagar o cadastro de '" + nomeCrianca + "' (ID: " + id + ")?\nEsta ação não pode ser desfeita. Um backup do arquivo atual será criado.")) {
                 document.getElementById('id_para_apagar_input').value = id;
                 document.getElementById('formApagarLinha').submit();
+            } else {
+                focarPrimeiroCampoCadastro();
             }
         }
 

@@ -29,13 +29,28 @@ $_ebi_data_dir = $_ebi_instance_root . '/data';
 define('DB_INSTANCE_PATH', $_ebi_data_dir . '/instance.db');
 define('ARQUIVO_DADOS',    $_ebi_data_dir . '/cadastro_criancas.txt'); // compat legado
 
-// Caminho para o BD central: a profundidade depende do modo de operação.
-// Template (ebi/template/):     2 dirname() → raiz do projeto
-// Instância (ebi/i/user_XXX/): 3 dirname() → raiz do projeto
-$_ebi_central_base = defined('INSTANCE_DIR')
-    ? dirname(dirname(dirname($_ebi_instance_root)))  // ebi/i/user_XXX/ → ebi/i/ → ebi/ → raiz
-    : dirname(dirname($_ebi_instance_root));           // ebi/template/   → ebi/   → raiz
-define('CENTRAL_DB_PATH', $_ebi_central_base . '/selfservice/data/ebi.db');
+// Localiza a raiz sem assumir a profundidade da URL da instância.
+// Isso atende tanto aos stubs atuais quanto às instâncias legadas em public_html/ebi.
+$_ebi_project_root = '';
+$_ebi_path_cursor = realpath($_ebi_instance_root) ?: $_ebi_instance_root;
+while (true) {
+    if (is_dir($_ebi_path_cursor . '/ebi') && is_dir($_ebi_path_cursor . '/selfservice')) {
+        $_ebi_project_root = $_ebi_path_cursor;
+        break;
+    }
+    $_ebi_parent = dirname($_ebi_path_cursor);
+    if ($_ebi_parent === $_ebi_path_cursor) break;
+    $_ebi_path_cursor = $_ebi_parent;
+}
+
+if ($_ebi_project_root === '') {
+    $_ebi_project_root = defined('INSTANCE_DIR')
+        ? dirname(dirname(dirname($_ebi_instance_root)))
+        : dirname(dirname($_ebi_instance_root));
+}
+
+define('EBI_PROJECT_ROOT', $_ebi_project_root);
+define('CENTRAL_DB_PATH', EBI_PROJECT_ROOT . '/selfservice/data/ebi.db');
 
 // Identificação da instância para propagar stats ao BD central
 $_ebi_info_usuario = $config['INFO_USUARIO'] ?? [];
@@ -236,9 +251,11 @@ function obter_versao_sistema(): string {
     // Raiz do projeto (3 níveis acima de qualquer modo)
     // Template: ebi/template/inc/ → ebi/template/ → ebi/ → raiz
     // Instância: ebi/i/user_XXX/  → ebi/i/        → ebi/ → raiz
-    $gitDir = defined('INSTANCE_DIR')
-        ? dirname(dirname(dirname(INSTANCE_DIR)))
-        : dirname(dirname(dirname(__DIR__)));
+    $gitDir = defined('EBI_PROJECT_ROOT')
+        ? EBI_PROJECT_ROOT
+        : (defined('INSTANCE_DIR')
+            ? dirname(dirname(dirname(INSTANCE_DIR)))
+            : dirname(dirname(dirname(__DIR__))));
     if (is_dir($gitDir . '/.git')) {
         $cmd = "cd " . escapeshellarg($gitDir) . " && git log -1 --format=%cd --date=format:'%Y%m%d%H%M' 2>/dev/null";
         $out = @shell_exec($cmd);

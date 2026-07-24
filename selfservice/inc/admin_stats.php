@@ -26,6 +26,10 @@ foreach ($statsPorDia as $row) {
     }
 }
 $totalCriancasPeriodo = array_sum($ageTotals) ?: 1; // evita divisão por zero
+$sexoGeral = [
+    'total_meninos' => (int)($statsGeral['total_meninos'] ?? 0),
+    'total_meninas' => (int)($statsGeral['total_meninas'] ?? 0),
+];
 ?>
 
 <div class="content-header">
@@ -84,6 +88,25 @@ $totalCriancasPeriodo = array_sum($ageTotals) ?: 1; // evita divisão por zero
                 <i class="fas fa-calendar-day icon"></i>
                 <h3 class="mb-0"><?php echo number_format((int)($statsHoje['cadastros_hoje'] ?? 0)); ?></h3>
                 <p class="mb-0">Cadastros Hoje</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-2">
+    <div class="col-md-6">
+        <div class="card border-left-primary" style="border-left: 4px solid #4e73df;">
+            <div class="card-body py-2 d-flex justify-content-between align-items-center">
+                <span>Meninos cadastrados</span>
+                <strong class="h5 mb-0"><?php echo number_format($sexoGeral['total_meninos']); ?></strong>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card border-left-danger" style="border-left: 4px solid #e74a9a;">
+            <div class="card-body py-2 d-flex justify-content-between align-items-center">
+                <span>Meninas cadastradas</span>
+                <strong class="h5 mb-0"><?php echo number_format($sexoGeral['total_meninas']); ?></strong>
             </div>
         </div>
     </div>

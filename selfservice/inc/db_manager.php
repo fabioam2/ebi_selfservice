@@ -62,6 +62,8 @@ function _central_db_init(PDO $pdo): void {
             age_8_11         INTEGER NOT NULL DEFAULT 0,
             age_12_14        INTEGER NOT NULL DEFAULT 0,
             age_15_17        INTEGER NOT NULL DEFAULT 0,
+            total_meninos    INTEGER NOT NULL DEFAULT 0,
+            total_meninas    INTEGER NOT NULL DEFAULT 0,
             portaria_data    TEXT NOT NULL DEFAULT '{}',
             comum_data       TEXT NOT NULL DEFAULT '{}',
             updated_at       TEXT,
@@ -71,6 +73,13 @@ function _central_db_init(PDO $pdo): void {
         CREATE INDEX IF NOT EXISTS idx_admin_stats_date ON admin_daily_stats(date);
         CREATE INDEX IF NOT EXISTS idx_admin_stats_user ON admin_daily_stats(user_id);
     ");
+
+    $statsColumns = array_column($pdo->query('PRAGMA table_info(admin_daily_stats)')->fetchAll(), 'name');
+    foreach (['total_meninos', 'total_meninas'] as $column) {
+        if (!in_array($column, $statsColumns, true)) {
+            $pdo->exec("ALTER TABLE admin_daily_stats ADD COLUMN {$column} INTEGER NOT NULL DEFAULT 0");
+        }
+    }
 }
 
 // ── ss_users ────────────────────────────────────────────────────────────────
@@ -133,7 +142,7 @@ function db_atualizar_last_access(string $user_id): void {
 
 /**
  * Incrementa (ou cria) o registro de stats do dia para uma instância.
- * $delta: ['cadastros'=>N, 'impressoes'=>N, 'saidas'=>N, 'age_*'=>N,
+ * $delta: ['cadastros'=>N, 'impressoes'=>N, 'saidas'=>N, 'age_*'=>N, 'total_meninos'=>N, 'total_meninas'=>N,
  *          'portaria_counts'=>['A'=>N,...], 'comum_counts'=>['Bonfim'=>N,...]]
  */
 function db_registrar_admin_stat(
@@ -141,10 +150,13 @@ function db_registrar_admin_stat(
     string $cidade,
     string $comum,
     array  $delta,
-    ?string $overridePath = null
+    ?string $overridePath = null,
+    ?string $date = null
 ): void {
     try {
-        $today = date('Y-m-d');
+        $today = $date !== null && preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)
+            ? $date
+            : date('Y-m-d');
         $now   = date('Y-m-d H:i:s');
         $pdo   = central_db($overridePath);
 
@@ -176,6 +188,8 @@ function db_registrar_admin_stat(
                     age_8_11 = age_8_11 + ?,
                     age_12_14= age_12_14+ ?,
                     age_15_17= age_15_17+ ?,
+                    total_meninos = total_meninos + ?,
+                    total_meninas = total_meninas + ?,
                     portaria_data = ?,
                     comum_data    = ?,
                     updated_at    = ?
@@ -185,6 +199,7 @@ function db_registrar_admin_stat(
                 $delta['cadastros']  ?? 0, $delta['impressoes'] ?? 0, $delta['saidas'] ?? 0,
                 $delta['age_0_3']    ?? 0, $delta['age_4_7']    ?? 0, $delta['age_8_11'] ?? 0,
                 $delta['age_12_14']  ?? 0, $delta['age_15_17']  ?? 0,
+                $delta['total_meninos'] ?? 0, $delta['total_meninas'] ?? 0,
                 $pj, $cj, $now, $user_id, $today,
             ]);
         } else {
@@ -193,14 +208,16 @@ function db_registrar_admin_stat(
                     (user_id, date, cidade, comum,
                      total_cadastros, total_impressoes, total_saidas,
                      age_0_3, age_4_7, age_8_11, age_12_14, age_15_17,
+                     total_meninos, total_meninas,
                      portaria_data, comum_data, updated_at)
-                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
+                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
             );
             $ins->execute([
                 $user_id, $today, $cidade, $comum,
                 $delta['cadastros']  ?? 0, $delta['impressoes'] ?? 0, $delta['saidas'] ?? 0,
                 $delta['age_0_3']    ?? 0, $delta['age_4_7']    ?? 0, $delta['age_8_11'] ?? 0,
                 $delta['age_12_14']  ?? 0, $delta['age_15_17']  ?? 0,
+                $delta['total_meninos'] ?? 0, $delta['total_meninas'] ?? 0,
                 $pj, $cj, $now,
             ]);
         }
@@ -219,7 +236,9 @@ function db_stats_por_dia(string $desde): array {
                 SUM(total_saidas)     as total_saidas,
                 SUM(age_0_3)  as age_0_3,  SUM(age_4_7)   as age_4_7,
                 SUM(age_8_11) as age_8_11, SUM(age_12_14) as age_12_14,
-                SUM(age_15_17) as age_15_17
+                SUM(age_15_17) as age_15_17,
+                SUM(total_meninos) as total_meninos,
+                SUM(total_meninas) as total_meninas
          FROM admin_daily_stats
          WHERE date >= ?
          GROUP BY date ORDER BY date ASC'
@@ -281,6 +300,8 @@ function db_stats_totais_geral(): array {
             COALESCE(SUM(total_cadastros), 0)  as total_cadastros,
             COALESCE(SUM(total_impressoes),0)  as total_impressoes,
             COALESCE(SUM(total_saidas),    0)  as total_saidas,
+            COALESCE(SUM(total_meninos),   0)  as total_meninos,
+            COALESCE(SUM(total_meninas),   0)  as total_meninas,
             COUNT(DISTINCT user_id)            as instancias_com_dados
          FROM admin_daily_stats'
     )->fetch();
@@ -298,7 +319,9 @@ function db_stats_totais_hoje(): array {
             COALESCE(SUM(age_4_7),0)  as age_4_7,
             COALESCE(SUM(age_8_11),0) as age_8_11,
             COALESCE(SUM(age_12_14),0)as age_12_14,
-            COALESCE(SUM(age_15_17),0)as age_15_17
+            COALESCE(SUM(age_15_17),0)as age_15_17,
+            COALESCE(SUM(total_meninos),0) as total_meninos,
+            COALESCE(SUM(total_meninas),0) as total_meninas
          FROM admin_daily_stats WHERE date = ?'
     );
     $stmt->execute([$today]);
