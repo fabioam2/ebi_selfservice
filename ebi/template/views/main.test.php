@@ -1104,26 +1104,94 @@
             <?php endif; ?>
 
 
-            // TESTE v2 — leitura de 2 formatos de QR Code:
-            //  - Formato atual (5 campos por criança): nome \t responsavel \t idade \t telefone \t comum
-            //  - Novo formato (6 campos): nome \t responsavel \t idade \t telefone \t comum \t data_nascimento
-            // O leitor de QR Code (pistola/celular) envia \t (Tab) entre campos da MESMA criança
-            // e \r (Enter) para separar uma criança da próxima. Por isso o Tab sempre avança uma
-            // coluna na mesma linha, e o Enter sempre pula para a coluna 0 da próxima linha —
-            // independentemente de quantas colunas (5 ou 6) foram preenchidas antes do Enter.
-            // Isso permite que a mesma tela funcione com os dois tipos de QR Code sem
-            // Suporta QR antigo (Enter entre crianças) e QR novo (só Tab)
-            // Debounce: Enter agenda submit em 300ms; se mais dados chegarem, cancela
+            // Leitores QR enviam uma sequência de teclas muito mais rápida que a digitação manual.
+            // Só essa sequência pode acionar o Auto-Cadastrar; Tab e Enter manuais apenas navegam.
             var autoSubmitTimer = null;
+            var leituraPistola = {
+                ultimoEventoEm: 0,
+                caracteresRapidos: 0,
+                separadoresRapidos: 0,
+                confirmada: false,
+                sequencia: 0
+            };
+            var LIMITE_INTERVALO_PISTOLA_MS = 65;
+            var MINIMO_CARACTERES_PISTOLA = 6;
+            var MINIMO_SEPARADORES_PISTOLA = 4;
+
+            function resetarLeituraPistola() {
+                leituraPistola.ultimoEventoEm = 0;
+                leituraPistola.caracteresRapidos = 0;
+                leituraPistola.separadoresRapidos = 0;
+                leituraPistola.confirmada = false;
+                leituraPistola.sequencia++;
+                if (autoSubmitTimer) {
+                    clearTimeout(autoSubmitTimer);
+                    autoSubmitTimer = null;
+                }
+            }
+
+            function registrarTeclaDaPistola(evento) {
+                if (evento.ctrlKey || evento.metaKey || evento.altKey) {
+                    resetarLeituraPistola();
+                    return false;
+                }
+
+                var agora = Date.now();
+                var ehCaractere = evento.key.length === 1;
+                var ehSeparador = evento.key === 'Tab' || evento.key === 'Enter';
+
+                if (!ehCaractere && !ehSeparador) {
+                    resetarLeituraPistola();
+                    return false;
+                }
+
+                if (leituraPistola.ultimoEventoEm === 0 || agora - leituraPistola.ultimoEventoEm > LIMITE_INTERVALO_PISTOLA_MS) {
+                    leituraPistola.caracteresRapidos = 0;
+                    leituraPistola.separadoresRapidos = 0;
+                    leituraPistola.confirmada = false;
+                    leituraPistola.sequencia++;
+                }
+
+                if (ehCaractere) {
+                    leituraPistola.caracteresRapidos++;
+                } else if (ehSeparador) {
+                    leituraPistola.separadoresRapidos++;
+                }
+
+                if (leituraPistola.caracteresRapidos >= MINIMO_CARACTERES_PISTOLA
+                    && leituraPistola.separadoresRapidos >= MINIMO_SEPARADORES_PISTOLA) {
+                    leituraPistola.confirmada = true;
+                }
+
+                leituraPistola.ultimoEventoEm = agora;
+                return leituraPistola.confirmada;
+            }
+
+            function agendarAutoCadastroPorPistola(atraso) {
+                if (localStorage.getItem('autoCadastro') !== 'true' || !leituraPistola.confirmada) {
+                    return;
+                }
+
+                var sequenciaAtual = leituraPistola.sequencia;
+                autoSubmitTimer = setTimeout(function() {
+                    if (leituraPistola.sequencia !== sequenciaAtual) {
+                        return;
+                    }
+                    var portariaVal = $('#portaria_cadastro').val().trim();
+                    if (portariaVal.length === 1 && $('#input_0_0').val().trim() !== '') {
+                        $('#btnCadastrar').click();
+                    }
+                    autoSubmitTimer = null;
+                }, atraso);
+            }
 
             $('.cadastro-input').on('keydown', function(e) {
                 const key = e.key;
+                registrarTeclaDaPistola(e);
                 if (key !== 'Enter' && key !== 'Tab') {
-                    // Caracteres normais: NÃO cancelar timer (são dados do campo atual)
                     return;
                 }
                 e.preventDefault();
-                // Tab/Enter cancela timer anterior (novo campo/linha vindo)
                 if (autoSubmitTimer) { clearTimeout(autoSubmitTimer); autoSubmitTimer = null; }
 
                 const target = e.target;
@@ -1138,16 +1206,7 @@
                     } else {
                         $('#portaria_cadastro').focus();
                     }
-                    // Agendar auto-submit: próximo Tab ou Enter cancela
-                    if (localStorage.getItem('autoCadastro') === 'true') {
-                        autoSubmitTimer = setTimeout(function() {
-                            var portariaVal = $('#portaria_cadastro').val().trim();
-                            if (portariaVal.length === 1 && $('#input_0_0').val().trim() !== '') {
-                                $('#btnCadastrar').click();
-                            }
-                            autoSubmitTimer = null;
-                        }, 500);
-                    }
+                    agendarAutoCadastroPorPistola(500);
                     return;
                 }
 
@@ -1158,24 +1217,15 @@
                     $('#portaria_cadastro').focus();
                 }
 
-                // Agendar auto-submit após Enter (QR antigo)
-                if (localStorage.getItem('autoCadastro') === 'true') {
-                    autoSubmitTimer = setTimeout(function() {
-                        var portariaVal = $('#portaria_cadastro').val().trim();
-                        if (portariaVal.length === 1 && $('#input_0_0').val().trim() !== '') {
-                            $('#btnCadastrar').click();
-                        }
-                        autoSubmitTimer = null;
-                    }, 300);
-                }
+                agendarAutoCadastroPorPistola(300);
             });
 
             $('#portaria_cadastro').on('keydown', function(e) {
+                registrarTeclaDaPistola(e);
                 if (e.key === 'Enter' || (e.key === 'Tab' && !e.shiftKey)) {
                     e.preventDefault();
                     var portariaVal = $(this).val().trim();
-                    // Auto-cadastrar: se Auto-Cadastrar ON e portaria preenchida
-                    if (localStorage.getItem('autoCadastro') === 'true' && portariaVal.length === 1) {
+                    if (localStorage.getItem('autoCadastro') === 'true' && leituraPistola.confirmada && portariaVal.length === 1) {
                         var temDados = $('#input_0_0').val().trim() !== '';
                         if (temDados) {
                             $('#btnCadastrar').click();
@@ -1189,6 +1239,8 @@
                     }
                 }
             });
+
+            $('#formNovoCadastro').on('mousedown touchstart paste', 'input, textarea, select', resetarLeituraPistola);
 
 
             $('#selecionarTodos').change(function() {
