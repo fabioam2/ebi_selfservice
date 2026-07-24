@@ -1159,9 +1159,9 @@
                     $('#portaria_cadastro').focus();
                 }
 
-                // Agendar auto-submit com debounce (300ms)
+                // Agendar auto-submit com debounce (300ms) — só se Auto-Cadastrar ON
                 // Se mais dados chegarem (próxima criança), o timer é cancelado acima
-                if (localStorage.getItem('autoImpressao') === 'true' || localStorage.getItem('autoCadastro') === 'true') {
+                if (localStorage.getItem('autoCadastro') === 'true') {
                     autoSubmitTimer = setTimeout(function() {
                         var portariaVal = $('#portaria_cadastro').val().trim();
                         if (portariaVal.length === 1 && $('#input_0_0').val().trim() !== '') {
@@ -1176,8 +1176,8 @@
                 if (e.key === 'Enter' || (e.key === 'Tab' && !e.shiftKey)) {
                     e.preventDefault();
                     var portariaVal = $(this).val().trim();
-                    // Auto-cadastrar: se auto-imprimir OU auto-cadastro ON
-                    if ((localStorage.getItem('autoImpressao') === 'true' || localStorage.getItem('autoCadastro') === 'true') && portariaVal.length === 1) {
+                    // Auto-cadastrar: se Auto-Cadastrar ON e portaria preenchida
+                    if (localStorage.getItem('autoCadastro') === 'true' && portariaVal.length === 1) {
                         var temDados = $('#input_0_0').val().trim() !== '';
                         if (temDados) {
                             $('#btnCadastrar').click();
@@ -1565,7 +1565,7 @@
             localStorage.setItem('autoImpressao', autoImpressaoAtiva);
             atualizarEstadoAutoImpressao();
             if (autoImpressaoAtiva) {
-                alert('Auto-Imprimir ATIVADO!\n\nApós cadastrar, o sistema imprimirá automaticamente as pulseiras.');
+                alert('Auto-Imprimir ATIVADO!\n\nApós clicar Cadastrar, imprime automaticamente as pulseiras.');
             } else {
                 alert('Auto-Imprimir DESATIVADO.\nApós cadastrar, será necessário imprimir manualmente.');
             }
@@ -1599,15 +1599,9 @@
             localStorage.setItem('autoCadastro', autoCadastroAtivo);
             atualizarEstadoAutoCadastro();
             if (autoCadastroAtivo) {
-                // Desligar auto-imprimir se ligar auto-cadastrar (são exclusivos)
-                if (autoImpressaoAtiva) {
-                    autoImpressaoAtiva = false;
-                    localStorage.setItem('autoImpressao', false);
-                    atualizarEstadoAutoImpressao();
-                }
-                alert('Auto-Cadastrar ATIVADO!\n\nApós ler o QR Code, cadastra automaticamente (sem imprimir).');
+                alert('Auto-Cadastrar ATIVADO!\n\nApós ler o QR Code com a pistola, cadastra automaticamente.');
             } else {
-                alert('Auto-Cadastrar DESATIVADO.');
+                alert('Auto-Cadastrar DESATIVADO.\nApós ler QR, precisará clicar Cadastrar manualmente.');
             }
         }
 
