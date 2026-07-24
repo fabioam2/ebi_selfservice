@@ -6,21 +6,6 @@
 
 require_once __DIR__ . '/db_instance.php';
 
-// ── Payload de impressora ZPL ─────────────────────────────────────────────────
-
-function obterPayloadDispositivo(): array {
-    $printerName = defined('PRINTER_NAME') ? PRINTER_NAME : 'ZDesigner 105SL';
-    return [
-        'name'         => $printerName,
-        'uid'          => $printerName,
-        'connection'   => 'driver',
-        'deviceType'   => 'printer',
-        'version'      => 2,
-        'provider'     => 'com.zebra.ds.webdriver.desktop.provider.DefaultDeviceProvider',
-        'manufacturer' => 'Zebra Technologies',
-    ];
-}
-
 // ── Variações de palavra para busca tolerante a erros ────────────────────────
 
 function gerarVariacoesPalavra(string $palavra): array {
@@ -189,7 +174,7 @@ function gerarCodigoZPL(string $nomeCrianca, string $nomeResponsavel, $idade, $c
     $idadeLimpa           = str_replace(['^','~','\\'], '', (string)$idade);
     $codigoLimpo          = str_replace(['^','~','\\'], '', (string)$codigo);
 
-    $zpl  = "^XA\n^CI28\n^PW192\n";
+    $zpl  = "^XA\n^CI28\n^PW" . LARGURA_PULSEIRA . "\n";
     $zpl .= "^LL" . (TAMPULSEIRA * DOTS) . "\n";
     $zpl .= "^FO80,{$ini_pos}^A0R,60,50^FD{$nomeCriancaLimpo}^FS\n";
     $zpl .= "^FO50,{$ini_pos}^A0R,30,40^FDIdade: {$idadeLimpa} anos      Cod.:{$codigoLimpo}^FS\n";
@@ -214,7 +199,7 @@ function gerarCodigoZPLResponsavel(string $nomeResponsavel, array $nomesCriancas
         $criancasZPL[] = mb_strtoupper(str_replace(['^','~','\\'], '', processarNomeParaZPL($nome, 25)), 'UTF-8');
     }
 
-    $zpl  = "^XA\n^CI28\n^PW192\n";
+    $zpl  = "^XA\n^CI28\n^PW" . LARGURA_PULSEIRA . "\n";
     $zpl .= "^LL" . (TAMPULSEIRA * DOTS) . "\n";
     $zpl .= "^FO70,{$id_pos}^A0R,40,45^FDID:{$codigoLimpo}^FS\n";
     $zpl .= "^FO10,{$id_pos}^A0R,20,25^FDRsp:{$nomeRespLimpo}^FS\n";

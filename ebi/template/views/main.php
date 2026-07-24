@@ -395,7 +395,7 @@
                     <?php endif; ?>
                 </div>
                 <!-- Badge status QZ Tray -->
-                <span id="qzStatusBadge" class="badge badge-secondary mr-2" style="font-size:0.75rem; cursor:pointer; padding: 6px 10px; vertical-align: middle;" onclick="abrirModalQZTray()" title="Status do QZ Tray — clique para configurar">
+                <span id="qzStatusBadge" class="badge badge-secondary mr-2" style="font-size:0.75rem; cursor:pointer; padding: 6px 10px; vertical-align: middle;" onclick="abrirModalConfigImpressora()" title="Status do QZ Tray — clique para configurar">
                     <span id="qzStatusDot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#dc3545;margin-right:4px;vertical-align:middle;"></span>
                     <span id="qzStatusText">QZ: Desconectado</span>
                 </span>
@@ -541,7 +541,7 @@
                     </div>
                     <div class="modal-body">
                         <div class="alert alert-info py-2">
-                            <small>O QZ Tray permite imprimir diretamente via USB sem necessidade de servidor HTTP local. Certifique-se de que o <strong>QZ Tray</strong> está instalado e em execução.</small>
+                            <small>Certifique-se de que o <strong>QZ Tray</strong> está instalado e em execução neste computador.</small>
                         </div>
 
                         <div id="qzModalStatus" class="alert alert-secondary py-2 mb-3">
@@ -608,7 +608,17 @@
                         </div>
                         <div class="modal-body">
                             <div class="alert alert-info">
-                                <strong>Atenção:</strong> Essas configurações serão salvas no arquivo config.ini. Altere apenas se souber o que está fazendo.
+                                <strong>Atenção:</strong> As medidas e os dados da instância são salvos no arquivo config.ini. A impressora QZ Tray é configurada neste computador.
+                            </div>
+
+                            <div class="border rounded p-3 mb-4">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>Impressora QZ Tray</strong>
+                                        <small class="d-block text-muted" id="qzConfigPrinterInfo">Verificando conexão...</small>
+                                    </div>
+                                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="abrirModalQZTray()">Gerenciar Impressora</button>
+                                </div>
                             </div>
 
                             <div class="row">
@@ -658,33 +668,15 @@
                             </div>
 
                             <div class="form-group">
-                                <label for="config_printer_name">Nome da Impressora</label>
-                                <input type="text" class="form-control" id="config_printer_name" name="config_printer_name" value="<?php echo PRINTER_NAME; ?>" required>
-                                <small class="form-text text-muted">Nome do dispositivo de impressão (ex: ZDesigner 105SL, ZDesigner GK420d, etc.)</small>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Base do Contador "Comum"</label>
-                                <input type="text" class="form-control" value="<?php echo sanitize_for_html(defined('INSTANCE_COMUM') ? INSTANCE_COMUM : ''); ?>" readonly>
-                                <small class="form-text text-muted">A base do contador é sempre a Comum da instância. Para alterar, edite o campo "Comum da Instância" acima.</small>
-                            </div>
-
-                            <div class="form-group">
                                 <label for="config_lista_palavras_contador_comum">Palavras Adicionais para Contador "Comum"</label>
                                 <textarea class="form-control" id="config_lista_palavras_contador_comum" name="config_lista_palavras_contador_comum" rows="3"><?php echo LISTA_PALAVRAS_CONTADOR_COMUM; ?></textarea>
                                 <small class="form-text text-muted">Lista de palavras adicionais separadas por vírgula (ex: "parque, parqui, par que, jardim, capela"). Estas palavras serão verificadas EXATAMENTE como digitadas, sem gerar variações automáticas.</small>
                             </div>
 
                             <div class="form-group">
-                                <label for="config_url_impressora">URL da Impressora</label>
-                                <input type="text" class="form-control" id="config_url_impressora" name="config_url_impressora" value="<?php echo URL_IMPRESSORA; ?>" required>
-                                <small class="form-text text-muted">Ex: http://127.0.0.1:9100/write ou http://IP_DA_IMPRESSORA:9100/write</small>
-                            </div>
-
-                            <div class="form-group">
                                 <label for="config_largura_pulseira">Largura da Pulseira (dots)</label>
-                                <input type="number" class="form-control" id="config_largura_pulseira" name="config_largura_pulseira" value="<?php echo $config['IMPRESSORA_ZPL']['LARGURA_PULSEIRA'] ?? 192; ?>" required>
-                                <small class="form-text text-muted">Largura em dots (24mm = 192 dots)</small>
+                                <input type="number" class="form-control" id="config_largura_pulseira" name="config_largura_pulseira" value="<?php echo LARGURA_PULSEIRA; ?>" min="1" required>
+                                <small class="form-text text-muted">Largura usada diretamente no comando ZPL enviado pelo QZ Tray.</small>
                             </div>
 
                             <div class="form-group">
@@ -695,6 +687,9 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-outline-danger" name="restaurar_config_impressora" onclick="return confirm('Restaurar as medidas padrão da pulseira? Cidade, comum, contador e impressora QZ serão preservados.');">
+                                Restaurar Medidas Padrão
+                            </button>
                             <button type="submit" class="btn btn-primary" name="salvar_config_impressora">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-save mr-1" viewBox="0 0 16 16"><path d="M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z"/></svg>
                                 Salvar Configurações
@@ -777,21 +772,16 @@
                             <small class="form-text text-muted">Você pode editar o código ZPL diretamente aqui antes de enviar</small>
                         </div>
 
-                        <div class="form-group">
-                            <label for="debug_url_impressora">URL da Impressora (fallback HTTP):</label>
-                            <input type="text" class="form-control" id="debug_url_impressora" value="<?php echo URL_IMPRESSORA; ?>">
-                        </div>
-
                         <div class="alert py-2 mb-2" id="debug_rota_alert" style="font-size:0.85rem;">
                             <strong>Rota de impressão:</strong> <span id="debug_rota_text">verificando...</span>
                         </div>
 
                         <div class="form-group">
-                            <label>Comando equivalente:</label>
+                            <label>Comando QZ Tray equivalente:</label>
                             <textarea class="form-control" id="debug_curl_command" rows="5" readonly style="font-family: 'Courier New', monospace; font-size: 11px; background-color: #f8f9fa;"></textarea>
-                            <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="copiarCurl()">
+                            <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="copiarComandoQZ()">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/></svg>
-                                Copiar cURL
+                                Copiar Código
                             </button>
                         </div>
                     </div>
@@ -1328,6 +1318,7 @@
         // ============ FUNÇÕES DE CONFIGURAÇÃO E DEBUG ============
 
         function abrirModalConfigImpressora() {
+            qzAtualizarBadge();
             $('#modalConfigImpressora').modal('show');
         }
 
@@ -1415,30 +1406,15 @@
             $('#debug_nome_crianca').text(info.nomeCrianca || 'N/A');
             $('#debug_codigo').text(info.codigo || 'N/A');
             $('#debug_tipo_pulseira').text(info.tipo || 'Criança');
-            $('#debug_url_impressora').val(info.urlImpressora || '<?php echo URL_IMPRESSORA; ?>');
 
-            atualizarCurlCommand();
+            atualizarComandoQZ();
             $('#modalDebugZPL').modal('show');
         }
 
-        function atualizarCurlCommand() {
+        function atualizarComandoQZ() {
             const zpl = $('#debug_zpl_code').val();
-            const url = $('#debug_url_impressora').val();
             const printerName = localStorage.getItem('qzPrinterSelecionada') || '';
             const viaQZ = printerName && qzConnected && qz.websocket.isActive();
-
-            const payload = {
-                "device": {
-                    "name": "<?php echo PRINTER_NAME; ?>",
-                    "uid": "<?php echo PRINTER_NAME; ?>",
-                    "connection": "driver",
-                    "deviceType": "printer",
-                    "version": 2,
-                    "provider": "com.zebra.ds.webdriver.desktop.provider.DefaultDeviceProvider",
-                    "manufacturer": "Zebra Technologies"
-                },
-                "data": zpl
-            };
 
             let commandText;
             if (viaQZ) {
@@ -1452,29 +1428,27 @@
                 commandText += '  [{ type: "raw", format: "hex", data: hex }]\n';
                 commandText += ');';
 
-                $('#debug_rota_alert').removeClass('alert-secondary alert-info').addClass('alert-success');
+                $('#debug_rota_alert').removeClass('alert-secondary alert-danger').addClass('alert-success');
                 $('#debug_rota_text').html('<strong>QZ Tray</strong> — impressora: <em>' + printerName + '</em>');
                 $('#debug_btn_label').text('Enviar via QZ Tray');
             } else {
-                const curlCmd = `curl -X POST '${url}' \\\n  -H 'Content-Type: application/json' \\\n  -d '${JSON.stringify(payload).replace(/'/g, "'\\''")}'`;
-                commandText = curlCmd;
-
-                $('#debug_rota_alert').removeClass('alert-success alert-info').addClass('alert-secondary');
-                $('#debug_rota_text').html('<strong>HTTP</strong> — ' + url + (printerName ? ' <em>(QZ Tray desconectado — reconecte para usar QZ Tray)</em>' : ''));
-                $('#debug_btn_label').text('Enviar via HTTP');
+                commandText = '// QZ Tray indisponível.\n// Conecte o QZ Tray e selecione uma impressora antes de enviar.';
+                $('#debug_rota_alert').removeClass('alert-success alert-secondary').addClass('alert-danger');
+                $('#debug_rota_text').html('<strong>QZ Tray indisponível</strong> — conecte e selecione uma impressora.');
+                $('#debug_btn_label').text('Enviar via QZ Tray');
             }
 
             $('#debug_curl_command').val(commandText);
         }
 
-        $('#debug_zpl_code, #debug_url_impressora').on('input', function() {
-            atualizarCurlCommand();
+        $('#debug_zpl_code').on('input', function() {
+            atualizarComandoQZ();
         });
 
-        function copiarCurl() {
+        function copiarComandoQZ() {
             const curlText = $('#debug_curl_command').val();
             navigator.clipboard.writeText(curlText).then(function() {
-                alert('Comando cURL copiado para a área de transferência!');
+                alert('Código QZ Tray copiado para a área de transferência!');
             }, function() {
                 // Fallback para navegadores mais antigos
                 const textarea = document.createElement('textarea');
@@ -1483,36 +1457,24 @@
                 textarea.select();
                 document.execCommand('copy');
                 document.body.removeChild(textarea);
-                alert('Comando cURL copiado para a área de transferência!');
+                alert('Código QZ Tray copiado para a área de transferência!');
             });
         }
 
         async function enviarZPLDebug() {
             const zpl = $('#debug_zpl_code').val();
-            const url = $('#debug_url_impressora').val();
 
             if (!zpl.trim()) {
                 alert('O código ZPL está vazio!');
                 return;
             }
 
-            const payload = {
-                "device": {
-                    "name": "<?php echo PRINTER_NAME; ?>",
-                    "uid": "<?php echo PRINTER_NAME; ?>",
-                    "connection": "driver",
-                    "deviceType": "printer",
-                    "version": 2,
-                    "provider": "com.zebra.ds.webdriver.desktop.provider.DefaultDeviceProvider",
-                    "manufacturer": "Zebra Technologies"
-                },
-                "data": zpl
-            };
+            const payload = { data: zpl };
 
             $('#modalDebugZPL').modal('hide');
 
             try {
-                const response = await _ebiPrint(url, payload);
+                const response = await _ebiPrint(payload);
                 if (!response.ok) {
                     const text = await response.text();
                     throw new Error('Falha na impressão: ' + (response.status || '') + ' ' + text);
@@ -1599,6 +1561,14 @@
             var btnRefresh = document.getElementById('btnRefreshQZPrinters');
             var printerSel = document.getElementById('qzPrinterSelect');
             var btnSalvar = document.getElementById('btnQZSalvarImpressora');
+            var configPrinterInfo = document.getElementById('qzConfigPrinterInfo');
+            var configPrinter = localStorage.getItem('qzPrinterSelecionada') || '';
+
+            if (configPrinterInfo) {
+                configPrinterInfo.textContent = configPrinter
+                    ? 'Impressora selecionada: ' + configPrinter
+                    : 'Nenhuma impressora selecionada neste computador.';
+            }
 
             if (qzConnected) {
                 dot.style.background = '#28a745';
@@ -1618,7 +1588,7 @@
                 if (info) {
                     info.textContent = savedPrinter
                         ? 'Impressora ativa: ' + savedPrinter
-                        : 'Nenhuma impressora QZ Tray selecionada — impressão usará URL HTTP.';
+                        : 'Nenhuma impressora QZ Tray selecionada.';
                 }
             } else {
                 var savedPrinterDisc = localStorage.getItem('qzPrinterSelecionada') || '';
@@ -1643,6 +1613,13 @@
         }
 
         function abrirModalQZTray() {
+            var configAberta = $('#modalConfigImpressora').hasClass('show');
+            if (configAberta) {
+                $('#modalConfigImpressora').modal('hide');
+                $('#modalQZTray').one('hidden.bs.modal', function() {
+                    $('#modalConfigImpressora').modal('show');
+                });
+            }
             qzAtualizarBadge();
             $('#modalQZTray').modal('show');
         }
@@ -1681,7 +1658,7 @@
         }
 
         function qzEsquecerImpressora() {
-            if (confirm('Remover a impressora QZ Tray salva?\nAs próximas impressões voltarão a usar HTTP.')) {
+            if (confirm('Remover a impressora QZ Tray salva?\nSelecione outra impressora antes de imprimir novamente.')) {
                 localStorage.removeItem('qzPrinterSelecionada');
                 qzAtualizarBadge();
             }
@@ -1718,17 +1695,13 @@
             alert('Impressora QZ Tray configurada: ' + printerName + '\n\nAs próximas impressões usarão QZ Tray diretamente.');
         }
 
-        /**
-         * Função central de impressão.
-         * Aguarda o auto-connect terminar (qzReadyPromise) antes de decidir a rota.
-         * Se QZ Tray estiver conectado e impressora salva → imprime via QZ Tray.
-         * Caso contrário → fallback HTTP para URL_IMPRESSORA.
-         *
-         * ENCODING: ZPL usa ^CI28 (UTF-8). Convertemos para hex byte-a-byte via
-         * TextEncoder para que os bytes UTF-8 cheguem intactos à impressora,
-         * igual ao sendRawBytes() do calibrar.php (format:'hex').
-         */
-        async function _ebiPrint(url, payload) {
+        function exibirErroImpressaoQZ(error) {
+            if (window.erroImpressaoQZExibido) return;
+            window.erroImpressaoQZExibido = true;
+            alert('Não foi possível imprimir via QZ Tray.\n\n' + (error.message || error));
+        }
+
+        async function _ebiPrint(payload) {
             // Aguarda o auto-connect terminar (nunca rejeita — catch interno)
             if (qzReadyPromise) {
                 try { await qzReadyPromise; } catch (e) { /* falha silenciosa */ }
@@ -1737,34 +1710,28 @@
             var printerName = localStorage.getItem('qzPrinterSelecionada') || '';
             console.log('[_ebiPrint] printerName=' + printerName + ' qzConnected=' + qzConnected);
 
-            if (printerName && qzConnected && qz.websocket.isActive()) {
-                try {
-                    // Converte ZPL para hex UTF-8 (igual a sendRawBytes em calibrar.php)
-                    var utf8Bytes = new TextEncoder().encode(payload.data);
-                    var hex = '';
-                    utf8Bytes.forEach(function(b) { hex += ('0' + b.toString(16)).slice(-2); });
-
-                    var cfg = qz.configs.create(printerName);
-                    await qz.print(cfg, [{ type: 'raw', format: 'hex', data: hex }]);
-                    console.log('[QZ Tray] Etiqueta enviada para: ' + printerName);
-                    return { ok: true, text: function() { return Promise.resolve('OK via QZ Tray (' + printerName + ')'); } };
-                } catch (e) {
-                    console.error('[QZ Tray] Erro ao imprimir:', e);
-                    alert('⚠️ Erro no QZ Tray ao imprimir:\n\n' + (e.message || e) + '\n\nUsando servidor HTTP como fallback...');
-                    qzConnected = false;
-                    try { qzAtualizarBadge(); } catch(_) {}
-                    // Cai no fetch HTTP abaixo
-                }
-            } else {
-                console.log('[_ebiPrint] Usando HTTP fallback (QZ Tray não disponível)');
+            if (!printerName) {
+                throw new Error('Selecione uma impressora em Configurar Impressora e Instância.');
+            }
+            if (!qzConnected || !qz.websocket.isActive()) {
+                throw new Error('O QZ Tray não está conectado. Abra-o e conecte novamente.');
             }
 
-            // Fallback: HTTP para URL_IMPRESSORA
-            return fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
+            try {
+                var utf8Bytes = new TextEncoder().encode(payload.data);
+                var hex = '';
+                utf8Bytes.forEach(function(b) { hex += ('0' + b.toString(16)).slice(-2); });
+
+                var cfg = qz.configs.create(printerName);
+                await qz.print(cfg, [{ type: 'raw', format: 'hex', data: hex }]);
+                console.log('[QZ Tray] Etiqueta enviada para: ' + printerName);
+                return { ok: true, text: function() { return Promise.resolve('OK via QZ Tray (' + printerName + ')'); } };
+            } catch (e) {
+                console.error('[QZ Tray] Erro ao imprimir:', e);
+                qzConnected = false;
+                try { qzAtualizarBadge(); } catch (_) {}
+                throw e;
+            }
         }
 
         // Auto-connect iniciado IMEDIATAMENTE (fora do document.ready) para que

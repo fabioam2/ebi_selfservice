@@ -96,9 +96,8 @@ ID|NomeCriança|NomeResponsável|Telefone|Idade|Comum|StatusImpresso|Portaria
 | `ARQUIVO_DADOS` | `[GERAL] ARQUIVO_DADOS` |
 | `DELIMITADOR` | `[GERAL] DELIMITADOR` |
 | `SENHA_ADMIN_REAL` / `SENHA_LOGIN` | `[SEGURANCA] SENHA_ADMIN_REAL` |
-| `TAMPULSEIRA`, `DOTS`, `FECHO`, `FECHOINI` | `[IMPRESSORA_ZPL]` |
+| `TAMPULSEIRA`, `DOTS`, `FECHO`, `FECHOINI`, `LARGURA_PULSEIRA` | `[IMPRESSORA_ZPL]` |
 | `PULSEIRAUTIL` | `(TAMPULSEIRA - FECHO) * DOTS` |
-| `URL_IMPRESSORA` | `[IMPRESSORA_ZPL] URL_IMPRESSORA` |
 | `TEMPO_SESSAO` | `[SEGURANCA] TEMPO_SESSAO` |
 | `VERSAO_SISTEMA` | Hash do último commit git ou mtime do index.php |
 | `PALAVRA_CONTADOR_COMUM` | `[IMPRESSORA_ZPL]` |
@@ -106,11 +105,13 @@ ID|NomeCriança|NomeResponsável|Telefone|Idade|Comum|StatusImpresso|Portaria
 
 ## Impressão de pulseiras
 
-A impressão usa **QZ Tray** via JavaScript na `views/main.php`. O código ZPL é gerado em `inc/funcoes.php` e enviado para `URL_IMPRESSORA` (padrão: `http://127.0.0.1:9100/write`).
+A impressão usa exclusivamente o **QZ Tray** via JavaScript nas telas `views/main.php` e `views/main.test.php`. O código ZPL é gerado em `inc/funcoes.php` e enviado diretamente para a impressora selecionada no navegador.
 
 Parâmetros ZPL calculados:
 - `PULSEIRAUTIL = (TAMPULSEIRA - FECHO) * DOTS`
 - `TAMPULSEIRA` em mm, `DOTS` em dots/mm
+- `LARGURA_PULSEIRA` define o comando `^PW` enviado pelo QZ Tray
+- Os padrões de fábrica da pulseira são: `269` mm, `8` dots/mm, fecho `1` mm, início do fecho `26` mm e largura `192` dots
 
 ## Módulo de saída (`saida/`)
 
