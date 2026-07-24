@@ -426,8 +426,12 @@ if (!isset($_SESSION['logado_saida']) || $_SESSION['logado_saida'] !== true) {
                 <label for="portaria">Portaria:</label>
                 <select id="portaria">
                     <option value="">-- Selecione --</option>
-                    <option value="M">Masculino</option>
-                    <option value="F">Feminino</option>
+                    <?php
+                    $portarias = ['A','B','C','D','E','F','G','H','I','J'];
+                    foreach ($portarias as $p):
+                    ?>
+                    <option value="<?php echo $p; ?>"><?php echo $p; ?></option>
+                    <?php endforeach; ?>
                 </select>
             </div>
             <div class="confirmation-buttons">
@@ -545,7 +549,9 @@ if (!isset($_SESSION['logado_saida']) || $_SESSION['logado_saida'] !== true) {
             }, 1500);
         }
 
-        localStorage.getItem('selectedPortaria') && (portariaSelect.value = localStorage.getItem('selectedPortaria'));
+        // Portaria: restaurar do localStorage ou padrão "A"
+        var savedPortaria = localStorage.getItem('selectedPortaria');
+        portariaSelect.value = savedPortaria || 'A';
         portariaSelect.addEventListener('change', (event) => {
             localStorage.setItem('selectedPortaria', event.target.value);
         });
