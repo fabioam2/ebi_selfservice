@@ -46,6 +46,7 @@ require_once __DIR__ . '/inc/paths.php';
 require_once __DIR__ . '/criar_instancia.php';
 require_once __DIR__ . '/inc/user_manager.php';
 require_once __DIR__ . '/inc/db_manager.php';
+require_once __DIR__ . '/inc/instance_lifecycle.php';
 
 // Senha de administrador - hash bcrypt (gere com: php -r "echo password_hash('SuaSenha', PASSWORD_BCRYPT, ['cost'=>12]);")
 // Senha padrão de fábrica: Senha123!  — TROQUE em produção via .env (ADMIN_PASSWORD_HASH).
@@ -292,9 +293,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         } else {
             $user_id = $_POST['user_id'] ?? '';
             if ($user_id) {
-                $resultado = removerInstancia($user_id);
+                $resultado = lifecycle_colocar_em_quarentena($user_id, 'admin_request');
                 if ($resultado['sucesso']) {
-                    $mensagem = "Instância removida com sucesso!";
+                    $mensagem = "Instância colocada em quarentena com sucesso.";
                     $tipo_mensagem = "success";
                 } else {
                     $mensagem = "Erro ao remover instância: " . $resultado['erro'];
@@ -316,7 +317,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $erros = 0;
 
                 foreach ($user_ids as $user_id) {
-                    $resultado = removerInstancia($user_id);
+                    $resultado = lifecycle_colocar_em_quarentena((string)$user_id, 'admin_request');
                     if ($resultado['sucesso']) {
                         $removidas++;
                     } else {
@@ -324,7 +325,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     }
                 }
 
-                $mensagem = "{$removidas} instância(s) removida(s) com sucesso";
+                $mensagem = "{$removidas} instância(s) colocada(s) em quarentena";
                 if ($erros > 0) {
                     $mensagem .= " ({$erros} erro(s))";
                     $tipo_mensagem = "warning";
@@ -393,13 +394,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         $tipo_mensagem = "danger";
                     } else {
                         // Monta link da instância
-                        $baseUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http')
-                                 . '://' . $_SERVER['HTTP_HOST'];
-                        $rootPath = dirname(dirname($_SERVER['PHP_SELF']));
-                        $pathPrefix = ($rootPath === '/') ? '' : $rootPath;
-                        $linkInstancia = $baseUrl . $pathPrefix . '/ebi/i/' . $user_id . '/index.php';
-
-                        $mail = enviarEmailResetSenha($emailDestino, $nomeDestino, $linkInstancia, $senhaTemp);
+                        $linkInstancia = lifecycle_instance_url($user_id);
+                        $mail = enviarEmailResetSenha(
+                            $emailDestino,
+                            $nomeDestino,
+                            $linkInstancia,
+                            $senhaTemp,
+                            lifecycle_link_acao($user_id, 'quarantine')
+                        );
 
                         // Log
                         $logFile = DATA_PATH . '/admin_actions.log';
@@ -688,6 +690,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     'RATE_LIMIT_TIME_WINDOW' => $_POST['rate_limit_time_window'] ?? '60',
                     'ALLOW_MULTIPLE_INSTANCES' => $_POST['allow_multiple_instances'] ?? 'false',
                     'CLEANUP_INACTIVE_HOURS' => $_POST['cleanup_inactive_hours'] ?? '6',
+                    'SENSITIVE_DATA_RETENTION_HOURS' => $_POST['sensitive_data_retention_hours'] ?? '24',
+                    'INACTIVITY_WARNING_DAYS' => $_POST['inactivity_warning_days'] ?? '30',
+                    'INACTIVITY_GRACE_DAYS' => $_POST['inactivity_grace_days'] ?? '30',
+                    'INACTIVITY_REMINDER_DAYS' => $_POST['inactivity_reminder_days'] ?? '7',
+                    'QUARANTINE_RETENTION_DAYS' => $_POST['quarantine_retention_days'] ?? '7',
+                    'INSTANCE_ACTION_TOKEN_HOURS' => $_POST['instance_action_token_hours'] ?? '168',
                     'LOG_LEVEL' => $_POST['log_level'] ?? 'warning',
                     'DEBUG_MODE' => $_POST['debug_mode'] ?? 'false',
                     'EMAIL_ENABLED' => $_POST['email_enabled'] ?? 'false',
@@ -1103,6 +1111,9 @@ function processarMarkdownSimples($texto) {
                     <a class="nav-link <?php echo $page === 'settings' ? 'active' : ''; ?>" href="?page=settings">
                         <i class="fas fa-cog"></i> Configurações
                     </a>
+                    <a class="nav-link <?php echo $page === 'tasks' ? 'active' : ''; ?>" href="?page=tasks">
+                        <i class="fas fa-clock"></i> Tarefas Agendadas
+                    </a>
                     <a class="nav-link <?php echo $page === 'docs' ? 'active' : ''; ?>" href="?page=docs">
                         <i class="fas fa-book"></i> Documentação
                     </a>
@@ -1146,6 +1157,9 @@ function processarMarkdownSimples($texto) {
                         break;
                     case 'settings':
                         include __DIR__ . '/inc/admin_settings.php';
+                        break;
+                    case 'tasks':
+                        include __DIR__ . '/inc/admin_tasks.php';
                         break;
                     case 'stats':
                         include __DIR__ . '/inc/admin_stats.php';
@@ -1194,10 +1208,10 @@ function processarMarkdownSimples($texto) {
             }
         }
 
-        // Confirmar remoção
+        // Confirmar quarentena
         function confirmarRemocao(userId, nome) {
-            if (confirm('Tem certeza que deseja remover a instância de "' + nome + '"?\n\nEsta ação não pode ser desfeita!')) {
-                if (confirm('ATENÇÃO: Todos os dados serão perdidos!\n\nConfirma a remoção?')) {
+            if (confirm('Colocar a instância de "' + nome + '" em quarentena?\n\nEla poderá ser recuperada pelo prazo configurado.')) {
+                if (confirm('Confirma a quarentena desta instância?')) {
                     $('#userIdRemover').val(userId);
                     $('#formRemover').submit();
                 }
@@ -1232,7 +1246,7 @@ function processarMarkdownSimples($texto) {
             }
         }
 
-        // Remover selecionados
+        // Colocar selecionadas em quarentena
         function removerSelecionados() {
             const checked = $('.instance-checkbox:checked').length;
 
@@ -1241,8 +1255,8 @@ function processarMarkdownSimples($texto) {
                 return;
             }
 
-            if (confirm(`Tem certeza que deseja remover ${checked} instância(s)?\n\nEsta ação não pode ser desfeita!`)) {
-                if (confirm('ATENÇÃO: Todos os dados serão perdidos!\n\nConfirma a remoção?')) {
+            if (confirm(`Colocar ${checked} instância(s) em quarentena?\n\nElas poderão ser recuperadas pelo prazo configurado.`)) {
+                if (confirm('Confirma a quarentena das instâncias selecionadas?')) {
                     $('#formRemoverLote').submit();
                 }
             }

@@ -37,6 +37,7 @@ if ($rateLimitEnabled && !checkRateLimit($clientIP, $maxRequests, $timeWindow)) 
 require_once __DIR__ . '/inc/paths.php';
 require_once __DIR__ . '/inc/db_manager.php';
 require_once __DIR__ . '/inc/email_manager.php';
+require_once __DIR__ . '/inc/instance_lifecycle.php';
 
 // Cria diretório de instâncias se necessário
 if (!file_exists(INSTANCE_BASE_PATH)) {
@@ -65,18 +66,52 @@ function ss_csrf_validate() {
     return true;
 }
 
+function ss_enviar_acessos_existentes(string $email): array {
+    $usuarios = db_listar_usuarios_por_email($email);
+    if (empty($usuarios)) {
+        return ['encontradas' => false, 'envio' => null];
+    }
+
+    $contas = [];
+    foreach ($usuarios as $usuario) {
+        $userId = (string)$usuario['user_id'];
+        $quarentena = lifecycle_registro_quarentena($userId);
+        $emQuarentena = ($quarentena['status'] ?? '') === 'quarantined';
+        $link = $emQuarentena
+            ? lifecycle_link_acao($userId, 'recover')
+            : lifecycle_instance_url($userId);
+
+        $contas[] = [
+            'nome' => (string)($usuario['nome'] ?? ''),
+            'cidade' => (string)($usuario['cidade'] ?? ''),
+            'comum' => (string)($usuario['comum'] ?? ''),
+            'link' => $link,
+            'delete_link' => $emQuarentena ? '' : lifecycle_link_acao($userId, 'quarantine'),
+        ];
+    }
+
+    return [
+        'encontradas' => true,
+        'envio' => enviarEmailRecuperacaoContas(
+            $email,
+            (string)($usuarios[0]['nome'] ?? 'Usuário'),
+            $contas
+        ),
+    ];
+}
+
 $mensagem = '';
 $tipo_mensagem = '';
 
 // ============================================================================
 // PROCESSAR AÇÃO DE RECUPERAR CONTAS POR EMAIL
 // ============================================================================
-if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['recuperar_conta_email'])) {
+if ($_SERVER["REQUEST_METHOD"] == "POST" && (isset($_POST['recuperar_conta_email']) || isset($_POST['enviar_acessos_existentes']))) {
     if (!ss_csrf_validate()) {
         $tipo_mensagem = 'danger';
         $mensagem = 'Requisição inválida (token de segurança). Tente novamente.';
     } else {
-        $emailRecuperacao = trim((string)($_POST['email_recuperacao'] ?? ''));
+        $emailRecuperacao = trim((string)($_POST['email_recuperacao'] ?? $_SESSION['email_contas_existentes'] ?? ''));
 
         if ($emailRecuperacao === '') {
             $tipo_mensagem = 'danger';
@@ -85,30 +120,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['recuperar_conta_email'
             $tipo_mensagem = 'danger';
             $mensagem = 'Informe um e-mail válido para recuperar a conta.';
         } else {
-            $usuarios = db_listar_usuarios_por_email($emailRecuperacao);
-
-            if (empty($usuarios)) {
+            $resultadoRecuperacao = ss_enviar_acessos_existentes($emailRecuperacao);
+            if (empty($resultadoRecuperacao['encontradas'])) {
                 $tipo_mensagem = 'info';
                 $mensagem = 'Nenhuma conta foi encontrada para este e-mail.';
             } else {
-                $baseUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http')
-                         . '://' . $_SERVER['HTTP_HOST'];
-                $rootPath = dirname(dirname($_SERVER['PHP_SELF']));
-                $pathPrefix = ($rootPath === '/' || $rootPath === '\\') ? '' : $rootPath;
-
-                $contas = [];
-                foreach ($usuarios as $u) {
-                    $contas[] = [
-                        'nome' => (string)($u['nome'] ?? ''),
-                        'cidade' => (string)($u['cidade'] ?? ''),
-                        'comum' => (string)($u['comum'] ?? ''),
-                        'link' => $baseUrl . $pathPrefix . '/ebi/i/' . (string)$u['user_id'] . '/index.php',
-                    ];
-                }
-
-                $nomeDestinatario = (string)($usuarios[0]['nome'] ?? 'Usuário');
-                $envio = enviarEmailRecuperacaoContas($emailRecuperacao, $nomeDestinatario, $contas);
-
+                $envio = $resultadoRecuperacao['envio'] ?? [];
                 if (!empty($envio['sucesso'])) {
                     $tipo_mensagem = 'success';
                     $mensagem = 'Enviamos os links das contas para o e-mail informado.';
@@ -129,59 +146,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['apagar_instancia'])) {
         $tipo_mensagem = 'danger';
         $mensagem = 'Requisição inválida (token de segurança). Tente novamente.';
     } else {
-        $user_id_existente = $_SESSION['user_id_existente'] ?? '';
-        $senha_admin_digitada = $_POST['senha_admin'] ?? '';
-
-        if (empty($user_id_existente)) {
-            $tipo_mensagem = 'danger';
-            $mensagem = 'Sessão expirada. Tente novamente.';
-        } else {
-            require_once 'criar_instancia.php';
-
-            // Obter senha admin do config.ini da instância
-            $configFile = INSTANCE_BASE_PATH . '/' . $user_id_existente . '/config.ini';
-            // Compat com instâncias antigas
-            if (!file_exists($configFile)) {
-                $legado = INSTANCE_BASE_PATH . '/' . $user_id_existente . '/config/config.ini';
-                if (file_exists($legado)) {
-                    $configFile = $legado;
-                }
-            }
-
-            if (!file_exists($configFile)) {
-                $tipo_mensagem = 'danger';
-                $mensagem = 'Configuração da instância não encontrada.';
-            } else {
-                $config = parse_ini_file($configFile, true);
-                $hashAdmin = (string)($config['SEGURANCA']['SENHA_ADMIN_HASH'] ?? '');
-                $plainLegado = (string)($config['SEGURANCA']['SENHA_ADMIN_REAL'] ?? '');
-
-                $senhaOk = false;
-                if ($hashAdmin !== '' && preg_match('/^\$2[aby]\$/', $hashAdmin)) {
-                    $senhaOk = password_verify($senha_admin_digitada, $hashAdmin);
-                } elseif ($plainLegado !== '') {
-                    $senhaOk = hash_equals($plainLegado, $senha_admin_digitada);
-                }
-
-                if ($senhaOk) {
-                    // Senha correta, pode apagar
-                    $resultado = removerInstancia($user_id_existente);
-
-                    if ($resultado['sucesso']) {
-                        $tipo_mensagem = 'success';
-                        $mensagem = 'Instância removida com sucesso! Você pode criar uma nova conta agora.';
-                        unset($_SESSION['user_id_existente']);
-                        unset($_SESSION['instancia_existente']);
-                    } else {
-                        $tipo_mensagem = 'danger';
-                        $mensagem = 'Erro ao remover instância: ' . $resultado['erro'];
-                    }
-                } else {
-                    $tipo_mensagem = 'danger';
-                    $mensagem = 'Senha de administrador incorreta!';
-                }
-            }
-        }
+        $tipo_mensagem = 'info';
+        $mensagem = 'A exclusão agora exige confirmação pelo link enviado ao e-mail cadastrado.';
     }
 }
 
@@ -210,17 +176,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['criar_nova_instancia']
             $user_id = uniqid('user_', true);
             $hash_senha = password_hash($senha, PASSWORD_BCRYPT, ['cost' => 12]);
 
-            // Registrar usuário no banco central
-            db_inserir_usuario($user_id, $email, $nome, $cidade, $comum, $hash_senha);
-
-            // Criar instância do sistema para o usuário
-            require_once 'criar_instancia.php';
-            $resultado = criarInstanciaUsuario($user_id, $nome, $email, $cidade, $comum, $senha);
+            if (!db_inserir_usuario($user_id, $email, $nome, $cidade, $comum, $hash_senha)) {
+                $tipo_mensagem = 'danger';
+                $mensagem = 'Erro ao registrar usuário. Tente novamente.';
+                $resultado = ['sucesso' => false, 'erro' => 'Registro central não criado.'];
+            } else {
+                require_once 'criar_instancia.php';
+                $resultado = criarInstanciaUsuario($user_id, $nome, $email, $cidade, $comum, $senha);
+            }
 
             if ($resultado['sucesso']) {
                 // Tentar enviar email com dados de acesso
                 require_once 'inc/email_manager.php';
-                $resultadoEmail = enviarEmailAcesso($email, $nome, $resultado['link'], $cidade, $comum);
+                $resultadoEmail = enviarEmailAcesso(
+                    $email,
+                    $nome,
+                    $resultado['link'],
+                    $cidade,
+                    $comum,
+                    lifecycle_link_acao($user_id, 'quarantine')
+                );
 
                 // Guardar resultado do email na sessão (apenas para informação, não bloqueia)
                 if ($resultadoEmail['sucesso']) {
@@ -235,10 +210,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['criar_nova_instancia']
                 $_SESSION['user_id'] = $user_id;
                 unset($_SESSION['instancia_existente']);
                 unset($_SESSION['user_id_existente']);
+                unset($_SESSION['contas_existentes']);
+                unset($_SESSION['email_contas_existentes']);
                 unset($_SESSION['dados_cadastro']);
                 header("Location: selfservice.php");
                 exit;
             } else {
+                db_remover_usuario($user_id);
                 $tipo_mensagem = 'danger';
                 $mensagem = "Erro ao criar sua instância: " . $resultado['erro'];
             }
@@ -286,27 +264,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['cadastrar'])) {
         $erros[] = "As senhas não coincidem";
     }
     
-    // Verificar se já existe instância com esse email
-    // (a menos que o admin tenha habilitado ALLOW_MULTIPLE_INSTANCES no .env)
-    $allowMultipleInstances = filter_var($_ENV['ALLOW_MULTIPLE_INSTANCES'] ?? 'false', FILTER_VALIDATE_BOOLEAN);
-    $instanciaExistente = null;
-    $user_id_existente = null;
+    $usuariosExistentes = empty($erros) ? db_listar_usuarios_por_email($email) : [];
 
-    if (empty($erros) && !$allowMultipleInstances) {
-        $usuarioExistente = db_buscar_usuario_por_email($email);
-        if ($usuarioExistente !== null) {
-            $user_id_existente = $usuarioExistente['user_id'];
-            require_once 'criar_instancia.php';
-            if (verificarInstanciaExiste($user_id_existente)) {
-                $instanciaExistente = obterInfoInstancia($user_id_existente);
-            }
-        }
-    }
-
-    if (empty($erros) && $instanciaExistente !== null) {
-        // Já existe instância! Guardar dados e mostrar tela de confirmação
-        $_SESSION['instancia_existente'] = $instanciaExistente;
-        $_SESSION['user_id_existente'] = $user_id_existente;
+    if (empty($erros) && !empty($usuariosExistentes)) {
+        // Preserva os dados para a escolha explícita de criar outra conta.
+        $_SESSION['contas_existentes'] = true;
+        $_SESSION['email_contas_existentes'] = $email;
         $_SESSION['dados_cadastro'] = [
             'nome' => $nome,
             'email' => $email,
@@ -314,20 +277,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['cadastrar'])) {
             'comum' => $comum,
             'senha' => $senha
         ];
-
-        // Gerar link da instância existente
-        $baseUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http")
-                   . "://" . $_SERVER['HTTP_HOST'];
-
-        // Obter o caminho raiz do projeto (suba dois níveis a partir de PHP_SELF)
-        // Exemplo: /dev2/selfservice/selfservice.php -> /dev2
-        $rootPath = dirname(dirname($_SERVER['PHP_SELF']));
-
-        // Evitar duplo slash se o sistema estiver na raiz
-        $pathPrefix = ($rootPath === '/') ? '' : $rootPath;
-
-        // Construir o link usando o caminho raiz dinâmico
-        $_SESSION['link_instancia_existente'] = $baseUrl . $pathPrefix . '/ebi/i/' . $user_id_existente . '/index.php';
 
         header("Location: selfservice.php");
         exit;
@@ -351,7 +300,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['cadastrar'])) {
         if ($resultado['sucesso']) {
             // Tentar enviar email com dados de acesso
             require_once 'inc/email_manager.php';
-            $resultadoEmail = enviarEmailAcesso($email, $nome, $resultado['link'], $cidade, $comum);
+            $resultadoEmail = enviarEmailAcesso(
+                $email,
+                $nome,
+                $resultado['link'],
+                $cidade,
+                $comum,
+                lifecycle_link_acao($user_id, 'quarantine')
+            );
 
             // Guardar resultado do email na sessão (apenas para informação, não bloqueia)
             if ($resultadoEmail['sucesso']) {
@@ -396,14 +352,12 @@ if (isset($_SESSION['cadastro_sucesso'])) {
     unset($_SESSION['email_erro']);
 }
 
-// Verificar se encontrou instância existente
-$mostrar_instancia_existente = false;
-$instancia_info = null;
-$link_instancia_existente = '';
-if (isset($_SESSION['instancia_existente'])) {
-    $mostrar_instancia_existente = true;
-    $instancia_info = $_SESSION['instancia_existente'];
-    $link_instancia_existente = $_SESSION['link_instancia_existente'] ?? '';
+// Verificar se o e-mail já possui contas, sem expor dados nesta tela.
+$mostrar_contas_existentes = false;
+$email_contas_existentes = '';
+if (!empty($_SESSION['contas_existentes'])) {
+    $mostrar_contas_existentes = true;
+    $email_contas_existentes = (string)($_SESSION['email_contas_existentes'] ?? '');
 }
 
 ?>
@@ -841,85 +795,40 @@ if (isset($_SESSION['instancia_existente'])) {
 </head>
 <body>
     <div class="selfservice-container">
-        <?php if ($mostrar_instancia_existente): ?>
-            <!-- Tela de Instância Existente -->
+        <?php if ($mostrar_contas_existentes): ?>
+            <!-- Tela de Contas Existentes -->
             <div class="alert alert-warning">
                 <i class="fas fa-exclamation-triangle"></i>
-                <strong>Atenção!</strong> Já existe uma instância cadastrada com este email.
+                <strong>Atenção!</strong> Já existem contas cadastradas com este e-mail.
             </div>
 
             <div class="info-box instance-found-box mb-4">
                 <i class="fas fa-info-circle"></i>
-                <strong>Instância encontrada:</strong><br>
-                <small>
-                    Nome: <?php echo htmlspecialchars($instancia_info['NOME'] ?? 'N/A'); ?><br>
-                    Cidade: <?php echo htmlspecialchars($instancia_info['CIDADE'] ?? 'N/A'); ?><br>
-                    Comum: <?php echo htmlspecialchars($instancia_info['COMUM'] ?? 'N/A'); ?><br>
-                    Criada em: <?php echo htmlspecialchars($instancia_info['DATA_CRIACAO'] ?? 'N/A'); ?>
-                </small>
+                <strong>Recupere seus acessos pelo e-mail.</strong><br>
+                <small>Para sua privacidade, os links e dados das contas são enviados somente para a caixa de entrada informada.</small>
             </div>
-
-            <div class="link-sistema link-warning mb-3">
-                <strong>Link da sua instância:</strong><br>
-                <a href="<?php echo htmlspecialchars($link_instancia_existente); ?>" target="_blank" id="linkInstanciaExistente">
-                    <?php echo htmlspecialchars($link_instancia_existente); ?>
-                </a>
-            </div>
-
-            <button class="btn btn-open-instance btn-block mb-2" onclick="window.open('<?php echo htmlspecialchars($link_instancia_existente); ?>', '_blank')">
-                <i class="fas fa-external-link-alt"></i> Acessar Minha Instância
-            </button>
-
-            <button class="btn btn-copy btn-block mb-3" onclick="copiarLinkExistente()">
-                <i class="fas fa-copy"></i> Copiar Link
-            </button>
-
-            <hr class="my-4">
 
             <h5 class="text-center mb-3">O que você deseja fazer?</h5>
 
-            <!-- Opção 1: Criar Nova Instância -->
+            <form method="post" action="selfservice.php" class="mb-3">
+                <?php echo ss_csrf_field(); ?>
+                <input type="hidden" name="enviar_acessos_existentes" value="1">
+                <input type="hidden" name="email_recuperacao" value="<?php echo htmlspecialchars($email_contas_existentes); ?>">
+                <button type="submit" class="btn btn-open-instance btn-block">
+                    <i class="fas fa-envelope-open-text"></i> Enviar meus acessos por e-mail
+                </button>
+            </form>
+
             <form method="post" action="selfservice.php" class="mb-3">
                 <?php echo ss_csrf_field(); ?>
                 <input type="hidden" name="criar_nova_instancia" value="1">
                 <button type="submit" class="btn btn-create-instance btn-block">
-                    <i class="fas fa-plus-circle"></i> Criar Nova Instância (Manter a Existente)
+                    <i class="fas fa-plus-circle"></i> Criar outra conta mesmo assim
                 </button>
                 <small class="text-muted d-block mt-1">
                     <i class="fas fa-info-circle"></i> Você terá duas instâncias independentes
                 </small>
             </form>
-
-            <!-- Opção 2: Apagar Instância Existente -->
-            <div class="card border-danger">
-                <div class="card-header bg-danger text-white">
-                    <i class="fas fa-trash-alt"></i> Apagar Instância Existente
-                </div>
-                <div class="card-body">
-                    <p class="text-danger mb-2">
-                        <strong>⚠️ ATENÇÃO:</strong> Esta ação é irreversível! Todos os dados serão perdidos.
-                    </p>
-
-                    <form method="post" action="selfservice.php" id="formApagarInstancia">
-                        <?php echo ss_csrf_field(); ?>
-                        <input type="hidden" name="apagar_instancia" value="1">
-
-                        <div class="form-group">
-                            <label for="senha_admin"><i class="fas fa-key"></i> Senha de Administrador da Instância</label>
-                            <input type="password" class="form-control" id="senha_admin" name="senha_admin"
-                                   placeholder="Digite a senha da instância" required>
-                            <small class="form-text text-muted">
-                                Esta é a senha que você definiu ao criar a instância
-                            </small>
-                        </div>
-
-                        <button type="submit" class="btn btn-danger btn-block"
-                                onclick="return confirm('⚠️ TEM CERTEZA?\n\nTodos os dados da instância serão PERMANENTEMENTE apagados!\n\nEsta ação NÃO pode ser desfeita!');">
-                            <i class="fas fa-trash-alt"></i> Confirmar Exclusão
-                        </button>
-                    </form>
-                </div>
-            </div>
 
         <?php elseif ($mostrar_sucesso): ?>
             <!-- Tela de Sucesso -->

@@ -40,7 +40,14 @@ function carregarConfigEmail(): array {
  * @param string $comum Comum do usuário
  * @return array{sucesso: bool, erro?: string} Resultado do envio
  */
-function enviarEmailAcesso(string $destinatario, string $nome, string $linkSistema, string $cidade, string $comum): array {
+function enviarEmailAcesso(
+    string $destinatario,
+    string $nome,
+    string $linkSistema,
+    string $cidade,
+    string $comum,
+    ?string $linkExcluir = null
+): array {
     $config = carregarConfigEmail();
 
     // Verificar se envio de email está habilitado
@@ -86,6 +93,22 @@ function enviarEmailAcesso(string $destinatario, string $nome, string $linkSiste
         // Conteúdo do email
         $mail->isHTML(true);
         $mail->Subject = '🎉 Sua conta EBI foi criada com sucesso!';
+
+        $nomeSafe = htmlspecialchars($nome, ENT_QUOTES, 'UTF-8');
+        $emailSafe = htmlspecialchars($destinatario, ENT_QUOTES, 'UTF-8');
+        $cidadeSafe = htmlspecialchars($cidade, ENT_QUOTES, 'UTF-8');
+        $comumSafe = htmlspecialchars($comum, ENT_QUOTES, 'UTF-8');
+        $linkSafe = htmlspecialchars($linkSistema, ENT_QUOTES, 'UTF-8');
+        $deleteBlock = '';
+        if ($linkExcluir !== null && $linkExcluir !== '') {
+            $deleteSafe = htmlspecialchars($linkExcluir, ENT_QUOTES, 'UTF-8');
+            $deleteBlock = "
+                    <div style='margin-top:22px;padding:14px;border:1px solid #f5c2c7;background:#fff5f5;border-radius:8px'>
+                        <strong style='color:#9b1c1c'>Precisa encerrar esta instância?</strong>
+                        <p style='margin:8px 0;color:#5f2120'>A exclusão entra em quarentena e pode ser desfeita pelo prazo informado no próximo e-mail.</p>
+                        <a href='{$deleteSafe}' style='color:#b91c1c;font-weight:700'>Excluir esta instância</a>
+                    </div>";
+        }
 
         $corpo = "
         <!DOCTYPE html>
@@ -175,24 +198,24 @@ function enviarEmailAcesso(string $destinatario, string $nome, string $linkSiste
                     <h1>🎉 Bem-vindo ao Sistema EBI!</h1>
                 </div>
                 <div class='content'>
-                    <h2>Olá, {$nome}!</h2>
+                    <h2>Olá, {$nomeSafe}!</h2>
                     <p>Sua conta foi criada com <strong>sucesso</strong>! 🎊</p>
 
                     <div class='info-box'>
                         <strong>📋 Informações da sua conta:</strong><br><br>
-                        <strong>Nome:</strong> {$nome}<br>
-                        <strong>Email:</strong> {$destinatario}<br>
-                        <strong>Cidade:</strong> {$cidade}<br>
-                        <strong>Comum:</strong> {$comum}
+                        <strong>Nome:</strong> {$nomeSafe}<br>
+                        <strong>Email:</strong> {$emailSafe}<br>
+                        <strong>Cidade:</strong> {$cidadeSafe}<br>
+                        <strong>Comum:</strong> {$comumSafe}
                     </div>
 
                     <p><strong>🔗 Link de Acesso:</strong></p>
                     <div class='link-box'>
-                        <a href='{$linkSistema}' target='_blank'>{$linkSistema}</a>
+                        <a href='{$linkSafe}' target='_blank'>{$linkSafe}</a>
                     </div>
 
                     <center>
-                        <a href='{$linkSistema}' class='btn' target='_blank'>🚀 Acessar Meu Sistema</a>
+                        <a href='{$linkSafe}' class='btn' target='_blank'>🚀 Acessar Meu Sistema</a>
                     </center>
 
                     <div class='info-box'>
@@ -204,6 +227,7 @@ function enviarEmailAcesso(string $destinatario, string $nome, string $linkSiste
                     </div>
 
                     <p>Bom trabalho! 😊</p>
+                    {$deleteBlock}
                 </div>
                 <div class='footer'>
                     <p>EBI Self-Service - Sistema de Cadastro de Crianças</p>
@@ -248,7 +272,7 @@ function enviarEmailAcesso(string $destinatario, string $nome, string $linkSiste
  *
  * @param string $destinatario Email de destino
  * @param string $nome Nome do usuário
- * @param array<int,array{nome:string,cidade:string,comum:string,link:string}> $contas
+ * @param array<int,array{nome:string,cidade:string,comum:string,link:string,delete_link?:string}> $contas
  * @return array{sucesso: bool, erro?: string}
  */
 function enviarEmailRecuperacaoContas(string $destinatario, string $nome, array $contas): array {
@@ -293,6 +317,11 @@ function enviarEmailRecuperacaoContas(string $destinatario, string $nome, array 
                         $cidadeConta = htmlspecialchars((string)($conta['cidade'] ?? ''), ENT_QUOTES, 'UTF-8');
                         $comumConta  = htmlspecialchars((string)($conta['comum'] ?? ''), ENT_QUOTES, 'UTF-8');
                         $linkConta   = htmlspecialchars((string)($conta['link'] ?? ''), ENT_QUOTES, 'UTF-8');
+                        $deleteLink  = htmlspecialchars((string)($conta['delete_link'] ?? ''), ENT_QUOTES, 'UTF-8');
+
+                        $deleteHtml = $deleteLink !== ''
+                            ? "<div style='margin-top:8px'><a href='{$deleteLink}' style='color:#b91c1c;font-weight:700'>Excluir esta instância</a></div>"
+                            : '';
 
                         $itensHtml .= "
                                 <div style='border:1px solid #e3e8ef;border-radius:8px;padding:12px;margin-bottom:10px;background:#fafcff'>
@@ -300,6 +329,7 @@ function enviarEmailRecuperacaoContas(string $destinatario, string $nome, array 
                                         <div><strong>Cidade:</strong> {$cidadeConta}</div>
                                         <div><strong>Comum:</strong> {$comumConta}</div>
                                         <div style='margin-top:6px'><strong>Link:</strong> <a href='{$linkConta}' target='_blank'>{$linkConta}</a></div>
+                                        {$deleteHtml}
                                 </div>";
 
                         $itensTxt .= "Nome: " . ($conta['nome'] ?? '') . "\n"
@@ -355,7 +385,13 @@ function enviarEmailRecuperacaoContas(string $destinatario, string $nome, array 
  * @param string $novaSenha    Senha temporária em texto plano (só vai pelo email)
  * @return array{sucesso:bool, erro?:string}
  */
-function enviarEmailResetSenha(string $destinatario, string $nome, string $linkSistema, string $novaSenha): array {
+function enviarEmailResetSenha(
+    string $destinatario,
+    string $nome,
+    string $linkSistema,
+    string $novaSenha,
+    ?string $linkExcluir = null
+): array {
     $config = carregarConfigEmail();
 
     if (!$config['habilitado']) {
@@ -388,6 +424,14 @@ function enviarEmailResetSenha(string $destinatario, string $nome, string $linkS
         $nomeSafe = htmlspecialchars($nome, ENT_QUOTES, 'UTF-8');
         $senhaSafe = htmlspecialchars($novaSenha, ENT_QUOTES, 'UTF-8');
         $linkSafe = htmlspecialchars($linkSistema, ENT_QUOTES, 'UTF-8');
+                $deleteBlock = '';
+                if ($linkExcluir !== null && $linkExcluir !== '') {
+                        $deleteSafe = htmlspecialchars($linkExcluir, ENT_QUOTES, 'UTF-8');
+                        $deleteBlock = "
+                            <p style='margin-top:22px;padding:14px;background:#fff5f5;border-left:4px solid #b91c1c;border-radius:4px'>
+                                <strong>Encerrar a instância?</strong> <a href='{$deleteSafe}' style='color:#b91c1c;font-weight:700'>Excluir esta instância</a>. A exclusão ficará em quarentena pelo prazo de recuperação.
+                            </p>";
+                }
 
         $mail->Body = "
         <!DOCTYPE html>
@@ -412,6 +456,7 @@ function enviarEmailResetSenha(string $destinatario, string $nome, string $linkS
               <p style='margin-top:22px;padding:14px;background:#f8d7da;border-left:4px solid #dc3545;border-radius:4px'>
                 <strong>⚠️ Importante:</strong> esta senha foi gerada automaticamente. Acesse o sistema e troque-a por uma senha pessoal o quanto antes.
               </p>
+                            {$deleteBlock}
             </div>
             <div style='background:#f4f4f4;padding:14px;text-align:center;color:#777;font-size:12px'>
               EBI Self-Service · Este é um email automático, não responda.
@@ -431,6 +476,74 @@ function enviarEmailResetSenha(string $destinatario, string $nome, string $linkS
     } catch (Exception $e) {
         return ['sucesso' => false, 'erro' => $mail->ErrorInfo ?? $e->getMessage()];
     }
+}
+
+/**
+ * Envia os avisos automáticos do ciclo de vida de uma instância.
+ */
+function enviarEmailCicloInstancia(string $destinatario, string $nome, string $assunto, string $corpoHtml, string $corpoTexto): array {
+    $config = carregarConfigEmail();
+    if (!$config['habilitado']) {
+        return ['sucesso' => false, 'erro' => 'Envio de email está desabilitado'];
+    }
+
+    try {
+        if (!file_exists(__DIR__ . '/../../vendor/autoload.php')) {
+            return ['sucesso' => false, 'erro' => 'PHPMailer não instalado'];
+        }
+        require_once __DIR__ . '/../../vendor/autoload.php';
+
+        $mail = new PHPMailer(true);
+        $mail->isSMTP();
+        $mail->Host = $config['smtp_host'];
+        $mail->SMTPAuth = true;
+        $mail->Username = $config['smtp_user'];
+        $mail->Password = $config['smtp_password'];
+        $mail->SMTPSecure = $config['smtp_secure'] === 'ssl' ? PHPMailer::ENCRYPTION_SMTPS : PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port = $config['smtp_port'];
+        $mail->CharSet = 'UTF-8';
+        $mail->setFrom($config['from_email'], $config['from_name']);
+        $mail->addAddress($destinatario, $nome);
+        $mail->addReplyTo($config['from_email'], $config['from_name']);
+        $mail->isHTML(true);
+        $mail->Subject = $assunto;
+        $mail->Body = $corpoHtml;
+        $mail->AltBody = $corpoTexto;
+        $mail->send();
+        return ['sucesso' => true];
+    } catch (Exception $e) {
+        return ['sucesso' => false, 'erro' => $mail->ErrorInfo ?? $e->getMessage()];
+    }
+}
+
+function enviarEmailInatividadeInstancia(string $destinatario, string $nome, string $linkSistema, string $quarentenaEm): array {
+    $nomeSafe = htmlspecialchars($nome, ENT_QUOTES, 'UTF-8');
+    $linkSafe = htmlspecialchars($linkSistema, ENT_QUOTES, 'UTF-8');
+    $dataSafe = htmlspecialchars(date('d/m/Y H:i', strtotime($quarentenaEm)), ENT_QUOTES, 'UTF-8');
+    $html = "<html><body style='font-family:Arial,sans-serif;color:#27364a'>
+        <h2>Instância sem atividade</h2>
+        <p>Olá, <strong>{$nomeSafe}</strong>. Sua instância não registra acesso recente.</p>
+        <p>Ela será colocada em quarentena em <strong>{$dataSafe}</strong>, caso não volte a ser utilizada.</p>
+        <p><a href='{$linkSafe}' style='font-weight:700;color:#0e7490'>Acessar minha instância</a></p>
+        <p>Depois de entrar em quarentena, ainda haverá prazo para recuperação.</p>
+    </body></html>";
+    $text = "Olá, {$nome}. Sua instância está sem atividade e será colocada em quarentena em {$dataSafe}. Acesse: {$linkSistema}";
+    return enviarEmailCicloInstancia($destinatario, $nome, 'Aviso de inatividade da instância EBI', $html, $text);
+}
+
+function enviarEmailQuarentenaInstancia(string $destinatario, string $nome, string $linkRecuperacao, string $expiraEm): array {
+    $nomeSafe = htmlspecialchars($nome, ENT_QUOTES, 'UTF-8');
+    $linkSafe = htmlspecialchars($linkRecuperacao, ENT_QUOTES, 'UTF-8');
+    $dataSafe = htmlspecialchars(date('d/m/Y H:i', strtotime($expiraEm)), ENT_QUOTES, 'UTF-8');
+    $html = "<html><body style='font-family:Arial,sans-serif;color:#27364a'>
+        <h2>Instância em quarentena</h2>
+        <p>Olá, <strong>{$nomeSafe}</strong>. Sua instância foi colocada em quarentena e está temporariamente indisponível.</p>
+        <p>Você pode desistir da exclusão e restaurá-la até <strong>{$dataSafe}</strong>.</p>
+        <p><a href='{$linkSafe}' style='display:inline-block;padding:12px 18px;background:#0e7490;color:#fff;text-decoration:none;font-weight:700'>Recuperar minha instância</a></p>
+        <p>Após esse prazo, os dados serão excluídos definitivamente.</p>
+    </body></html>";
+    $text = "Olá, {$nome}. Sua instância está em quarentena. Recupere até {$dataSafe}: {$linkRecuperacao}";
+    return enviarEmailCicloInstancia($destinatario, $nome, 'Sua instância EBI está em quarentena', $html, $text);
 }
 
 /**

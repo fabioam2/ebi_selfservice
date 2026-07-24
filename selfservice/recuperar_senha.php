@@ -37,6 +37,7 @@ require_once __DIR__ . '/inc/paths.php';
 require_once __DIR__ . '/inc/db_manager.php';
 require_once __DIR__ . '/criar_instancia.php';
 require_once __DIR__ . '/inc/email_manager.php';
+require_once __DIR__ . '/inc/instance_lifecycle.php';
 
 // Rate limit — mais apertado neste endpoint: 5 tentativas / 5 min por IP.
 // Respeita o mesmo toggle RATE_LIMIT_ENABLED usado no restante do sistema.
@@ -70,43 +71,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $mensagem = 'Informe um e-mail válido.';
         $tipo = 'danger';
     } else {
-        // Procurar usuário no banco central SQLite
-        $usuario = null;
-        $row = db_buscar_usuario_por_email($emailDigitado);
-        if ($row !== null) {
-            $usuario = [
-                'user_id' => $row['user_id'],
-                'email'   => $row['email'],
-                'nome'    => $row['nome'],
-                'cidade'  => $row['cidade'],
-                'comum'   => $row['comum'],
-            ];
-        }
+        // Uma pessoa pode possuir mais de uma instância com o mesmo e-mail.
+        $usuarios = db_listar_usuarios_por_email($emailDigitado);
 
         $logFile = __DIR__ . '/data/recuperacao_senha.log';
         $logLinha = date('Y-m-d H:i:s') . " | IP: $clientIP | email: $emailDigitado | ";
 
-        if ($usuario !== null) {
-            try {
+        if (!empty($usuarios)) {
+            $resets = 0;
+            foreach ($usuarios as $usuario) {
+                if ((int)($usuario['active'] ?? 1) !== 1) {
+                    continue;
+                }
+
+                try {
                 $senhaTemp = gerarSenhaTemporaria(12);
                 $reset = redefinirSenhaInstancia($usuario['user_id'], $senhaTemp);
 
                 if (!$reset['sucesso']) {
-                    $logLinha .= 'falha_reset: ' . ($reset['erro'] ?? '?');
+                    $logLinha .= 'falha_reset:' . $usuario['user_id'] . ':' . ($reset['erro'] ?? '?') . ' | ';
                 } else {
-                    // Monta link da instância
-                    $baseUrl = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http')
-                             . '://' . $_SERVER['HTTP_HOST'];
-                    $rootPath = dirname(dirname($_SERVER['PHP_SELF'])); // .../dev2
-                    $pathPrefix = ($rootPath === '/' || $rootPath === '\\') ? '' : $rootPath;
-                    $linkInstancia = $baseUrl . $pathPrefix . '/ebi/i/' . $usuario['user_id'] . '/index.php';
-
-                    $mail = enviarEmailResetSenha($usuario['email'], $usuario['nome'], $linkInstancia, $senhaTemp);
-                    $logLinha .= 'reset_ok | email: ' . ($mail['sucesso'] ? 'enviado' : 'falha: ' . ($mail['erro'] ?? '?'));
+                    $linkInstancia = lifecycle_instance_url((string)$usuario['user_id']);
+                    $mail = enviarEmailResetSenha(
+                        (string)$usuario['email'],
+                        (string)$usuario['nome'],
+                        $linkInstancia,
+                        $senhaTemp,
+                        lifecycle_link_acao((string)$usuario['user_id'], 'quarantine')
+                    );
+                    $logLinha .= 'reset_ok:' . $usuario['user_id'] . ':' . ($mail['sucesso'] ? 'enviado' : 'falha:' . ($mail['erro'] ?? '?')) . ' | ';
+                    $resets++;
                 }
-            } catch (Throwable $e) {
-                $logLinha .= 'excecao: ' . $e->getMessage();
+                } catch (Throwable $e) {
+                    $logLinha .= 'excecao:' . $usuario['user_id'] . ':' . $e->getMessage() . ' | ';
+                }
             }
+            if ($resets === 0) $logLinha .= 'nenhuma_instancia_ativa';
         } else {
             $logLinha .= 'email_nao_encontrado';
         }

@@ -49,8 +49,8 @@
         <strong><span id="selectedCount">0</span> instância(s) selecionada(s)</strong>
     </div>
     <div>
-        <button class="btn btn-danger" onclick="removerSelecionados()">
-            <i class="fas fa-trash mr-2"></i>Remover Selecionadas
+        <button class="btn btn-warning" onclick="removerSelecionados()">
+            <i class="fas fa-shield-alt mr-2"></i>Colocar em Quarentena
         </button>
         <button class="btn btn-secondary" onclick="$('.instance-checkbox').prop('checked', false); updateActionBar();">
             <i class="fas fa-times mr-2"></i>Cancelar
@@ -144,8 +144,8 @@
                             <button class="btn btn-sm btn-success btn-action" onclick="resetSenhaEmail('<?php echo htmlspecialchars($inst['user_id'] ?? ''); ?>', '<?php echo htmlspecialchars($inst['NOME'] ?? ''); ?>', '<?php echo $emailInst; ?>')" title="Enviar nova senha por email">
                                 <i class="fas fa-envelope"></i>
                             </button>
-                            <button class="btn btn-sm btn-danger btn-action" onclick="confirmarRemocao('<?php echo htmlspecialchars($inst['user_id'] ?? ''); ?>', '<?php echo htmlspecialchars($inst['NOME'] ?? 'este usuário'); ?>')" title="Remover">
-                                <i class="fas fa-trash"></i>
+                            <button class="btn btn-sm btn-warning btn-action" onclick="confirmarRemocao('<?php echo htmlspecialchars($inst['user_id'] ?? ''); ?>', '<?php echo htmlspecialchars($inst['NOME'] ?? 'este usuário'); ?>')" title="Colocar em quarentena">
+                                <i class="fas fa-shield-alt"></i>
                             </button>
                         </td>
                     </tr>
@@ -163,14 +163,14 @@
     </p>
 </div>
 
-<!-- Form oculto para remoção única -->
+<!-- Form oculto para quarentena única -->
 <form method="post" action="admin.php?page=instances" id="formRemover" style="display: none;">
     <?php echo admin_csrf_field(); ?>
     <input type="hidden" name="user_id" id="userIdRemover">
     <input type="hidden" name="remover_instancia" value="1">
 </form>
 
-<!-- Form oculto para remoção em lote -->
+<!-- Form oculto para quarentena em lote -->
 <form method="post" action="admin.php?page=instances" id="formRemoverLote" style="display: none;">
     <?php echo admin_csrf_field(); ?>
     <div id="checkboxesContainer"></div>
@@ -351,7 +351,7 @@ function exportarTabela() {
     link.click();
 }
 
-// Remover selecionados (sobrescrever função global)
+// Colocar selecionadas em quarentena (sobrescrever função global)
 function removerSelecionados() {
     const checked = $('.instance-checkbox:checked');
     const count = checked.length;
@@ -361,8 +361,8 @@ function removerSelecionados() {
         return;
     }
 
-    if (confirm(`Tem certeza que deseja remover ${count} instância(s)?\n\nEsta ação não pode ser desfeita!`)) {
-        if (confirm('ATENÇÃO: Todos os dados serão perdidos!\n\nConfirma a remoção?')) {
+    if (confirm(`Colocar ${count} instância(s) em quarentena?\n\nElas poderão ser recuperadas pelo prazo configurado.`)) {
+        if (confirm('Confirma a quarentena das instâncias selecionadas?')) {
             // Criar checkboxes no form
             $('#checkboxesContainer').empty();
             checked.each(function() {

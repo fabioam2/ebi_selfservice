@@ -86,6 +86,15 @@ function getBackupPath(): string {
     return resolvePath($path);
 }
 
+/**
+ * Obtém caminho para instâncias em quarentena.
+ * Este diretório fica fora da árvore pública de instâncias.
+ */
+function getQuarantinePath(): string {
+    $path = $_ENV['QUARANTINE_PATH'] ?? 'selfservice/data/quarantine';
+    return resolvePath($path);
+}
+
 // Definir constantes globais para fácil acesso
 if (!defined('INSTANCE_BASE_PATH')) {
     define('INSTANCE_BASE_PATH', getInstanceBasePath());
@@ -114,6 +123,10 @@ if (!defined('LOG_FILE_PATH')) {
 
 if (!defined('BACKUP_PATH')) {
     define('BACKUP_PATH', getBackupPath());
+}
+
+if (!defined('QUARANTINE_PATH')) {
+    define('QUARANTINE_PATH', getQuarantinePath());
 }
 
 // Criar diretórios se não existirem

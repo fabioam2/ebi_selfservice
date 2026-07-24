@@ -72,6 +72,46 @@ function _central_db_init(PDO $pdo): void {
 
         CREATE INDEX IF NOT EXISTS idx_admin_stats_date ON admin_daily_stats(date);
         CREATE INDEX IF NOT EXISTS idx_admin_stats_user ON admin_daily_stats(user_id);
+
+        CREATE TABLE IF NOT EXISTS instance_quarantine (
+            user_id        TEXT PRIMARY KEY,
+            reason         TEXT NOT NULL DEFAULT 'user_request',
+            requested_at   TEXT NOT NULL,
+            delete_after   TEXT NOT NULL,
+            recovery_until TEXT NOT NULL,
+            status         TEXT NOT NULL DEFAULT 'quarantined',
+            recovered_at   TEXT,
+            finalized_at   TEXT
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_instance_quarantine_status_date
+            ON instance_quarantine(status, delete_after);
+
+        CREATE TABLE IF NOT EXISTS instance_action_tokens (
+            token_hash TEXT PRIMARY KEY,
+            user_id    TEXT NOT NULL,
+            purpose    TEXT NOT NULL,
+            expires_at TEXT NOT NULL,
+            consumed_at TEXT,
+            created_at TEXT NOT NULL
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_instance_action_tokens_lookup
+            ON instance_action_tokens(user_id, purpose, expires_at);
+
+        CREATE TABLE IF NOT EXISTS instance_inactivity_notices (
+            user_id           TEXT PRIMARY KEY,
+            first_notified_at TEXT NOT NULL,
+            last_notified_at  TEXT NOT NULL,
+            quarantine_after  TEXT NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS scheduled_task_runs (
+            task_name   TEXT PRIMARY KEY,
+            last_run_at TEXT NOT NULL,
+            last_status TEXT NOT NULL DEFAULT 'ok',
+            details     TEXT NOT NULL DEFAULT ''
+        );
     ");
 
     $statsColumns = array_column($pdo->query('PRAGMA table_info(admin_daily_stats)')->fetchAll(), 'name');
@@ -85,7 +125,7 @@ function _central_db_init(PDO $pdo): void {
 // ── ss_users ────────────────────────────────────────────────────────────────
 
 function db_buscar_usuario_por_email(string $email): ?array {
-    $stmt = central_db()->prepare('SELECT * FROM ss_users WHERE email = ? LIMIT 1');
+    $stmt = central_db()->prepare('SELECT * FROM ss_users WHERE lower(email) = lower(?) ORDER BY created_at DESC LIMIT 1');
     $stmt->execute([$email]);
     return $stmt->fetch() ?: null;
 }

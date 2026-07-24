@@ -460,11 +460,57 @@ EMAIL_FROM_NAME="EBI Self-Service"</code></pre>
                     </div>
 
                     <div class="form-group">
-                        <label>Tempo de Inatividade para Limpeza (horas)</label>
-                        <input type="number" name="cleanup_inactive_hours" class="form-control"
-                               value="<?php echo htmlspecialchars($configAtual['CLEANUP_INACTIVE_HOURS'] ?? '6'); ?>"
-                               min="1" max="720">
-                        <small class="form-text text-muted">Instâncias inativas por esse período serão marcadas para limpeza</small>
+                        <label>Retenção de dados sensíveis (horas)</label>
+                        <input type="number" name="sensitive_data_retention_hours" class="form-control"
+                               value="<?php echo htmlspecialchars($configAtual['SENSITIVE_DATA_RETENTION_HOURS'] ?? '24'); ?>"
+                               min="1" max="8760">
+                        <small class="form-text text-muted">Após esse prazo sem novos cadastros, a tarefa horária remove dados identificáveis e preserva as estatísticas.</small>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Aviso de inatividade (dias)</label>
+                                <input type="number" name="inactivity_warning_days" class="form-control"
+                                       value="<?php echo htmlspecialchars($configAtual['INACTIVITY_WARNING_DAYS'] ?? '30'); ?>"
+                                       min="1" max="3650">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Prazo após aviso (dias)</label>
+                                <input type="number" name="inactivity_grace_days" class="form-control"
+                                       value="<?php echo htmlspecialchars($configAtual['INACTIVITY_GRACE_DAYS'] ?? '30'); ?>"
+                                       min="1" max="3650">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Lembrete de inatividade (dias)</label>
+                                <input type="number" name="inactivity_reminder_days" class="form-control"
+                                       value="<?php echo htmlspecialchars($configAtual['INACTIVITY_REMINDER_DAYS'] ?? '7'); ?>"
+                                       min="1" max="365">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Quarentena antes do expurgo (dias)</label>
+                                <input type="number" name="quarantine_retention_days" class="form-control"
+                                       value="<?php echo htmlspecialchars($configAtual['QUARANTINE_RETENTION_DAYS'] ?? '7'); ?>"
+                                       min="1" max="365">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Validade dos links de ação (horas)</label>
+                        <input type="number" name="instance_action_token_hours" class="form-control"
+                               value="<?php echo htmlspecialchars($configAtual['INSTANCE_ACTION_TOKEN_HOURS'] ?? '168'); ?>"
+                               min="1" max="2160">
+                        <small class="form-text text-muted">Links de exclusão enviados por e-mail precisam ser confirmados dentro desse prazo.</small>
                     </div>
 
                     <hr>
@@ -679,7 +725,12 @@ EMAIL_FROM_NAME="EBI Self-Service"</code></pre>
                         'RATE_LIMIT_MAX_REQUESTS' => 'Máximo de requisições',
                         'RATE_LIMIT_TIME_WINDOW' => 'Janela de tempo (segundos)',
                         'ALLOW_MULTIPLE_INSTANCES' => 'Permitir múltiplas instâncias',
-                        'CLEANUP_INACTIVE_HOURS' => 'Horas para limpeza',
+                        'SENSITIVE_DATA_RETENTION_HOURS' => 'Retenção dos dados sensíveis (horas)',
+                        'INACTIVITY_WARNING_DAYS' => 'Inatividade antes do primeiro aviso',
+                        'INACTIVITY_GRACE_DAYS' => 'Prazo após o aviso de inatividade',
+                        'INACTIVITY_REMINDER_DAYS' => 'Intervalo de lembretes de inatividade',
+                        'QUARANTINE_RETENTION_DAYS' => 'Prazo de recuperação na quarentena',
+                        'INSTANCE_ACTION_TOKEN_HOURS' => 'Validade dos links enviados por e-mail',
                         'LOG_LEVEL' => 'Nível de log',
                         'DEBUG_MODE' => 'Modo debug',
                         'APP_ENV' => 'Ambiente da aplicação',
