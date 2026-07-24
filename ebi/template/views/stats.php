@@ -53,12 +53,34 @@ $totalIdades     = array_sum(array_intersect_key($periodoTotais, array_flip(['ag
 // Sexo (M/F) — contagem direta dos cadastros atuais
 $totalMeninos = 0;
 $totalMeninas = 0;
+$cadastrosHoje = 0;
+$meninosHoje = 0;
+$meninasHoje = 0;
+$portariaHoje = [];
+$idadesHoje = ['0-3'=>0,'4-7'=>0,'8-11'=>0,'12-14'=>0,'15-17'=>0];
 foreach ($todosOsCadastros as $c) {
     $sexo = strtoupper(trim($c['sexo'] ?? ''));
     if ($sexo === 'M') $totalMeninos++;
     elseif ($sexo === 'F') $totalMeninas++;
+
+    // Dados do dia (em tempo real)
+    $criadoEm = $c['created_at'] ?? '';
+    if (strpos($criadoEm, $hoje) === 0) {
+        $cadastrosHoje++;
+        if ($sexo === 'M') $meninosHoje++;
+        elseif ($sexo === 'F') $meninasHoje++;
+        $port = strtoupper(trim($c['portaria'] ?? ''));
+        if ($port) $portariaHoje[$port] = ($portariaHoje[$port] ?? 0) + 1;
+        $idade = (int)($c['idade'] ?? 0);
+        if ($idade <= 3) $idadesHoje['0-3']++;
+        elseif ($idade <= 7) $idadesHoje['4-7']++;
+        elseif ($idade <= 11) $idadesHoje['8-11']++;
+        elseif ($idade <= 14) $idadesHoje['12-14']++;
+        else $idadesHoje['15-17']++;
+    }
 }
 $totalSexo = max(1, $totalMeninos + $totalMeninas);
+arsort($portariaHoje);
 
 // Hoje
 $todayRow = null;
@@ -146,17 +168,29 @@ $instNome = (defined('INSTANCE_COMUM') && INSTANCE_COMUM ? ucfirst(INSTANCE_COMU
         </div>
     </div>
 
-    <!-- Hoje -->
-    <?php if ($todayRow): ?>
+    <!-- Hoje (dados em tempo real) -->
     <div class="card border-0 shadow-sm mb-3 p-3" style="border-radius:12px;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff">
-        <div class="section-title" style="color:rgba(255,255,255,.7)">Hoje — <?php echo date('d/m/Y'); ?></div>
-        <div class="row text-center">
-            <div class="col-4"><div style="font-size:1.8rem;font-weight:700"><?php echo (int)$todayRow['total_cadastros']; ?></div><div style="font-size:.75rem;opacity:.8">Cadastros</div></div>
-            <div class="col-4"><div style="font-size:1.8rem;font-weight:700"><?php echo (int)$todayRow['total_impressoes']; ?></div><div style="font-size:.75rem;opacity:.8">Pulseiras</div></div>
-            <div class="col-4"><div style="font-size:1.8rem;font-weight:700"><?php echo (int)$todayRow['total_saidas']; ?></div><div style="font-size:.75rem;opacity:.8">Saídas</div></div>
+        <div class="section-title" style="color:rgba(255,255,255,.7)">Hoje — <?php echo date('d/m/Y'); ?> (tempo real)</div>
+        <div class="row text-center mb-2">
+            <div class="col-3"><div style="font-size:1.8rem;font-weight:700"><?php echo $cadastrosHoje; ?></div><div style="font-size:.72rem;opacity:.8">Cadastros</div></div>
+            <div class="col-3"><div style="font-size:1.8rem;font-weight:700"><?php echo $meninosHoje; ?></div><div style="font-size:.72rem;opacity:.8">👦 Meninos</div></div>
+            <div class="col-3"><div style="font-size:1.8rem;font-weight:700"><?php echo $meninasHoje; ?></div><div style="font-size:.72rem;opacity:.8">👧 Meninas</div></div>
+            <div class="col-3"><div style="font-size:1.8rem;font-weight:700"><?php echo $todayRow ? (int)$todayRow['total_saidas'] : 0; ?></div><div style="font-size:.72rem;opacity:.8">Saídas</div></div>
         </div>
+        <?php if (!empty($portariaHoje)): ?>
+        <div style="font-size:.75rem;opacity:.85;border-top:1px solid rgba(255,255,255,.2);padding-top:8px;">
+            <strong>Portarias:</strong>
+            <?php foreach ($portariaHoje as $p => $cnt): ?>
+                <span class="mr-2"><?php echo sanitize_for_html($p); ?>: <?php echo $cnt; ?></span>
+            <?php endforeach; ?>
+            &nbsp;|&nbsp;
+            <strong>Idades:</strong>
+            <?php foreach ($idadesHoje as $faixa => $cnt): if ($cnt > 0): ?>
+                <span class="mr-2"><?php echo $faixa; ?>: <?php echo $cnt; ?></span>
+            <?php endif; endforeach; ?>
+        </div>
+        <?php endif; ?>
     </div>
-    <?php endif; ?>
 
     <div class="row">
         <!-- Faixas etárias -->
