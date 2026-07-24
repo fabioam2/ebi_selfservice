@@ -15,5 +15,8 @@ if (in_array('--dry-run', $argv, true)) {
     exit(0);
 }
 
-fwrite(STDOUT, "cleanup_instances.php esta obsoleto; executando tarefas_agendadas.php.\n");
+// --force era necessario no script antigo; no novo executor ele ignoraria os
+// intervalos persistidos e nao deve ser repassado por este adaptador.
+$argv = ['tarefas_agendadas.php'];
+fwrite(STDOUT, "cleanup_instances.php esta obsoleto; executando tarefas_agendadas.php com a frequencia controlada.\n");
 require __DIR__ . '/tarefas_agendadas.php';
