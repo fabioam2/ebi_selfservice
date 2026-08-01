@@ -218,6 +218,40 @@
             font-size: 0.72rem;
             color: #888;
         }
+
+        /* ===== Responsivo (celular/tablet) ===== */
+        @media (max-width: 767.98px) {
+            .container { margin-top: 0; padding: 12px; border-radius: 0; }
+            header.d-flex {
+                flex-wrap: wrap;
+                row-gap: 10px;
+            }
+            header .dropdown { order: 1; }
+            header h1 {
+                order: 3;
+                flex: 1 0 100%;
+                font-size: 1.1rem;
+                margin: 4px 0;
+            }
+            header h1 img { width: 40px; height: 40px; }
+            header > div.d-flex.align-items-center:last-child {
+                order: 2;
+                flex-wrap: wrap;
+                justify-content: center !important;
+                min-width: 0 !important;
+                row-gap: 6px;
+            }
+            #formListaCriancas > div.d-flex.justify-content-between {
+                flex-wrap: wrap;
+                row-gap: 10px;
+            }
+            #formListaCriancas > div.d-flex.justify-content-between > div.d-flex.align-items-center {
+                flex-wrap: wrap;
+                row-gap: 6px;
+            }
+            #qzStatusBadge { margin: 0; }
+            #tourTooltip { max-width: calc(100vw - 24px); }
+        }
     </style>
 </head>
 <body>
