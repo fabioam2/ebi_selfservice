@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cadastro de Crianças</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -181,10 +182,9 @@
             background: rgba(0,0,0,0.55);
             z-index: 2000;
             display: none;
+            pointer-events: none;
         }
         .tour-alvo-destacado {
-            position: relative;
-            z-index: 2001;
             box-shadow: 0 0 0 4px #fff, 0 0 0 8px #007bff, 0 0 25px rgba(0,0,0,0.5);
             border-radius: 6px;
         }
@@ -309,7 +309,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tag mr-1" viewBox="0 0 16 16"><path d="M6 4.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm-1 0a.5.5 0 1 0-1 0 .5.5 0 0 0 1 0z"/><path d="M2 1h4.586a1 1 0 0 1 .707.293l7 7a1 1 0 0 1 0 1.414l-4.586 4.586a1 1 0 0 1-1.414 0l-7-7A1 1 0 0 1 1 6.586V2a1 1 0 0 1 1-1zm0 5.586 7 7L13.586 9l-7-7H2v4.586z"/></svg>
                         <span id="labelTesteMode">Testar Impressão: OFF</span>
                     </button>
-                    <a class="dropdown-item" href="calibrar.php" target="_blank">
+                    <a class="dropdown-item" href="calibrar.php" target="_blank" id="menuCalibrar">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sliders mr-1" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3h9.05zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8h2.05zm9.45 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm-2.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1h9.05z"/></svg>
                         Calibrar
                     </a>
@@ -346,6 +346,11 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download mr-1" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/></svg>
                                 QZ Tray 2.2.5 x64 (.exe)
                             </a>
+                            <div class="dropdown-divider"></div>
+                            <button class="dropdown-item" type="button" onclick="abrirModalHowToQZ()" id="menuHowToQZ">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-question-circle mr-1" viewBox="0 0 16 16"><path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/></svg>
+                                Como Instalar (How To)
+                            </button>
                         </div>
                     </div>
                     <div class="dropdown-divider"></div>
@@ -381,7 +386,7 @@
                 Cadastro de Crianças
             </h1>
             <div class="d-flex align-items-center" style="min-width: 220px; justify-content: flex-end;">
-                <a href="./saida/index.php" class="btn btn-outline-secondary btn-sm mr-1" target="_blank">Saída</a>
+                <a href="./saida/index.php" class="btn btn-outline-secondary btn-sm mr-1" target="_blank" id="linkSaida">Saída</a>
                 <a href="./saida/painel.php" class="btn btn-outline-secondary btn-sm mr-1" target="_blank">Painel Saída</a>
                 <a href="<?php echo sanitize_for_html($qrcodeUrl); ?>" class="btn btn-outline-secondary btn-sm mr-1" target="_blank">QrCode</a>
                 <a href="?acao=mobile" class="btn btn-outline-success btn-sm mr-1" target="_blank" title="Versão para Smartphone"><i class="fas fa-mobile-alt mr-1"></i>Mobile</a>
@@ -757,6 +762,65 @@
                                 Usar esta Impressora
                             </button>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal How To — QZ Tray -->
+        <div class="modal fade" id="modalHowToQZ" tabindex="-1" role="dialog" aria-labelledby="modalHowToQZLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header bg-dark text-white">
+                        <h5 class="modal-title" id="modalHowToQZLabel">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-printer mr-2" viewBox="0 0 16 16"><path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/><path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/></svg>
+                            How To — QZ Tray (Impressão)
+                        </h5>
+                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span>&times;</span></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-muted small mb-3">Passo a passo para configurar a impressão silenciosa via QZ Tray em todos os desktops.</p>
+                        <div class="row">
+                            <div class="col-md-7">
+                                <ol class="small">
+                                    <li class="mb-2"><strong>Instalar QZ Tray</strong> em cada desktop → <a href="https://qz.io/download/" target="_blank">qz.io/download</a></li>
+                                    <li class="mb-2"><strong>Gerar chaves DEMO</strong> em UM computador:
+                                        <br><code>QZ Tray (bandeja) → Botão direito → Advanced → Site Manager → "+" → Create New</code>
+                                        <br>Clicar <strong>Yes</strong> em todas as perguntas (criar, instalar, copiar override)
+                                    </li>
+                                    <li class="mb-2"><strong>Copiar para o servidor</strong> os 2 arquivos gerados (pasta "QZ Tray Demo Cert" na Área de Trabalho):
+                                        <br><code>digital-certificate.txt</code> → <code>ebi/template/assets/signing/</code>
+                                        <br><code>private-key.pem</code> → <code>ebi/template/assets/signing/</code>
+                                    </li>
+                                    <li class="mb-2"><strong>Distribuir override.crt</strong> para TODOS os desktops:
+                                        <br>Copiar <code>C:\Program Files\QZ Tray\override.crt</code> da máquina geradora para todas as outras no mesmo caminho
+                                    </li>
+                                    <li class="mb-2"><strong>Reiniciar QZ Tray</strong> em cada máquina (fechar no tray e reabrir)</li>
+                                </ol>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="card bg-light p-3">
+                                    <h6 class="mb-2"><i class="fas fa-link mr-1"></i> Links úteis</h6>
+                                    <a href="https://qz.io/docs/signing" target="_blank" class="d-block mb-2 small">
+                                        <i class="fas fa-file-signature mr-1"></i> Documentação de Assinatura
+                                    </a>
+                                    <a href="https://qz.io/download/" target="_blank" class="d-block mb-2 small">
+                                        <i class="fas fa-download mr-1"></i> Download QZ Tray
+                                    </a>
+                                    <a href="https://github.com/qzind/tray/releases/download/v2.2.5/qz-tray-2.2.5-x86_64.exe" target="_blank" class="d-block mb-2 small">
+                                        <i class="fas fa-windows mr-1"></i> QZ Tray 2.2.5 x64 (.exe)
+                                    </a>
+                                    <hr class="my-2">
+                                    <h6 class="mb-2"><i class="fas fa-shield-alt mr-1"></i> Verificação</h6>
+                                    <p class="small text-muted mb-1">Testar no navegador:</p>
+                                    <code class="small d-block mb-1" style="word-break:break-all;">assets/signing/digital-certificate.txt → 200 OK</code>
+                                    <code class="small d-block" style="word-break:break-all;">assets/signing/sign-message.php?request=teste → base64</code>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Fechar</button>
                     </div>
                 </div>
             </div>
@@ -1491,21 +1555,27 @@
 
         var tourPassos = [
             {
-                seletor: '#btnCadastrar',
-                titulo: 'Cadastrar Criança',
-                texto: 'Preencha os dados da criança e do responsável e clique aqui para cadastrar. A pulseira fica pronta para impressão.',
-                posicao: 'top'
-            },
-            {
                 seletor: '#portaria_cadastro',
                 titulo: 'Portaria de Entrada',
                 texto: 'Define a portaria (padrão "A"), identifica por onde a criança entrou.',
                 posicao: 'top'
             },
             {
+                seletor: '#btnCadastrar',
+                titulo: 'Cadastrar Criança',
+                texto: 'Preencha os dados da criança e do responsável e clique aqui para cadastrar. A pulseira fica pronta para impressão.',
+                posicao: 'top'
+            },
+            {
+                seletor: '.btn-copiar-dados',
+                titulo: 'Copiar Responsável',
+                texto: 'Copia os dados do responsável, telefone e comum da primeira linha para a linha atual — ajuda e acelera o cadastro manual de mais crianças da mesma família.',
+                posicao: 'top'
+            },
+            {
                 seletor: '#btnImprimir',
                 titulo: 'Imprimir Pulseiras',
-                texto: 'Marque as crianças na lista e clique aqui para imprimir as pulseiras com QR Code.',
+                texto: 'Marque as crianças na lista e clique aqui para imprimir as pulseiras.',
                 posicao: 'bottom'
             },
             {
@@ -1521,16 +1591,52 @@
                 posicao: 'bottom'
             },
             {
+                seletor: '#menuCalibrar',
+                titulo: 'Calibrar Impressora',
+                texto: 'Ao clicar aqui, a impressora passa por uma calibração completa — útil quando a pulseira sai torta ou fora de posição.',
+                posicao: 'right',
+                antes: function() { $('#dropdownMenuAdmin').dropdown('show'); },
+                depois: function() { $('#dropdownMenuAdmin').dropdown('hide'); }
+            },
+            {
+                seletor: '#menuLista',
+                titulo: 'Lista',
+                texto: 'Aqui é possível imprimir ou baixar a lista das crianças presentes, em PDF, CSV ou planilha (XLS).',
+                posicao: 'right',
+                antes: function() { $('#dropdownMenuAdmin').dropdown('show'); },
+                depois: function() { $('#dropdownMenuAdmin').dropdown('hide'); }
+            },
+            {
                 seletor: '#menuEstatisticas',
                 titulo: 'Estatísticas (BI)',
                 texto: 'Veja todas as estatísticas do sistema: total de cadastros, faixas etárias, meninos/meninas, por portaria e por comum — com gráficos e histórico por período.',
                 posicao: 'right',
                 antes: function() { $('#dropdownMenuAdmin').dropdown('show'); },
                 depois: function() { $('#dropdownMenuAdmin').dropdown('hide'); }
+            },
+            {
+                seletor: '#linkSaida',
+                titulo: 'Saída',
+                texto: 'Abre o sistema de saída: as auxiliadoras digitam o código do responsável (impresso na pulseira) e, no Painel de Saída, aparece qual criança está sendo aguardada por esse responsável.',
+                posicao: 'bottom'
             }
         ];
 
         var tourIndiceAtual = -1;
+
+        function tourRecortarOverlay($el) {
+            var overlay = document.getElementById('tourOverlay');
+            if (!$el || $el.length === 0) { overlay.style.clipPath = ''; return; }
+            var rect = $el[0].getBoundingClientRect();
+            var pad = 6;
+            var x1 = Math.max(0, rect.left - pad);
+            var y1 = Math.max(0, rect.top - pad);
+            var x2 = Math.min(window.innerWidth, rect.right + pad);
+            var y2 = Math.min(window.innerHeight, rect.bottom + pad);
+            var w = window.innerWidth, h = window.innerHeight;
+            overlay.style.clipPath = 'polygon(evenodd, 0px 0px, 0px ' + h + 'px, ' + w + 'px ' + h + 'px, ' + w + 'px 0px, 0px 0px, ' +
+                x1 + 'px ' + y1 + 'px, ' + x1 + 'px ' + y2 + 'px, ' + x2 + 'px ' + y2 + 'px, ' + x2 + 'px ' + y1 + 'px, ' + x1 + 'px ' + y1 + 'px)';
+        }
 
         function tourPosicionarTooltip($el, passo) {
             var rect = $el[0].getBoundingClientRect();
@@ -1596,6 +1702,7 @@
                     $el[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
                     setTimeout(function() {
                         $el.addClass('tour-alvo-destacado');
+                        tourRecortarOverlay($el);
                         tourPosicionarTooltip($el, passo);
                     }, 250);
                 }, 120);
@@ -1639,7 +1746,9 @@
         $(window).on('resize', function() {
             var passo = tourPassos[tourIndiceAtual];
             if (passo && $('#tourTooltip').is(':visible')) {
-                tourPosicionarTooltip($(passo.seletor), passo);
+                var $el = $(passo.seletor);
+                tourRecortarOverlay($el);
+                tourPosicionarTooltip($el, passo);
             }
         });
 
@@ -2079,6 +2188,10 @@
             }
             qzAtualizarBadge();
             $('#modalQZTray').modal('show');
+        }
+
+        function abrirModalHowToQZ() {
+            $('#modalHowToQZ').modal('show');
         }
 
         async function qzConectar() {
