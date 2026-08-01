@@ -877,10 +877,13 @@ if (!empty($_SESSION['contas_existentes'])) {
                 <p>Cadastre-se e receba acesso ao Sistema de Cadastro de Crianças</p>
             </div>
 
-            <!-- Botão vídeo apresentação -->
-            <div class="text-center mb-3">
+            <!-- Botões de vídeo: apresentação e demonstração -->
+            <div class="text-center mb-3 d-flex flex-wrap justify-content-center" style="gap:10px">
                 <a href="#" onclick="document.getElementById('modalVideo').style.display='flex';document.getElementById('videoApresentacao').play();return false;" class="btn btn-sm" style="border:1px solid rgba(14,116,144,.5);color:#0e7490;border-radius:50px;padding:8px 22px;font-size:.9rem;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:8px;background:rgba(14,116,144,.1);transition:background .2s,transform .2s" onmouseover="this.style.background='rgba(14,116,144,.18)';this.style.transform='translateY(-1px)'" onmouseout="this.style.background='rgba(14,116,144,.1)';this.style.transform='translateY(0)'">
                     <i class="fas fa-play-circle"></i> O que é o sistema?
+                </a>
+                <a href="#" onclick="document.getElementById('modalVideoDemo').style.display='flex';document.getElementById('videoDemonstracao').play();return false;" class="btn btn-sm" style="border:1px solid rgba(14,116,144,.5);color:#0e7490;border-radius:50px;padding:8px 22px;font-size:.9rem;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:8px;background:rgba(14,116,144,.1);transition:background .2s,transform .2s" onmouseover="this.style.background='rgba(14,116,144,.18)';this.style.transform='translateY(-1px)'" onmouseout="this.style.background='rgba(14,116,144,.1)';this.style.transform='translateY(0)'">
+                    <i class="fas fa-desktop"></i> Veja o sistema
                 </a>
             </div>
 
@@ -890,6 +893,17 @@ if (!empty($_SESSION['contas_existentes'])) {
                     <button onclick="document.getElementById('modalVideo').style.display='none';document.getElementById('videoApresentacao').pause();" style="position:absolute;top:-40px;right:0;background:none;border:none;color:#fff;font-size:2rem;cursor:pointer;z-index:10000">&times;</button>
                     <video id="videoApresentacao" controls playsinline style="width:100%;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.5)">
                         <source src="video/apresentacao-ebi.mp4" type="video/mp4">
+                        Seu navegador não suporta vídeo HTML5.
+                    </video>
+                </div>
+            </div>
+
+            <!-- Modal de vídeo — demonstração do sistema -->
+            <div id="modalVideoDemo" onclick="if(event.target===this){this.style.display='none';document.getElementById('videoDemonstracao').pause();}" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);z-index:9999;justify-content:center;align-items:center">
+                <div style="position:relative;width:90%;max-width:800px">
+                    <button onclick="document.getElementById('modalVideoDemo').style.display='none';document.getElementById('videoDemonstracao').pause();" style="position:absolute;top:-40px;right:0;background:none;border:none;color:#fff;font-size:2rem;cursor:pointer;z-index:10000">&times;</button>
+                    <video id="videoDemonstracao" controls playsinline preload="none" style="width:100%;border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.5)">
+                        <source src="video/ebi%20demonstration%20video%20short%20reduzido.mp4" type="video/mp4">
                         Seu navegador não suporta vídeo HTML5.
                     </video>
                 </div>
