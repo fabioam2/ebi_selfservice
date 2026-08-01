@@ -174,6 +174,84 @@
             font-weight: 600;
         }
 
+        /* ===== Tour Guiado ===== */
+        #tourOverlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.55);
+            z-index: 2000;
+            display: none;
+        }
+        .tour-alvo-destacado {
+            position: relative;
+            z-index: 2001;
+            box-shadow: 0 0 0 4px #fff, 0 0 0 8px #007bff, 0 0 25px rgba(0,0,0,0.5);
+            border-radius: 6px;
+        }
+        #tourTooltip {
+            position: fixed;
+            z-index: 2002;
+            max-width: 320px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+            padding: 14px 16px;
+            display: none;
+        }
+        #tourTooltip .tour-titulo {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #007bff;
+            margin-bottom: 6px;
+        }
+        #tourTooltip .tour-texto {
+            font-size: 0.85rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        #tourTooltip .tour-rodape {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        #tourTooltip .tour-passo-contador {
+            font-size: 0.72rem;
+            color: #888;
+        }
+
+        /* ===== Responsivo (celular/tablet) ===== */
+        @media (max-width: 767.98px) {
+            .container { margin-top: 0; padding: 12px; border-radius: 0; }
+            header.d-flex {
+                flex-wrap: wrap;
+                row-gap: 10px;
+            }
+            header .dropdown { order: 1; }
+            header h1 {
+                order: 3;
+                flex: 1 0 100%;
+                font-size: 1.1rem;
+                margin: 4px 0;
+            }
+            header h1 img { width: 40px; height: 40px; }
+            header > div.d-flex.align-items-center:last-child {
+                order: 2;
+                flex-wrap: wrap;
+                justify-content: center !important;
+                min-width: 0 !important;
+                row-gap: 6px;
+            }
+            #formListaCriancas > div.d-flex.justify-content-between {
+                flex-wrap: wrap;
+                row-gap: 10px;
+            }
+            #formListaCriancas > div.d-flex.justify-content-between > div.d-flex.align-items-center {
+                flex-wrap: wrap;
+                row-gap: 6px;
+            }
+            #qzStatusBadge { margin: 0; }
+            #tourTooltip { max-width: calc(100vw - 24px); }
+        }
     </style>
 </head>
 <body>
@@ -196,7 +274,7 @@
                 <div class="dropdown-menu" aria-labelledby="dropdownMenuAdmin">
                     <!-- Estatísticas BI -->
                     <h6 class="dropdown-header">Relatórios</h6>
-                    <a class="dropdown-item" href="?acao=stats">
+                    <a class="dropdown-item" href="?acao=stats" id="menuEstatisticas">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bar-chart-fill mr-1" viewBox="0 0 16 16"><path d="M1 11a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1zm5-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1zm5-5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1z"/></svg>
                         Estatísticas (BI)
                     </a>
@@ -307,9 +385,9 @@
                 <a href="./saida/painel.php" class="btn btn-outline-secondary btn-sm mr-1" target="_blank">Painel Saída</a>
                 <a href="<?php echo sanitize_for_html($qrcodeUrl); ?>" class="btn btn-outline-secondary btn-sm mr-1" target="_blank">QrCode</a>
                 <a href="?acao=mobile" class="btn btn-outline-success btn-sm mr-1" target="_blank" title="Versão para Smartphone"><i class="fas fa-mobile-alt mr-1"></i>Mobile</a>
-                <button type="button" class="btn btn-outline-info btn-sm btn-ajuda" onclick="abrirModalAjuda()" title="Como usar o sistema">
+                <button type="button" class="btn btn-outline-info btn-sm btn-ajuda" onclick="iniciarTourGuiado()" title="Tour guiado pelo sistema" id="btnTourGuiado">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-question-circle mr-1" viewBox="0 0 16 16"><path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/></svg>
-                    Como Usar
+                    Tour Guiado
                 </button>
             </div>
         </header>
@@ -446,7 +524,7 @@
             <?php echo csrf_field(); ?>
             <div class="mt-3 d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center">
-                    <button type="submit" class="btn btn-success" name="imprimir"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer-fill mr-2" viewBox="0 0 16 16"><path d="M5 1a2 2 0 0 0-2 2v1h10V3a2 2 0 0 0-2-2zm6 8H5a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1"/><path d="M0 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-1v-2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2H2a2 2 0 0 1-2-2zm3 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2"/></svg>Imprimir</button>
+                    <button type="submit" class="btn btn-success" name="imprimir" id="btnImprimir"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer-fill mr-2" viewBox="0 0 16 16"><path d="M5 1a2 2 0 0 0-2 2v1h10V3a2 2 0 0 0-2-2zm6 8H5a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1"/><path d="M0 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-1v-2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2H2a2 2 0 0 1-2-2zm3 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2"/></svg>Imprimir</button>
                     <div class="total-cadastros-info <?php if ($totalDeCadastrosGeral > 90) echo 'total-cadastros-alerta'; ?>" title="Total de crianças cadastradas"> 
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-people-fill" viewBox="0 0 16 16">
                             <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6m-5.784 6A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/>
@@ -889,138 +967,24 @@
             </div>
         </div>
 
-        <!-- Modal Como Usar -->
-        <div class="modal fade" id="modalAjuda" tabindex="-1" role="dialog" aria-labelledby="modalAjudaLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg" role="document">
-                <div class="modal-content">
-                    <div class="modal-header bg-info text-white">
-                        <h5 class="modal-title" id="modalAjudaLabel">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-question-circle mr-2" viewBox="0 0 16 16"><path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/></svg>
-                            Como Usar o Sistema de Cadastro
-                        </h5>
-                        <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="row">
-                            <!-- Passo 1 -->
-                            <div class="col-md-6 mb-3">
-                                <div class="border rounded p-3 h-100">
-                                    <h6 class="text-primary font-weight-bold">
-                                        <span class="badge badge-primary mr-1">1</span> Cadastrar Crianças
-                                    </h6>
-                                    <p class="small mb-2">Preencha os campos do formulário para cada criança:</p>
-                                    <ul class="small pl-3 mb-0">
-                                        <li><strong>Nome da Criança</strong> — como aparecerá na pulseira</li>
-                                        <li><strong>Responsável</strong> — nome do pai/mãe que vai retirar</li>
-                                        <li><strong>Telefone</strong> — para contato se necessário</li>
-                                        <li><strong>Idade</strong> — usada para direcionar à sala correta</li>
-                                        <li><strong>Comum</strong> — congregação de origem</li>
-                                        <li><strong>Portaria</strong> — portaria de entrada (A, B, C…)</li>
-                                    </ul>
-                                    <div class="alert alert-info mt-2 mb-0 p-2 small">
-                                        <strong>Dica:</strong> Cadastre todas as crianças do mesmo responsável de uma vez — use o botão <em>Copiar Responsável</em> para agilizar.
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- Passo 2 -->
-                            <div class="col-md-6 mb-3">
-                                <div class="border rounded p-3 h-100">
-                                    <h6 class="text-success font-weight-bold">
-                                        <span class="badge badge-success mr-1">2</span> QR Code (pistola)
-                                    </h6>
-                                    <p class="small mb-2">Acelere o cadastro com um leitor de QR Code (pistola ou celular):</p>
-                                    <ul class="small pl-3 mb-2">
-                                        <li>Conecte o leitor ao computador (USB ou Bluetooth)</li>
-                                        <li>Clique no campo <strong>Responsável</strong> ou <strong>Telefone</strong></li>
-                                        <li>Aponte o leitor para o QR Code do responsável</li>
-                                        <li>Os dados são preenchidos automaticamente</li>
-                                    </ul>
-                                    <div class="alert alert-success mb-0 p-2 small">
-                                        <strong>Gerar QR Codes:</strong> Acesse o botão <strong>QrCode</strong> no canto superior direito ou clique <a href="<?php echo sanitize_for_html($qrcodeUrl); ?>" target="_blank">aqui</a> para criar os QR Codes dos responsáveis com seus dados pré-preenchidos.
-                                    </div>
-                                </div>
-                            </div>
-                            <!-- Passo 3 -->
-                            <div class="col-md-6 mb-3">
-                                <div class="border rounded p-3 h-100">
-                                    <h6 class="text-warning font-weight-bold">
-                                        <span class="badge badge-warning mr-1">3</span> Imprimir Pulseiras
-                                    </h6>
-                                    <p class="small mb-2">Após o cadastro, selecione as crianças e imprima as pulseiras:</p>
-                                    <ul class="small pl-3 mb-0">
-                                        <li>Marque as caixas ao lado de cada criança</li>
-                                        <li>Clique em <strong>Imprimir</strong> (botão verde) ou use <kbd>Enter</kbd></li>
-                                        <li>A pulseira sai com nome, responsável e QR Code</li>
-                                        <li>O leitor QR Code na saída usa esse código para identificar as crianças</li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <!-- Passo 4 -->
-                            <div class="col-md-6 mb-3">
-                                <div class="border rounded p-3 h-100">
-                                    <h6 class="text-danger font-weight-bold">
-                                        <span class="badge badge-danger mr-1">4</span> Controle de Saída
-                                    </h6>
-                                    <p class="small mb-2">A portaria usa o módulo de <strong>Saída</strong> para liberar as crianças:</p>
-                                    <ul class="small pl-3 mb-2">
-                                        <li>Acesse <strong>Saída</strong> no canto superior direito</li>
-                                        <li>O responsável apresenta o QR Code da pulseira</li>
-                                        <li>O sistema identifica e lista as crianças vinculadas</li>
-                                        <li>A portaria confirma e registra a saída</li>
-                                    </ul>
-                                    <div class="alert alert-secondary mb-0 p-2 small">
-                                        Use <strong>Painel Saída</strong> para monitorar em tempo real as saídas registradas.
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Menu de Relatórios -->
-                        <div class="border rounded p-3 mt-1 bg-light">
-                            <h6 class="font-weight-bold mb-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bar-chart mr-1" viewBox="0 0 16 16"><path d="M4 11H2v3h2zm5-4H7v7h2zm5-5v12h-2V2zm-2-1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1zm-5 4a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1zm-5 4a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1z"/></svg>
-                                Menu ☰ — Opções Disponíveis
-                            </h6>
-                            <div class="row small">
-                                <div class="col-md-4">
-                                    <strong>Relatórios</strong>
-                                    <ul class="pl-3 mb-0">
-                                        <li><strong>Estatísticas (BI)</strong> — gráficos e histórico por período</li>
-                                        <li><strong>Lista → Imprimir</strong> — impressão da lista de cadastros</li>
-                                        <li><strong>Lista → CSV / XLS</strong> — exportar para planilha</li>
-                                    </ul>
-                                </div>
-                                <div class="col-md-4">
-                                    <strong>Impressora</strong>
-                                    <ul class="pl-3 mb-0">
-                                        <li>Configurar impressora ZPL</li>
-                                        <li>QZ Tray — conexão USB/rede</li>
-                                        <li>Calibrar — ajustar posição</li>
-                                    </ul>
-                                </div>
-                                <div class="col-md-4">
-                                    <strong>Dados</strong>
-                                    <ul class="pl-3 mb-0">
-                                        <li>Zerar Arquivo — apaga todos os cadastros do dia</li>
-                                        <li>Recuperar Backup — restaura cadastros anteriores</li>
-                                        <li>Sair — encerrar sessão</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <label class="mr-auto small text-muted">
-                            <input type="checkbox" id="chkNaoMostrarAjuda"> Não mostrar novamente
-                        </label>
-                        <button type="button" class="btn btn-info text-white" data-dismiss="modal">Entendido!</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- Rodapé com versão do sistema -->
         <div class="text-center mt-4 mb-2" style="font-size: 9px; color: #b0b0b0; opacity: 0.6;">
             v<?php echo VERSAO_SISTEMA; ?>
+        </div>
+    </div>
+
+    <!-- Tour Guiado -->
+    <div id="tourOverlay"></div>
+    <div id="tourTooltip">
+        <div class="tour-titulo"></div>
+        <div class="tour-texto"></div>
+        <div class="tour-rodape">
+            <span class="tour-passo-contador"></span>
+            <div>
+                <button type="button" class="btn btn-link btn-sm text-muted" id="tourBtnPular">Pular</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="tourBtnAnterior">Anterior</button>
+                <button type="button" class="btn btn-primary btn-sm" id="tourBtnProximo">Próximo</button>
+            </div>
         </div>
     </div>
 
@@ -1523,22 +1487,167 @@
 
         });
 
-        // ============ MODAL COMO USAR ============
+        // ============ TOUR GUIADO ============
 
-        function abrirModalAjuda() {
-            $('#modalAjuda').modal('show');
+        var tourPassos = [
+            {
+                seletor: '#btnCadastrar',
+                titulo: 'Cadastrar Criança',
+                texto: 'Preencha os dados da criança e do responsável e clique aqui para cadastrar. A pulseira fica pronta para impressão.',
+                posicao: 'top'
+            },
+            {
+                seletor: '#portaria_cadastro',
+                titulo: 'Portaria de Entrada',
+                texto: 'Define a portaria (padrão "A"), identifica por onde a criança entrou.',
+                posicao: 'top'
+            },
+            {
+                seletor: '#btnImprimir',
+                titulo: 'Imprimir Pulseiras',
+                texto: 'Marque as crianças na lista e clique aqui para imprimir as pulseiras com QR Code.',
+                posicao: 'bottom'
+            },
+            {
+                seletor: '#qzStatusBadge',
+                titulo: 'Status da Impressora',
+                texto: 'Mostra se a impressora está online (verde) ou desconectada (vermelho/amarelo). Clique aqui para configurar a conexão.',
+                posicao: 'bottom'
+            },
+            {
+                seletor: '#filtroPortaria',
+                titulo: 'Filtrar por Portaria',
+                texto: 'Define qual portaria será mostrado na tabela abaixo pra facilitar encontrar as crianças que entraram por essa portaria.',
+                posicao: 'bottom'
+            },
+            {
+                seletor: '#menuEstatisticas',
+                titulo: 'Estatísticas (BI)',
+                texto: 'Veja todas as estatísticas do sistema: total de cadastros, faixas etárias, meninos/meninas, por portaria e por comum — com gráficos e histórico por período.',
+                posicao: 'right',
+                antes: function() { $('#dropdownMenuAdmin').dropdown('show'); },
+                depois: function() { $('#dropdownMenuAdmin').dropdown('hide'); }
+            }
+        ];
+
+        var tourIndiceAtual = -1;
+
+        function tourPosicionarTooltip($el, passo) {
+            var rect = $el[0].getBoundingClientRect();
+            var $tip = $('#tourTooltip');
+            $tip.find('.tour-titulo').text(passo.titulo);
+            $tip.find('.tour-texto').text(passo.texto);
+            $tip.find('.tour-passo-contador').text((tourIndiceAtual + 1) + ' de ' + tourPassos.length);
+            $tip.css('display', 'block');
+
+            var margem = 12;
+            var tipWidth = $tip.outerWidth();
+            var tipHeight = $tip.outerHeight();
+            var posicao = passo.posicao || 'bottom';
+            var top, left;
+
+            if (posicao === 'top') {
+                top = rect.top - tipHeight - margem;
+                left = rect.left;
+            } else if (posicao === 'left') {
+                top = rect.top;
+                left = rect.left - tipWidth - margem;
+            } else if (posicao === 'right') {
+                top = rect.top;
+                left = rect.right + margem;
+            } else {
+                top = rect.bottom + margem;
+                left = rect.left;
+            }
+
+            if (left + tipWidth > window.innerWidth - margem) left = window.innerWidth - tipWidth - margem;
+            if (left < margem) left = margem;
+            if (top + tipHeight > window.innerHeight - margem) top = window.innerHeight - tipHeight - margem;
+            if (top < margem) top = margem;
+
+            $tip.css({ top: top + 'px', left: left + 'px' });
+            $('#tourBtnAnterior').prop('disabled', tourIndiceAtual === 0);
+            $('#tourBtnProximo').text(tourIndiceAtual === tourPassos.length - 1 ? 'Concluir' : 'Próximo');
         }
+
+        function tourEsconderPassoAtual() {
+            var passo = tourPassos[tourIndiceAtual];
+            if (!passo) return;
+            $(passo.seletor).removeClass('tour-alvo-destacado');
+            if (typeof passo.depois === 'function') passo.depois();
+        }
+
+        function tourMostrarPasso(indice) {
+            var passo = tourPassos[indice];
+            if (!passo) return;
+
+            // Adiado: se "antes" abre um dropdown, precisa rodar depois que o
+            // clique atual terminar de propagar (senão o listener global do
+            // Bootstrap que fecha dropdowns ao clicar fora fecha de novo).
+            setTimeout(function() {
+                if (typeof passo.antes === 'function') passo.antes();
+
+                setTimeout(function() {
+                    var $el = $(passo.seletor);
+                    if ($el.length === 0 || !$el.is(':visible')) {
+                        tourProximoPasso();
+                        return;
+                    }
+                    $el[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    setTimeout(function() {
+                        $el.addClass('tour-alvo-destacado');
+                        tourPosicionarTooltip($el, passo);
+                    }, 250);
+                }, 120);
+            }, 0);
+        }
+
+        function tourProximoPasso() {
+            tourEsconderPassoAtual();
+            tourIndiceAtual++;
+            if (tourIndiceAtual >= tourPassos.length) {
+                tourEncerrar();
+                return;
+            }
+            tourMostrarPasso(tourIndiceAtual);
+        }
+
+        function tourPassoAnterior() {
+            if (tourIndiceAtual <= 0) return;
+            tourEsconderPassoAtual();
+            tourIndiceAtual--;
+            tourMostrarPasso(tourIndiceAtual);
+        }
+
+        function tourEncerrar() {
+            tourEsconderPassoAtual();
+            $('#tourOverlay').css('display', 'none');
+            $('#tourTooltip').css('display', 'none');
+            tourIndiceAtual = -1;
+            localStorage.setItem('ebi_tour_guiado_visto', '1');
+        }
+
+        function iniciarTourGuiado() {
+            tourIndiceAtual = -1;
+            $('#tourOverlay').css('display', 'block');
+            tourProximoPasso();
+        }
+
+        $('#tourBtnProximo').on('click', tourProximoPasso);
+        $('#tourBtnAnterior').on('click', tourPassoAnterior);
+        $('#tourBtnPular').on('click', tourEncerrar);
+        $(window).on('resize', function() {
+            var passo = tourPassos[tourIndiceAtual];
+            if (passo && $('#tourTooltip').is(':visible')) {
+                tourPosicionarTooltip($(passo.seletor), passo);
+            }
+        });
 
         // Mostrar automaticamente no primeiro acesso
         (function() {
-            if (!localStorage.getItem('ebi_ajuda_visto')) {
-                setTimeout(function() { $('#modalAjuda').modal('show'); }, 600);
+            if (!localStorage.getItem('ebi_tour_guiado_visto')) {
+                setTimeout(iniciarTourGuiado, 600);
             }
-            $('#modalAjuda').on('hide.bs.modal', function() {
-                if ($('#chkNaoMostrarAjuda').is(':checked')) {
-                    localStorage.setItem('ebi_ajuda_visto', '1');
-                }
-            });
         })();
 
         // ============ FUNÇÕES DE CONFIGURAÇÃO E DEBUG ============

@@ -110,6 +110,79 @@ $totalHoje = count($cadastrosHojeMobile);
         .back-link { display: inline-flex; align-items: center; gap: 4px; color: rgba(255,255,255,0.65); font-size: 0.75rem; text-decoration: none; margin-bottom: 10px; }
         .back-link:hover { color: #fff; text-decoration: none; }
         .footer { text-align: center; margin-top: 12px; font-size: 9px; color: rgba(255,255,255,0.3); }
+
+        .btn-tour {
+            margin-top: 8px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.5);
+            background: transparent;
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .btn-tour:active { background: rgba(255,255,255,0.15); }
+
+        /* ===== Tour Guiado ===== */
+        #tourOverlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.55);
+            z-index: 2000;
+            display: none;
+        }
+        .tour-alvo-destacado {
+            position: relative;
+            z-index: 2001;
+            box-shadow: 0 0 0 4px #fff, 0 0 0 8px #f59e0b, 0 0 25px rgba(0,0,0,0.5);
+            border-radius: 10px;
+        }
+        #tourTooltip {
+            position: fixed;
+            z-index: 2002;
+            max-width: calc(100vw - 24px);
+            width: 300px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+            padding: 14px 16px;
+            display: none;
+        }
+        #tourTooltip .tour-titulo {
+            font-weight: 800;
+            font-size: 0.9rem;
+            color: var(--brand);
+            margin-bottom: 6px;
+        }
+        #tourTooltip .tour-texto {
+            font-size: 0.8rem;
+            color: var(--text-main);
+            margin-bottom: 10px;
+        }
+        #tourTooltip .tour-rodape {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        #tourTooltip .tour-passo-contador {
+            font-size: 0.68rem;
+            color: var(--text-soft);
+        }
+        #tourTooltip button {
+            border: none;
+            border-radius: 8px;
+            padding: 5px 10px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        #tourBtnPular { background: transparent; color: var(--text-soft); }
+        #tourBtnAnterior { background: #e5e7eb; color: var(--text-main); }
+        #tourBtnAnterior:disabled { opacity: 0.4; cursor: default; }
+        #tourBtnProximo { background: var(--brand); color: #fff; }
     </style>
 </head>
 <body>
@@ -119,6 +192,7 @@ $totalHoje = count($cadastrosHojeMobile);
     <div class="header">
         <h1><i class="fas fa-mobile-alt"></i> EBI Mobile</h1>
         <p>Cadastro rápido por QR Code</p>
+        <button type="button" class="btn-tour" id="btnTourGuiado" onclick="iniciarTourGuiado()"><i class="fas fa-question-circle mr-1"></i> Tour Guiado</button>
     </div>
 
     <div id="toast" class="toast"></div>
@@ -150,7 +224,7 @@ $totalHoje = count($cadastrosHojeMobile);
     </div>
 
     <!-- Lista dos cadastros de hoje -->
-    <div class="card">
+    <div class="card" id="listaHojeCard">
         <h2><i class="fas fa-list"></i> Cadastros de Hoje (<?php echo $totalHoje; ?>)</h2>
         <div class="lista-card">
             <?php if ($totalHoje > 0): ?>
@@ -323,6 +397,178 @@ $totalHoje = count($cadastrosHojeMobile);
 
     function esc(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
     function attr(s){ return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+})();
+</script>
+
+<!-- Tour Guiado -->
+<div id="tourOverlay"></div>
+<div id="tourTooltip">
+    <div class="tour-titulo"></div>
+    <div class="tour-texto"></div>
+    <div class="tour-rodape">
+        <span class="tour-passo-contador"></span>
+        <div>
+            <button type="button" id="tourBtnPular">Pular</button>
+            <button type="button" id="tourBtnAnterior">Anterior</button>
+            <button type="button" id="tourBtnProximo">Próximo</button>
+        </div>
+    </div>
+</div>
+<script>
+(function(){
+    var tourPassos = [
+        {
+            seletor: '#portaria',
+            titulo: 'Portaria de Entrada',
+            texto: 'Define a portaria (padrão "A"), identifica por onde a criança entrou.',
+            posicao: 'bottom'
+        },
+        {
+            seletor: '#btnScan',
+            titulo: 'Escanear QR Code',
+            texto: 'Toque aqui para abrir a câmera e ler o QR Code do responsável — os dados da criança são preenchidos automaticamente.',
+            posicao: 'top'
+        },
+        {
+            seletor: '#btnCad',
+            titulo: 'Confirmar Cadastro',
+            texto: 'Depois de escanear, confira os dados e toque aqui para confirmar o cadastro e liberar a pulseira para impressão.',
+            posicao: 'top'
+        },
+        {
+            seletor: '#listaHojeCard',
+            titulo: 'Cadastros de Hoje',
+            texto: 'Acompanhe aqui a lista de crianças já cadastradas hoje, com portaria, idade e data de nascimento.',
+            posicao: 'top'
+        }
+    ];
+
+    var tourIndiceAtual = -1;
+
+    function tourElVisivel(elAlvo) {
+        if (!elAlvo) return false;
+        var rect = elAlvo.getBoundingClientRect();
+        var estilo = window.getComputedStyle(elAlvo);
+        return estilo.display !== 'none' && estilo.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
+    }
+
+    function tourPosicionarTooltip(elAlvo, passo) {
+        var rect = elAlvo.getBoundingClientRect();
+        var tip = document.getElementById('tourTooltip');
+        tip.querySelector('.tour-titulo').textContent = passo.titulo;
+        tip.querySelector('.tour-texto').textContent = passo.texto;
+        tip.querySelector('.tour-passo-contador').textContent = (tourIndiceAtual + 1) + ' de ' + tourPassos.length;
+        tip.style.display = 'block';
+
+        var margem = 12;
+        var tipWidth = tip.offsetWidth;
+        var tipHeight = tip.offsetHeight;
+        var posicao = passo.posicao || 'bottom';
+        var top, left;
+
+        if (posicao === 'top') {
+            top = rect.top - tipHeight - margem;
+            left = rect.left;
+        } else if (posicao === 'left') {
+            top = rect.top;
+            left = rect.left - tipWidth - margem;
+        } else if (posicao === 'right') {
+            top = rect.top;
+            left = rect.right + margem;
+        } else {
+            top = rect.bottom + margem;
+            left = rect.left;
+        }
+
+        if (left + tipWidth > window.innerWidth - margem) left = window.innerWidth - tipWidth - margem;
+        if (left < margem) left = margem;
+        if (top + tipHeight > window.innerHeight - margem) top = window.innerHeight - tipHeight - margem;
+        if (top < margem) top = margem;
+
+        tip.style.top = top + 'px';
+        tip.style.left = left + 'px';
+
+        document.getElementById('tourBtnAnterior').disabled = (tourIndiceAtual === 0);
+        document.getElementById('tourBtnProximo').textContent = (tourIndiceAtual === tourPassos.length - 1) ? 'Concluir' : 'Próximo';
+    }
+
+    function tourEsconderPassoAtual() {
+        var passo = tourPassos[tourIndiceAtual];
+        if (!passo) return;
+        var elAlvo = document.querySelector(passo.seletor);
+        if (elAlvo) elAlvo.classList.remove('tour-alvo-destacado');
+        if (typeof passo.depois === 'function') passo.depois();
+    }
+
+    function tourMostrarPasso(indice) {
+        var passo = tourPassos[indice];
+        if (!passo) return;
+
+        setTimeout(function() {
+            if (typeof passo.antes === 'function') passo.antes();
+
+            setTimeout(function() {
+                var elAlvo = document.querySelector(passo.seletor);
+                if (!tourElVisivel(elAlvo)) {
+                    tourProximoPasso();
+                    return;
+                }
+                elAlvo.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setTimeout(function() {
+                    elAlvo.classList.add('tour-alvo-destacado');
+                    tourPosicionarTooltip(elAlvo, passo);
+                }, 250);
+            }, 120);
+        }, 0);
+    }
+
+    function tourProximoPasso() {
+        tourEsconderPassoAtual();
+        tourIndiceAtual++;
+        if (tourIndiceAtual >= tourPassos.length) {
+            tourEncerrar();
+            return;
+        }
+        tourMostrarPasso(tourIndiceAtual);
+    }
+
+    function tourPassoAnterior() {
+        if (tourIndiceAtual <= 0) return;
+        tourEsconderPassoAtual();
+        tourIndiceAtual--;
+        tourMostrarPasso(tourIndiceAtual);
+    }
+
+    function tourEncerrar() {
+        tourEsconderPassoAtual();
+        document.getElementById('tourOverlay').style.display = 'none';
+        document.getElementById('tourTooltip').style.display = 'none';
+        tourIndiceAtual = -1;
+        localStorage.setItem('ebi_tour_guiado_mobile_visto', '1');
+    }
+
+    window.iniciarTourGuiado = function() {
+        tourIndiceAtual = -1;
+        document.getElementById('tourOverlay').style.display = 'block';
+        tourProximoPasso();
+    };
+
+    document.getElementById('tourBtnProximo').addEventListener('click', tourProximoPasso);
+    document.getElementById('tourBtnAnterior').addEventListener('click', tourPassoAnterior);
+    document.getElementById('tourBtnPular').addEventListener('click', tourEncerrar);
+    window.addEventListener('resize', function() {
+        var passo = tourPassos[tourIndiceAtual];
+        if (!passo) return;
+        var elAlvo = document.querySelector(passo.seletor);
+        if (elAlvo && document.getElementById('tourTooltip').style.display !== 'none') {
+            tourPosicionarTooltip(elAlvo, passo);
+        }
+    });
+
+    // Mostrar automaticamente no primeiro acesso
+    if (!localStorage.getItem('ebi_tour_guiado_mobile_visto')) {
+        setTimeout(window.iniciarTourGuiado, 700);
+    }
 })();
 </script>
 </body>
