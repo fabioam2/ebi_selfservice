@@ -410,9 +410,9 @@
                 <div class="col col-responsavel">Responsável</div>
                 <div class="col col-idade text-center">Idade</div>
                 <div class="col col-telefone">Telefone</div>
+                <div class="col col-comum">Comum</div>
                 <div class="col col-cidade" title="Cidade (opcional)">Cidade</div>
                 <div class="col col-estado text-center" title="Estado / UF (opcional)">UF</div>
-                <div class="col col-comum">Comum</div>
                 <div class="col col-sexo text-center" title="Sexo (M/F)">Sx</div>
                 <div class="col col-nascimento text-center" title="Data de Nascimento">DT</div>
                 <div class="col col-acao text-center">Ação</div>
@@ -436,13 +436,17 @@
                     <label for="input_<?php echo $linha; ?>_3" class="d-md-none">Telefone <?php echo $linha + 1; ?>:</label>
                     <input type="text" class="form-control form-control-sm telefone-mask cadastro-input" id="input_<?php echo $linha; ?>_3" name="telefone[]" data-linha="<?php echo $linha; ?>" data-col="3" placeholder="(00) 00000-0000">
                 </div>
+                <div class="form-group col-md col-comum">
+                    <label for="input_<?php echo $linha; ?>_4" class="d-md-none">Comum <?php echo $linha + 1; ?>:</label>
+                    <input type="text" class="form-control form-control-sm cadastro-input" id="input_<?php echo $linha; ?>_4" name="comum[]" data-linha="<?php echo $linha; ?>" data-col="4" placeholder="Comum">
+                </div>
                 <div class="form-group col-md col-cidade">
-                    <label for="input_<?php echo $linha; ?>_4" class="d-md-none">Cidade <?php echo $linha + 1; ?>:</label>
-                    <input type="text" class="form-control form-control-sm cadastro-input" id="input_<?php echo $linha; ?>_4" name="cidade[]" data-linha="<?php echo $linha; ?>" data-col="4" placeholder="Cidade (opcional)">
+                    <label for="input_<?php echo $linha; ?>_5" class="d-md-none">Cidade <?php echo $linha + 1; ?>:</label>
+                    <input type="text" class="form-control form-control-sm cadastro-input" id="input_<?php echo $linha; ?>_5" name="cidade[]" data-linha="<?php echo $linha; ?>" data-col="5" placeholder="Cidade (opcional)">
                 </div>
                 <div class="form-group col-md col-estado">
-                    <label for="input_<?php echo $linha; ?>_5" class="d-md-none" title="Estado (UF)">UF <?php echo $linha + 1; ?>:</label>
-                    <select class="form-control form-control-sm cadastro-input text-center" id="input_<?php echo $linha; ?>_5" name="estado[]" data-linha="<?php echo $linha; ?>" data-col="5" title="Estado (UF)" style="font-size:0.7rem;padding:0.2rem;">
+                    <label for="input_<?php echo $linha; ?>_6" class="d-md-none" title="Estado (UF)">UF <?php echo $linha + 1; ?>:</label>
+                    <select class="form-control form-control-sm cadastro-input text-center" id="input_<?php echo $linha; ?>_6" name="estado[]" data-linha="<?php echo $linha; ?>" data-col="6" title="Estado (UF)" style="font-size:0.7rem;padding:0.2rem;">
                         <option value=""></option>
                         <option value="AC">AC</option>
                         <option value="AL">AL</option>
@@ -473,10 +477,6 @@
                         <option value="TO">TO</option>
                     </select>
                 </div>
-                <div class="form-group col-md col-comum">
-                    <label for="input_<?php echo $linha; ?>_6" class="d-md-none">Comum <?php echo $linha + 1; ?>:</label>
-                    <input type="text" class="form-control form-control-sm cadastro-input" id="input_<?php echo $linha; ?>_6" name="comum[]" data-linha="<?php echo $linha; ?>" data-col="6" placeholder="Comum">
-                </div>
                 <div class="form-group col-md col-sexo">
                     <label for="input_<?php echo $linha; ?>_7" class="d-md-none" title="Sexo">Sx <?php echo $linha + 1; ?>:</label>
                     <select class="form-control form-control-sm cadastro-input text-center" id="input_<?php echo $linha; ?>_7" name="sexo[]" data-linha="<?php echo $linha; ?>" data-col="7" title="Sexo" style="font-size:0.7rem;padding:0.2rem;">
@@ -491,7 +491,7 @@
                 </div>
                 <div class="form-group col-md col-acao px-1 d-flex align-items-center justify-content-center">
                     <?php if ($linha > 0): ?>
-                    <button type="button" class="btn btn-primary btn-sm btn-copiar-quadrado btn-copiar-dados" data-target-linha="<?php echo $linha; ?>" title="Copiar Responsável, Telefone, Cidade, UF e Comum da Linha 1">
+                    <button type="button" class="btn btn-primary btn-sm btn-copiar-quadrado btn-copiar-dados" data-target-linha="<?php echo $linha; ?>" title="Copiar Responsável, Telefone, Comum, Cidade e UF da Linha 1">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-files" viewBox="0 0 16 16">
                             <path d="M13 0H6a2 2 0 0 0-2 2 2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2 2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm0 13V4a2 2 0 0 0-2-2H5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1zM3 4a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4z"/>
                         </svg>
@@ -1093,7 +1093,7 @@
     <script>
         var csrfToken = <?php echo json_encode(csrf_token()); ?>;
         const NUM_LINHAS_FORM_CADASTRO = <?php echo NUM_LINHAS_FORMULARIO_CADASTRO; ?>;
-        // TESTE v2: agora suporta 9 colunas por linha (a 5ª é a cidade e a 6ª o
+        // TESTE v2: agora suporta 9 colunas por linha (a 6ª é a cidade e a 7ª o
         // estado/UF, presentes apenas no novo formato de QR Code gerado por
         // qrcode/qrcode.2.php).
         const NUM_CAMPOS_POR_LINHA_CADASTRO = 9;
@@ -1438,15 +1438,15 @@
                 const targetLinha = parseInt($(this).data('target-linha'));
                 const responsavelLinha0 = $('#input_0_1').val();
                 const telefoneLinha0 = $('#input_0_3').val();
-                const cidadeLinha0 = $('#input_0_4').val();
-                const estadoLinha0 = $('#input_0_5').val();
-                const comumLinha0 = $('#input_0_6').val();
+                const comumLinha0 = $('#input_0_4').val();
+                const cidadeLinha0 = $('#input_0_5').val();
+                const estadoLinha0 = $('#input_0_6').val();
 
                 $('#input_' + targetLinha + '_1').val(responsavelLinha0);
                 $('#input_' + targetLinha + '_3').val(telefoneLinha0).trigger('input');
-                $('#input_' + targetLinha + '_4').val(cidadeLinha0);
-                $('#input_' + targetLinha + '_5').val(estadoLinha0);
-                $('#input_' + targetLinha + '_6').val(comumLinha0);
+                $('#input_' + targetLinha + '_4').val(comumLinha0);
+                $('#input_' + targetLinha + '_5').val(cidadeLinha0);
+                $('#input_' + targetLinha + '_6').val(estadoLinha0);
             });
 
             $('#btnLimparCadastro').on('click', function() {

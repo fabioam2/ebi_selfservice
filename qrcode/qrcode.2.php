@@ -391,6 +391,11 @@
                     </div>
                 </div>
                 <div class="form-row">
+                    <div class="form-group col-4">
+                        <label for="comum">Comum</label>
+                        <input type="text" class="form-control" id="comum" name="comum" placeholder="Ex: Central">
+                        <span id="errorComum" class="error"></span>
+                    </div>
                     <div class="form-group col-5">
                         <label for="cidade">Cidade <span class="text-muted" style="font-weight:400;">(opcional)</span></label>
                         <input type="text" class="form-control" id="cidade" name="cidade" placeholder="Ex: São Paulo">
@@ -429,11 +434,6 @@
                             <option value="TO">TO - Tocantins</option>
                         </select>
                         <span id="errorEstado" class="error"></span>
-                    </div>
-                    <div class="form-group col-4">
-                        <label for="comum">Comum</label>
-                        <input type="text" class="form-control" id="comum" name="comum" placeholder="Ex: Central">
-                        <span id="errorComum" class="error"></span>
                     </div>
                 </div>
 
@@ -738,9 +738,9 @@
 
                 if (isValid && nomeFilho && idade !== null) {
                     // Estrutura de dados por linha (uma criança) — formato v2:
-                    // NomeFilho \t NomePai \t IdadeFilho \t TelefonePai \t CidadePai \t EstadoPai \t ComumPai \t Sexo \t DataNascimentoFilho
+                    // NomeFilho \t NomePai \t IdadeFilho \t TelefonePai \t ComumPai \t CidadePai \t EstadoPai \t Sexo \t DataNascimentoFilho
                     const sexoFilho = document.getElementById(`sexoFilho${i}`).value || 'M';
-                    qrData += `${nomeFilho}\t${nomePai}\t${idade}\t${telefone}\t${cidade}\t${estado}\t${comum}\t${sexoFilho}\t${dataNascimentoMaskValue}`;
+                    qrData += `${nomeFilho}\t${nomePai}\t${idade}\t${telefone}\t${comum}\t${cidade}\t${estado}\t${sexoFilho}\t${dataNascimentoMaskValue}`;
 
                     if (i < childCount) {
                         qrData += '\t'; // Tab entre crianças (Enter só no final pelo scanner)
