@@ -391,12 +391,46 @@
                     </div>
                 </div>
                 <div class="form-row">
-                    <div class="form-group col-6">
+                    <div class="form-group col-5">
                         <label for="cidade">Cidade <span class="text-muted" style="font-weight:400;">(opcional)</span></label>
                         <input type="text" class="form-control" id="cidade" name="cidade" placeholder="Ex: São Paulo">
                         <span id="errorCidade" class="error"></span>
                     </div>
-                    <div class="form-group col-6">
+                    <div class="form-group col-3">
+                        <label for="estado">UF <span class="text-muted" style="font-weight:400;">(opc.)</span></label>
+                        <select class="form-control" id="estado" name="estado">
+                            <option value="">—</option>
+                            <option value="AC">AC - Acre</option>
+                            <option value="AL">AL - Alagoas</option>
+                            <option value="AP">AP - Amapá</option>
+                            <option value="AM">AM - Amazonas</option>
+                            <option value="BA">BA - Bahia</option>
+                            <option value="CE">CE - Ceará</option>
+                            <option value="DF">DF - Distrito Federal</option>
+                            <option value="ES">ES - Espírito Santo</option>
+                            <option value="GO">GO - Goiás</option>
+                            <option value="MA">MA - Maranhão</option>
+                            <option value="MT">MT - Mato Grosso</option>
+                            <option value="MS">MS - Mato Grosso do Sul</option>
+                            <option value="MG">MG - Minas Gerais</option>
+                            <option value="PA">PA - Pará</option>
+                            <option value="PB">PB - Paraíba</option>
+                            <option value="PR">PR - Paraná</option>
+                            <option value="PE">PE - Pernambuco</option>
+                            <option value="PI">PI - Piauí</option>
+                            <option value="RJ">RJ - Rio de Janeiro</option>
+                            <option value="RN">RN - Rio Grande do Norte</option>
+                            <option value="RS">RS - Rio Grande do Sul</option>
+                            <option value="RO">RO - Rondônia</option>
+                            <option value="RR">RR - Roraima</option>
+                            <option value="SC">SC - Santa Catarina</option>
+                            <option value="SP">SP - São Paulo</option>
+                            <option value="SE">SE - Sergipe</option>
+                            <option value="TO">TO - Tocantins</option>
+                        </select>
+                        <span id="errorEstado" class="error"></span>
+                    </div>
+                    <div class="form-group col-4">
                         <label for="comum">Comum</label>
                         <input type="text" class="form-control" id="comum" name="comum" placeholder="Ex: Central">
                         <span id="errorComum" class="error"></span>
@@ -646,6 +680,7 @@
             var nomePai = removeAccents(document.getElementById('nomePai').value);
             var telefone = removeAccents(document.getElementById('telefone').value);
             var cidade = removeAccents(document.getElementById('cidade').value);
+            var estado = document.getElementById('estado').value;
             var comum = removeAccents(document.getElementById('comum').value);
 
             var qrData = "";
@@ -655,6 +690,7 @@
             document.getElementById('errorNomePai').innerText = '';
             document.getElementById('errorTelefone').innerText = '';
             document.getElementById('errorCidade').innerText = '';
+            document.getElementById('errorEstado').innerText = '';
             document.getElementById('errorComum').innerText = '';
 
             // Validação dos dados do Responsável
@@ -702,9 +738,9 @@
 
                 if (isValid && nomeFilho && idade !== null) {
                     // Estrutura de dados por linha (uma criança) — formato v2:
-                    // NomeFilho \t NomePai \t IdadeFilho \t TelefonePai \t CidadePai \t ComumPai \t Sexo \t DataNascimentoFilho
+                    // NomeFilho \t NomePai \t IdadeFilho \t TelefonePai \t CidadePai \t EstadoPai \t ComumPai \t Sexo \t DataNascimentoFilho
                     const sexoFilho = document.getElementById(`sexoFilho${i}`).value || 'M';
-                    qrData += `${nomeFilho}\t${nomePai}\t${idade}\t${telefone}\t${cidade}\t${comum}\t${sexoFilho}\t${dataNascimentoMaskValue}`;
+                    qrData += `${nomeFilho}\t${nomePai}\t${idade}\t${telefone}\t${cidade}\t${estado}\t${comum}\t${sexoFilho}\t${dataNascimentoMaskValue}`;
 
                     if (i < childCount) {
                         qrData += '\t'; // Tab entre crianças (Enter só no final pelo scanner)
