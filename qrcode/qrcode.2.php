@@ -183,6 +183,15 @@
             outline: none;
         }
 
+        select.form-control {
+            font-size: 0.82rem;
+            padding: 10px 30px 10px 10px;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+            background-position: right 10px center;
+        }
+
         .error {
             color: var(--danger);
             font-size: 0.78rem;
@@ -391,13 +400,20 @@
                     </div>
                 </div>
                 <div class="form-row">
-                    <div class="form-group col-5">
+                    <div class="form-group col-6">
+                        <label for="comum">Comum</label>
+                        <input type="text" class="form-control" id="comum" name="comum" placeholder="Ex: Central">
+                        <span id="errorComum" class="error"></span>
+                    </div>
+                    <div class="form-group col-6">
                         <label for="cidade">Cidade <span class="text-muted" style="font-weight:400;">(opcional)</span></label>
                         <input type="text" class="form-control" id="cidade" name="cidade" placeholder="Ex: São Paulo">
                         <span id="errorCidade" class="error"></span>
                     </div>
-                    <div class="form-group col-3">
-                        <label for="estado">UF <span class="text-muted" style="font-weight:400;">(opc.)</span></label>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-12">
+                        <label for="estado">Estado <span class="text-muted" style="font-weight:400;">(opcional)</span></label>
                         <select class="form-control" id="estado" name="estado">
                             <option value="">—</option>
                             <option value="AC">AC - Acre</option>
@@ -430,11 +446,6 @@
                         </select>
                         <span id="errorEstado" class="error"></span>
                     </div>
-                    <div class="form-group col-4">
-                        <label for="comum">Comum</label>
-                        <input type="text" class="form-control" id="comum" name="comum" placeholder="Ex: Central">
-                        <span id="errorComum" class="error"></span>
-                    </div>
                 </div>
 
                 <div class="section-title"><i class="fas fa-child"></i>Crianças</div>
@@ -452,7 +463,7 @@
                         </div>
                         <div class="form-row">
                             <div class="form-group col-4">
-                                <label for="sexoFilho1">Sexo</label>
+                                <label for="sexoFilho1">Gênero</label>
                                 <select class="form-control" id="sexoFilho1">
                                     <option value="M">Menino</option>
                                     <option value="F">Menina</option>
@@ -601,7 +612,7 @@
                     </div>
                     <div class="form-row">
                         <div class="form-group col-4">
-                            <label for="sexoFilho${childCount}">Sexo</label>
+                            <label for="sexoFilho${childCount}">Gênero</label>
                             <select class="form-control" id="sexoFilho${childCount}">
                                 <option value="M">Menino</option>
                                 <option value="F">Menina</option>
@@ -738,9 +749,9 @@
 
                 if (isValid && nomeFilho && idade !== null) {
                     // Estrutura de dados por linha (uma criança) — formato v2:
-                    // NomeFilho \t NomePai \t IdadeFilho \t TelefonePai \t CidadePai \t EstadoPai \t ComumPai \t Sexo \t DataNascimentoFilho
+                    // NomeFilho \t NomePai \t IdadeFilho \t TelefonePai \t ComumPai \t CidadePai \t EstadoPai \t Gênero \t DataNascimentoFilho
                     const sexoFilho = document.getElementById(`sexoFilho${i}`).value || 'M';
-                    qrData += `${nomeFilho}\t${nomePai}\t${idade}\t${telefone}\t${cidade}\t${estado}\t${comum}\t${sexoFilho}\t${dataNascimentoMaskValue}`;
+                    qrData += `${nomeFilho}\t${nomePai}\t${idade}\t${telefone}\t${comum}\t${cidade}\t${estado}\t${sexoFilho}\t${dataNascimentoMaskValue}`;
 
                     if (i < childCount) {
                         qrData += '\t'; // Tab entre crianças (Enter só no final pelo scanner)
