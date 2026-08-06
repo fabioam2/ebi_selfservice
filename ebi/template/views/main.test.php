@@ -38,11 +38,12 @@
         #formNovoCadastro .form-registro-linha .form-group { margin-bottom: 0.1rem; padding-left: 4px; padding-right: 4px; }
         #formNovoCadastro .form-control-sm { font-size: 0.82rem; }
 
-        .col-nome-crianca { flex: 0 0 20%; max-width: 20%; }
-        .col-responsavel { flex: 0 0 20%; max-width: 20%; }
-        .col-idade { flex: 0 0 7%; max-width: 7%; }
-        .col-telefone { flex: 0 0 15%; max-width: 15%; }
-        .col-comum { flex: 0 0 14%; max-width: 14%; }
+        .col-nome-crianca { flex: 0 0 18%; max-width: 18%; }
+        .col-responsavel { flex: 0 0 17%; max-width: 17%; }
+        .col-idade { flex: 0 0 6%; max-width: 6%; }
+        .col-telefone { flex: 0 0 13%; max-width: 13%; }
+        .col-cidade { flex: 0 0 12%; max-width: 12%; }
+        .col-comum { flex: 0 0 12%; max-width: 12%; }
         .col-sexo { flex: 0 0 5%; max-width: 5%; }
         .col-nascimento { flex: 0 0 7%; max-width: 7%; }
         .col-acao { flex: 0 0 9%; max-width: 9%; }
@@ -408,6 +409,7 @@
                 <div class="col col-responsavel">Responsável</div>
                 <div class="col col-idade text-center">Idade</div>
                 <div class="col col-telefone">Telefone</div>
+                <div class="col col-cidade" title="Cidade (opcional)">Cidade</div>
                 <div class="col col-comum">Comum</div>
                 <div class="col col-sexo text-center" title="Sexo (M/F)">Sx</div>
                 <div class="col col-nascimento text-center" title="Data de Nascimento">DT</div>
@@ -432,25 +434,29 @@
                     <label for="input_<?php echo $linha; ?>_3" class="d-md-none">Telefone <?php echo $linha + 1; ?>:</label>
                     <input type="text" class="form-control form-control-sm telefone-mask cadastro-input" id="input_<?php echo $linha; ?>_3" name="telefone[]" data-linha="<?php echo $linha; ?>" data-col="3" placeholder="(00) 00000-0000">
                 </div>
+                <div class="form-group col-md col-cidade">
+                    <label for="input_<?php echo $linha; ?>_4" class="d-md-none">Cidade <?php echo $linha + 1; ?>:</label>
+                    <input type="text" class="form-control form-control-sm cadastro-input" id="input_<?php echo $linha; ?>_4" name="cidade[]" data-linha="<?php echo $linha; ?>" data-col="4" placeholder="Cidade (opcional)">
+                </div>
                 <div class="form-group col-md col-comum">
-                    <label for="input_<?php echo $linha; ?>_4" class="d-md-none">Comum <?php echo $linha + 1; ?>:</label>
-                    <input type="text" class="form-control form-control-sm cadastro-input" id="input_<?php echo $linha; ?>_4" name="comum[]" data-linha="<?php echo $linha; ?>" data-col="4" placeholder="Comum">
+                    <label for="input_<?php echo $linha; ?>_5" class="d-md-none">Comum <?php echo $linha + 1; ?>:</label>
+                    <input type="text" class="form-control form-control-sm cadastro-input" id="input_<?php echo $linha; ?>_5" name="comum[]" data-linha="<?php echo $linha; ?>" data-col="5" placeholder="Comum">
                 </div>
                 <div class="form-group col-md col-sexo">
-                    <label for="input_<?php echo $linha; ?>_5" class="d-md-none" title="Sexo">Sx <?php echo $linha + 1; ?>:</label>
-                    <select class="form-control form-control-sm cadastro-input text-center" id="input_<?php echo $linha; ?>_5" name="sexo[]" data-linha="<?php echo $linha; ?>" data-col="5" title="Sexo" style="font-size:0.7rem;padding:0.2rem;">
+                    <label for="input_<?php echo $linha; ?>_6" class="d-md-none" title="Sexo">Sx <?php echo $linha + 1; ?>:</label>
+                    <select class="form-control form-control-sm cadastro-input text-center" id="input_<?php echo $linha; ?>_6" name="sexo[]" data-linha="<?php echo $linha; ?>" data-col="6" title="Sexo" style="font-size:0.7rem;padding:0.2rem;">
                         <option value=""></option>
                         <option value="M">M</option>
                         <option value="F">F</option>
                     </select>
                 </div>
                 <div class="form-group col-md col-nascimento">
-                    <label for="input_<?php echo $linha; ?>_6" class="d-md-none" title="Data de Nascimento">DT <?php echo $linha + 1; ?>:</label>
-                    <input type="text" inputmode="numeric" class="form-control form-control-sm data-nascimento-mask cadastro-input text-center" id="input_<?php echo $linha; ?>_6" name="data_nascimento[]" data-linha="<?php echo $linha; ?>" data-col="6" title="Data de Nascimento" placeholder="dd/mm" maxlength="10" style="font-size:0.7rem;padding:0.2rem;">
+                    <label for="input_<?php echo $linha; ?>_7" class="d-md-none" title="Data de Nascimento">DT <?php echo $linha + 1; ?>:</label>
+                    <input type="text" inputmode="numeric" class="form-control form-control-sm data-nascimento-mask cadastro-input text-center" id="input_<?php echo $linha; ?>_7" name="data_nascimento[]" data-linha="<?php echo $linha; ?>" data-col="7" title="Data de Nascimento" placeholder="dd/mm" maxlength="10" style="font-size:0.7rem;padding:0.2rem;">
                 </div>
                 <div class="form-group col-md col-acao px-1 d-flex align-items-center justify-content-center">
                     <?php if ($linha > 0): ?>
-                    <button type="button" class="btn btn-primary btn-sm btn-copiar-quadrado btn-copiar-dados" data-target-linha="<?php echo $linha; ?>" title="Copiar Responsável, Telefone e Comum da Linha 1">
+                    <button type="button" class="btn btn-primary btn-sm btn-copiar-quadrado btn-copiar-dados" data-target-linha="<?php echo $linha; ?>" title="Copiar Responsável, Telefone, Cidade e Comum da Linha 1">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-files" viewBox="0 0 16 16">
                             <path d="M13 0H6a2 2 0 0 0-2 2 2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2 2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm0 13V4a2 2 0 0 0-2-2H5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1zM3 4a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4z"/>
                         </svg>
@@ -1052,9 +1058,9 @@
     <script>
         var csrfToken = <?php echo json_encode(csrf_token()); ?>;
         const NUM_LINHAS_FORM_CADASTRO = <?php echo NUM_LINHAS_FORMULARIO_CADASTRO; ?>;
-        // TESTE v2: agora suporta 6 colunas por linha (a 6ª é a data de nascimento,
+        // TESTE v2: agora suporta 8 colunas por linha (a 5ª é a cidade,
         // presente apenas no novo formato de QR Code gerado por qrcode/qrcode.2.php).
-        const NUM_CAMPOS_POR_LINHA_CADASTRO = 7;
+        const NUM_CAMPOS_POR_LINHA_CADASTRO = 8;
 
         function focarPrimeiroCampoCadastro() {
             $('#input_0_0').focus();
@@ -1066,7 +1072,8 @@
             $('#input_' + linha + '_2').val('');
             $('#input_' + linha + '_3').val('').trigger('input');
             $('#input_' + linha + '_4').val('');
-            $('#input_' + linha + '_5').val('').trigger('input');
+            $('#input_' + linha + '_5').val('');
+            $('#input_' + linha + '_6').val('').trigger('input');
         }
 
         $(document).ready(function(){
@@ -1394,11 +1401,13 @@
                 const targetLinha = parseInt($(this).data('target-linha'));
                 const responsavelLinha0 = $('#input_0_1').val();
                 const telefoneLinha0 = $('#input_0_3').val();
-                const comumLinha0 = $('#input_0_4').val();
+                const cidadeLinha0 = $('#input_0_4').val();
+                const comumLinha0 = $('#input_0_5').val();
 
                 $('#input_' + targetLinha + '_1').val(responsavelLinha0);
-                $('#input_' + targetLinha + '_3').val(telefoneLinha0).trigger('input'); 
-                $('#input_' + targetLinha + '_4').val(comumLinha0);
+                $('#input_' + targetLinha + '_3').val(telefoneLinha0).trigger('input');
+                $('#input_' + targetLinha + '_4').val(cidadeLinha0);
+                $('#input_' + targetLinha + '_5').val(comumLinha0);
             });
 
             $('#btnLimparCadastro').on('click', function() {

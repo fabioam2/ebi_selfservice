@@ -384,12 +384,19 @@
                 </div>
 
                 <div class="form-row">
-                    <div class="form-group col-7">
+                    <div class="form-group col-12">
                         <label for="telefone">Telefone</label>
                         <input type="text" inputmode="tel" class="form-control" id="telefone" name="telefone" placeholder="(00) 00000-0000" autocomplete="tel">
                         <span id="errorTelefone" class="error"></span>
                     </div>
-                    <div class="form-group col-5">
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-6">
+                        <label for="cidade">Cidade <span class="text-muted" style="font-weight:400;">(opcional)</span></label>
+                        <input type="text" class="form-control" id="cidade" name="cidade" placeholder="Ex: São Paulo">
+                        <span id="errorCidade" class="error"></span>
+                    </div>
+                    <div class="form-group col-6">
                         <label for="comum">Comum</label>
                         <input type="text" class="form-control" id="comum" name="comum" placeholder="Ex: Central">
                         <span id="errorComum" class="error"></span>
@@ -638,6 +645,7 @@
         function generateQRCode() {
             var nomePai = removeAccents(document.getElementById('nomePai').value);
             var telefone = removeAccents(document.getElementById('telefone').value);
+            var cidade = removeAccents(document.getElementById('cidade').value);
             var comum = removeAccents(document.getElementById('comum').value);
 
             var qrData = "";
@@ -646,6 +654,7 @@
             // Limpa mensagens de erro do Responsável
             document.getElementById('errorNomePai').innerText = '';
             document.getElementById('errorTelefone').innerText = '';
+            document.getElementById('errorCidade').innerText = '';
             document.getElementById('errorComum').innerText = '';
 
             // Validação dos dados do Responsável
@@ -693,9 +702,9 @@
 
                 if (isValid && nomeFilho && idade !== null) {
                     // Estrutura de dados por linha (uma criança) — formato v2:
-                    // NomeFilho \t NomePai \t IdadeFilho \t TelefonePai \t ComumPai \t Sexo \t DataNascimentoFilho
+                    // NomeFilho \t NomePai \t IdadeFilho \t TelefonePai \t CidadePai \t ComumPai \t Sexo \t DataNascimentoFilho
                     const sexoFilho = document.getElementById(`sexoFilho${i}`).value || 'M';
-                    qrData += `${nomeFilho}\t${nomePai}\t${idade}\t${telefone}\t${comum}\t${sexoFilho}\t${dataNascimentoMaskValue}`;
+                    qrData += `${nomeFilho}\t${nomePai}\t${idade}\t${telefone}\t${cidade}\t${comum}\t${sexoFilho}\t${dataNascimentoMaskValue}`;
 
                     if (i < childCount) {
                         qrData += '\t'; // Tab entre crianças (Enter só no final pelo scanner)
