@@ -413,7 +413,7 @@
                 <div class="col col-comum">Comum</div>
                 <div class="col col-cidade" title="Cidade (opcional)">Cidade</div>
                 <div class="col col-estado text-center" title="Estado / UF (opcional)">UF</div>
-                <div class="col col-sexo text-center" title="Sexo (M/F)">Sx</div>
+                <div class="col col-sexo text-center" title="M/F">M/F</div>
                 <div class="col col-nascimento text-center" title="Data de Nascimento">DT</div>
                 <div class="col col-acao text-center">Ação</div>
             </div>
@@ -478,8 +478,8 @@
                     </select>
                 </div>
                 <div class="form-group col-md col-sexo">
-                    <label for="input_<?php echo $linha; ?>_7" class="d-md-none" title="Sexo">Sx <?php echo $linha + 1; ?>:</label>
-                    <select class="form-control form-control-sm cadastro-input text-center" id="input_<?php echo $linha; ?>_7" name="sexo[]" data-linha="<?php echo $linha; ?>" data-col="7" title="Sexo" style="font-size:0.7rem;padding:0.2rem;">
+                    <label for="input_<?php echo $linha; ?>_7" class="d-md-none" title="M/F">M/F <?php echo $linha + 1; ?>:</label>
+                    <select class="form-control form-control-sm cadastro-input text-center" id="input_<?php echo $linha; ?>_7" name="sexo[]" data-linha="<?php echo $linha; ?>" data-col="7" title="M/F" style="font-size:0.7rem;padding:0.2rem;">
                         <option value=""></option>
                         <option value="M">M</option>
                         <option value="F">F</option>
@@ -611,7 +611,7 @@
                             <th style="width: auto;">Nome do Responsável</th>
                             <th style="width: 10%;">Telefone</th>
                             <th style="width: 5%;">Idade</th>
-                            <th style="width: 4%;" title="Sexo">Sx</th>
+                            <th style="width: 4%;" title="M/F">M/F</th>
                             <th style="width: 5%;" title="Data de Nascimento">DT</th>
                             <th style="width: 10%;">Comum</th>
                             <th style="width: 4%;" class="no-print" title="Excluir">🗑️</th>
@@ -1497,7 +1497,7 @@
 
             // Função auxiliar para extrair dados visíveis da tabela
             function extrairDadosTabelaVisivel() {
-                var headers = ['Impresso', 'Portaria', 'Codigo', 'Cod Resp', 'Nome da Crianca', 'Nome do Responsavel', 'Telefone', 'Idade', 'Sexo', 'DT', 'Comum'];
+                var headers = ['Impresso', 'Portaria', 'Codigo', 'Cod Resp', 'Nome da Crianca', 'Nome do Responsavel', 'Telefone', 'Idade', 'M/F', 'DT', 'Comum'];
                 var rows = [];
                 $('#lista-criancas tr').each(function() {
                     if ($(this).is(':visible')) {

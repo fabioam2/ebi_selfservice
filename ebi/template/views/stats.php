@@ -57,7 +57,7 @@ foreach ($comumAgr as $c => $cnt) {
 $totalForaComum  = max(0, $periodoTotais['cadastros'] - $totalDaComum);
 $totalIdades     = array_sum(array_intersect_key($periodoTotais, array_flip(['age_0_3','age_4_7','age_8_11','age_12_14','age_15_17']))) ?: 1;
 
-// Sexo (M/F) — agregado do período selecionado
+// Gênero (M/F) — agregado do período selecionado
 $totalMeninos = $periodoTotais['total_meninos'];
 $totalMeninas = $periodoTotais['total_meninas'];
 $cadastrosHoje = 0;
@@ -299,10 +299,10 @@ $instNome = (defined('INSTANCE_COMUM') && INSTANCE_COMUM ? ucfirst(INSTANCE_COMU
             </div>
         </div>
 
-        <!-- Sexo (Meninos/Meninas) -->
+        <!-- Gênero (Meninos/Meninas) -->
         <div class="col-md-2 mb-3">
             <div class="card border-0 shadow-sm p-3 h-100" style="border-radius:12px">
-                <div class="section-title">Sexo (<?php echo $periodo; ?>d)</div>
+                <div class="section-title">Gênero (<?php echo $periodo; ?>d)</div>
                 <div class="text-center mb-3">
                     <div style="font-size:2rem;font-weight:700;color:#17a2b8"><?php echo $totalMeninos + $totalMeninas; ?></div>
                     <div class="text-muted" style="font-size:.75rem">com sexo informado</div>

@@ -463,7 +463,7 @@
                         </div>
                         <div class="form-row">
                             <div class="form-group col-4">
-                                <label for="sexoFilho1">Sexo</label>
+                                <label for="sexoFilho1">Gênero</label>
                                 <select class="form-control" id="sexoFilho1">
                                     <option value="M">Menino</option>
                                     <option value="F">Menina</option>
@@ -612,7 +612,7 @@
                     </div>
                     <div class="form-row">
                         <div class="form-group col-4">
-                            <label for="sexoFilho${childCount}">Sexo</label>
+                            <label for="sexoFilho${childCount}">Gênero</label>
                             <select class="form-control" id="sexoFilho${childCount}">
                                 <option value="M">Menino</option>
                                 <option value="F">Menina</option>
@@ -749,7 +749,7 @@
 
                 if (isValid && nomeFilho && idade !== null) {
                     // Estrutura de dados por linha (uma criança) — formato v2:
-                    // NomeFilho \t NomePai \t IdadeFilho \t TelefonePai \t ComumPai \t CidadePai \t EstadoPai \t Sexo \t DataNascimentoFilho
+                    // NomeFilho \t NomePai \t IdadeFilho \t TelefonePai \t ComumPai \t CidadePai \t EstadoPai \t Gênero \t DataNascimentoFilho
                     const sexoFilho = document.getElementById(`sexoFilho${i}`).value || 'M';
                     qrData += `${nomeFilho}\t${nomePai}\t${idade}\t${telefone}\t${comum}\t${cidade}\t${estado}\t${sexoFilho}\t${dataNascimentoMaskValue}`;
 
