@@ -183,6 +183,15 @@
             outline: none;
         }
 
+        select.form-control {
+            font-size: 0.82rem;
+            padding: 10px 30px 10px 10px;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+            background-position: right 10px center;
+        }
+
         .error {
             color: var(--danger);
             font-size: 0.78rem;
@@ -391,18 +400,20 @@
                     </div>
                 </div>
                 <div class="form-row">
-                    <div class="form-group col-4">
+                    <div class="form-group col-6">
                         <label for="comum">Comum</label>
                         <input type="text" class="form-control" id="comum" name="comum" placeholder="Ex: Central">
                         <span id="errorComum" class="error"></span>
                     </div>
-                    <div class="form-group col-5">
+                    <div class="form-group col-6">
                         <label for="cidade">Cidade <span class="text-muted" style="font-weight:400;">(opcional)</span></label>
                         <input type="text" class="form-control" id="cidade" name="cidade" placeholder="Ex: São Paulo">
                         <span id="errorCidade" class="error"></span>
                     </div>
-                    <div class="form-group col-3">
-                        <label for="estado">UF <span class="text-muted" style="font-weight:400;">(opc.)</span></label>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-12">
+                        <label for="estado">Estado <span class="text-muted" style="font-weight:400;">(opcional)</span></label>
                         <select class="form-control" id="estado" name="estado">
                             <option value="">—</option>
                             <option value="AC">AC - Acre</option>
