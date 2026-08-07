@@ -347,31 +347,37 @@ $totalHoje = count($cadastrosHojeMobile);
 
         const fields = text.split('\t').map(field => field.trim());
 
-        // QR v2: o gerador concatena crianças em uma única linha, em blocos de
-        // sete campos: nome, responsável, idade, telefone, comum, sexo e nascimento.
-        if (fields.length >= 7 && fields.length % 7 === 0 && isQrV2(fields)) {
-            const children = [];
-            for (let index = 0; index < fields.length; index += 7) {
-                children.push({
-                    nome: fields[index],
-                    resp: fields[index + 1],
-                    idade: fields[index + 2],
-                    tel: fields[index + 3],
-                    comum: fields[index + 4],
-                    sexo: fields[index + 5].toUpperCase(),
-                    nasc: fields[index + 6],
-                });
+        // QR v2 concatena crianças em uma única linha. O formato atual inclui
+        // cidade e estado (nove campos); o formato anterior tinha sete campos.
+        for (const fieldsPerChild of [9, 7]) {
+            if (fields.length >= fieldsPerChild && fields.length % fieldsPerChild === 0 && isQrV2(fields, fieldsPerChild)) {
+                const children = [];
+                const sexoIndex = fieldsPerChild - 2;
+                const nascimentoIndex = fieldsPerChild - 1;
+                for (let index = 0; index < fields.length; index += fieldsPerChild) {
+                    children.push({
+                        nome: fields[index],
+                        resp: fields[index + 1],
+                        idade: fields[index + 2],
+                        tel: fields[index + 3],
+                        comum: fields[index + 4],
+                        sexo: fields[index + sexoIndex].toUpperCase(),
+                        nasc: fields[index + nascimentoIndex],
+                    });
+                }
+                return children;
             }
-            return children;
         }
 
         const record = parseQrRecord(text);
         return record ? [record] : [];
     }
 
-    function isQrV2(fields) {
-        for (let index = 0; index < fields.length; index += 7) {
-            if (!/^[MF]$/i.test(fields[index + 5]) || !/^\d{2}\/\d{2}\/\d{4}$/.test(fields[index + 6])) {
+    function isQrV2(fields, fieldsPerChild) {
+        const sexoIndex = fieldsPerChild - 2;
+        const nascimentoIndex = fieldsPerChild - 1;
+        for (let index = 0; index < fields.length; index += fieldsPerChild) {
+            if (!/^[MF]$/i.test(fields[index + sexoIndex]) || !/^\d{2}\/\d{2}\/\d{4}$/.test(fields[index + nascimentoIndex])) {
                 return false;
             }
         }
@@ -382,8 +388,13 @@ $totalHoje = count($cadastrosHojeMobile);
         const fields = record.split('\t').map(field => field.trim());
         if (fields.length < 5) return null;
 
-        const sexo = /^[MF]$/i.test(fields[5] || '') ? fields[5].toUpperCase() : '';
-        const nascimento = /^\d{2}\/\d{2}\/\d{4}$/.test(fields[6] || '') ? fields[6] : '';
+        const fieldsPerChild = fields.length === 9 && isQrV2(fields, 9)
+            ? 9
+            : fields.length === 7 && isQrV2(fields, 7)
+                ? 7
+                : 0;
+        const sexo = fieldsPerChild > 0 ? fields[fieldsPerChild - 2].toUpperCase() : '';
+        const nascimento = fieldsPerChild > 0 ? fields[fieldsPerChild - 1] : '';
         return {
             nome: fields[0],
             resp: fields[1],
