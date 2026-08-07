@@ -8,6 +8,9 @@
  * @version 1.0
  */
 
+// Horários administrativos, logs e tarefas devem usar o horário de Brasília.
+date_default_timezone_set('America/Sao_Paulo');
+
 // Diretório raiz do projeto (pai de selfservice/)
 define('PROJECT_ROOT', dirname(__DIR__, 2));
 

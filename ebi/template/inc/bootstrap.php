@@ -23,6 +23,13 @@ if (!isset($config['GERAL'], $config['SEGURANCA'], $config['IMPRESSORA_ZPL'])) {
     die('Erro: Seções obrigatórias ([GERAL], [SEGURANCA], [IMPRESSORA_ZPL]) ausentes no config.ini.');
 }
 
+// Mantém data e hora da instância em GMT-3 quando o servidor usa UTC.
+$ebiTimezone = (string)($config['GERAL']['TIMEZONE'] ?? 'America/Sao_Paulo');
+if (!in_array($ebiTimezone, timezone_identifiers_list(), true)) {
+    $ebiTimezone = 'America/Sao_Paulo';
+}
+date_default_timezone_set($ebiTimezone);
+
 // ── Constantes de banco de dados ─────────────────────────────────────────────
 $_ebi_data_dir = $_ebi_instance_root . '/data';
 

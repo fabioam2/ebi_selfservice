@@ -19,6 +19,13 @@ if (!isset($config['GERAL'], $config['SEGURANCA'])) {
     die('Erro: Seções [GERAL] e [SEGURANCA] ausentes no config.ini.');
 }
 
+// Mantém data e hora da portaria em GMT-3 quando o servidor usa UTC.
+$saidaTimezone = (string)($config['GERAL']['TIMEZONE'] ?? 'America/Sao_Paulo');
+if (!in_array($saidaTimezone, timezone_identifiers_list(), true)) {
+    $saidaTimezone = 'America/Sao_Paulo';
+}
+date_default_timezone_set($saidaTimezone);
+
 // ── Constantes de BD ──────────────────────────────────────────────────────────
 $_saida_data_dir = $_saida_instance_root . '/data';
 

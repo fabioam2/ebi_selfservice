@@ -15,6 +15,12 @@ if (!isset($config['GERAL'], $config['SEGURANCA'], $config['IMPRESSORA_ZPL'])) {
     die("Erro: Falta uma ou mais seções ([GERAL], [SEGURANCA], [IMPRESSORA_ZPL]) no arquivo de configuração.");
 }
 
+$templateTimezone = (string)($config['GERAL']['TIMEZONE'] ?? 'America/Sao_Paulo');
+if (!in_array($templateTimezone, timezone_identifiers_list(), true)) {
+    $templateTimezone = 'America/Sao_Paulo';
+}
+date_default_timezone_set($templateTimezone);
+
 $baseDir = dirname(__DIR__);
 $data_file_path = $baseDir . $config['GERAL']['ARQUIVO_DADOS'];
 define('ARQUIVO_DADOS', $data_file_path);
