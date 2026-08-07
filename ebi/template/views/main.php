@@ -808,10 +808,7 @@
                                     </a>
                                     <hr class="my-2">
                                     <h6 class="mb-2"><i class="fas fa-shield-alt mr-1"></i> Verificação</h6>
-                                    <p class="small text-muted mb-2">Após o passo 4, abra os dois links para confirmar a comunicação com o servidor. O certificado deve carregar e o teste deve mostrar uma assinatura codificada.</p>
-                                    <a href="<?php echo $qzSigningBaseUrl; ?>digital-certificate.txt" target="_blank" class="d-block mb-2 small">
-                                        <i class="fas fa-certificate mr-1"></i> Abrir certificado
-                                    </a>
+                                    <p class="small text-muted mb-2">Use este teste somente se a impressão não funcionar. Uma sequência codificada confirma que o servidor está pronto para assinar impressões.</p>
                                     <a href="<?php echo $qzSigningBaseUrl; ?>sign-message.php?request=teste" target="_blank" class="d-block small">
                                         <i class="fas fa-check-circle mr-1"></i> Testar assinatura
                                     </a>
@@ -849,6 +846,9 @@
                             <div class="border rounded p-3 mb-4">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
+                                        <a href="calibrar.php" target="_blank" class="text-primary mr-1" title="Calibrar impressora" aria-label="Calibrar impressora">
+                                            <i class="fas fa-sliders-h"></i>
+                                        </a>
                                         <strong>Impressora QZ Tray</strong>
                                         <small class="d-block text-muted" id="qzConfigPrinterInfo">Verificando conexão...</small>
                                     </div>
