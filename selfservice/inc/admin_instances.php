@@ -2,6 +2,13 @@
 /**
  * Gerenciamento de Instâncias
  */
+
+foreach ($instancias as &$instancia) {
+    $userId = (string)($instancia['user_id'] ?? '');
+    $instancia['ULTIMO_CADASTRO'] = lifecycle_ultimo_cadastro($userId);
+    $instancia['LINK_ACESSO'] = lifecycle_instance_url($userId);
+}
+unset($instancia);
 ?>
 
 <div class="content-header">
@@ -93,6 +100,7 @@
                 <th>Cidade</th>
                 <th>Comum</th>
                 <th>Data Criação</th>
+                <th>Último Cadastro</th>
                 <th>User ID</th>
                 <th class="text-center">Ações</th>
             </tr>
@@ -100,7 +108,7 @@
         <tbody>
             <?php if (empty($instancias)): ?>
                 <tr>
-                    <td colspan="8" class="text-center py-5">
+                    <td colspan="9" class="text-center py-5">
                         <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
                         <p class="text-muted">Nenhuma instância criada ainda</p>
                         <a href="selfservice.php" target="_blank" class="btn btn-primary">
@@ -110,6 +118,7 @@
                 </tr>
             <?php else: ?>
                 <?php foreach ($instancias as $inst): ?>
+                    <?php $ultimoCadastro = strtotime((string)($inst['ULTIMO_CADASTRO'] ?? '')); ?>
                     <tr>
                         <td>
                             <input type="checkbox" class="instance-checkbox checkbox-lg"
@@ -121,17 +130,17 @@
                         <td><?php echo htmlspecialchars($inst['CIDADE'] ?? 'N/A'); ?></td>
                         <td><?php echo htmlspecialchars($inst['COMUM'] ?? 'N/A'); ?></td>
                         <td><?php echo isset($inst['DATA_CRIACAO']) ? date('d/m/Y H:i', strtotime($inst['DATA_CRIACAO'])) : 'N/A'; ?></td>
+                        <td><?php echo $ultimoCadastro !== false ? date('d/m/Y H:i', $ultimoCadastro) : 'Nenhum cadastro'; ?></td>
                         <td><small><code><?php echo htmlspecialchars($inst['user_id'] ?? 'N/A'); ?></code></small></td>
                         <td class="text-center">
                             <?php
-                            // Calculate relative path from admin.php to instance
-                            $instancesRelativePath = substr(INSTANCE_BASE_PATH, strlen(SELFSERVICE_ROOT) + 1);
-                            $link = '../' . $instancesRelativePath . '/' . ($inst['user_id'] ?? '') . '/index.php';
+                            $link = (string)($inst['LINK_ACESSO'] ?? '');
+                            $linkJson = htmlspecialchars(json_encode($link, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8');
                             ?>
-                            <a href="<?php echo $link; ?>" target="_blank" class="btn btn-sm btn-info btn-action" title="Acessar Sistema">
+                            <a href="<?php echo htmlspecialchars($link, ENT_QUOTES, 'UTF-8'); ?>" target="_blank" class="btn btn-sm btn-info btn-action" title="Acessar Sistema">
                                 <i class="fas fa-external-link-alt"></i>
                             </a>
-                            <button class="btn btn-sm btn-primary btn-action" onclick="copiarLink('<?php echo $link; ?>')" title="Copiar Link">
+                            <button class="btn btn-sm btn-primary btn-action" onclick="copiarLink(<?php echo $linkJson; ?>)" title="Copiar Link">
                                 <i class="fas fa-copy"></i>
                             </button>
                             <button class="btn btn-sm btn-warning btn-action" onclick="verDetalhes('<?php echo htmlspecialchars(json_encode($inst), ENT_QUOTES); ?>')" title="Ver Detalhes">
@@ -238,12 +247,6 @@
 </div>
 
 <script>
-<?php
-// Calculate relative path for instances
-$instancesRelativePath = substr(INSTANCE_BASE_PATH, strlen(SELFSERVICE_ROOT) + 1);
-?>
-const INSTANCES_RELATIVE_PATH = '<?php echo $instancesRelativePath; ?>';
-
 $(document).ready(function() {
     // Setup busca
     setupTableSearch('searchInput', 'tabelaInstancias');
@@ -283,6 +286,7 @@ function verDetalhes(jsonData) {
             'CIDADE': 'Cidade',
             'COMUM': 'Comum',
             'DATA_CRIACAO': 'Data de Criação',
+            'ULTIMO_CADASTRO': 'Último Cadastro',
             'TELEFONE': 'Telefone',
             'ENDERECO': 'Endereço'
         };
@@ -291,7 +295,7 @@ function verDetalhes(jsonData) {
             if (inst[key]) {
                 let value = inst[key];
 
-                if (key === 'DATA_CRIACAO') {
+                if (key === 'DATA_CRIACAO' || key === 'ULTIMO_CADASTRO') {
                     value = new Date(value).toLocaleString('pt-BR');
                 }
 
@@ -304,19 +308,20 @@ function verDetalhes(jsonData) {
 
         html += '</table>';
 
-        // Link da instância
-        const link = '../' + INSTANCES_RELATIVE_PATH + '/' + inst.user_id + '/index.php';
-        const fullLink = window.location.origin + window.location.pathname.replace('admin.php', '') + link;
-
+        const link = inst.LINK_ACESSO || '';
+        const linkHtml = $('<div>').text(link).html();
         html += `<div class="alert alert-info">
             <strong>Link de Acesso:</strong><br>
-            <a href="${link}" target="_blank">${fullLink}</a>
-            <button class="btn btn-sm btn-primary float-right" onclick="copiarLink('${link}')">
+            <a href="${linkHtml}" target="_blank">${linkHtml}</a>
+            <button type="button" id="copiarLinkInstancia" class="btn btn-sm btn-primary float-right">
                 <i class="fas fa-copy mr-1"></i>Copiar
             </button>
         </div>`;
 
         $('#modalDetalhesBody').html(html);
+        $('#copiarLinkInstancia').on('click', function() {
+            copiarLink(link);
+        });
         $('#modalDetalhes').modal('show');
     } catch (e) {
         alert('Erro ao exibir detalhes: ' + e.message);
@@ -325,7 +330,7 @@ function verDetalhes(jsonData) {
 
 // Exportar tabela para CSV
 function exportarTabela() {
-    let csv = 'Nome,Email,Cidade,Comum,Data Criação,User ID\n';
+    let csv = 'Nome,Email,Cidade,Comum,Data Criação,Último Cadastro,User ID\n';
 
     $('#tabelaInstancias tbody tr').each(function() {
         if ($(this).is(':visible') && $(this).find('td').length > 1) {
@@ -336,7 +341,8 @@ function exportarTabela() {
                 $(cells[3]).text().trim(),
                 $(cells[4]).text().trim(),
                 $(cells[5]).text().trim(),
-                $(cells[6]).text().trim()
+                $(cells[6]).text().trim(),
+                $(cells[7]).text().trim()
             ];
 
             csv += row.map(v => `"${v}"`).join(',') + '\n';

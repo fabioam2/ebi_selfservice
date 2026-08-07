@@ -217,14 +217,13 @@ if (function_exists('db_stats_totais_hoje')) {
                         <td><?php echo isset($inst['DATA_CRIACAO']) ? date('d/m/Y H:i', strtotime($inst['DATA_CRIACAO'])) : 'N/A'; ?></td>
                         <td class="text-center">
                             <?php
-                            // Calculate relative path from admin.php to instance
-                            $instancesRelativePath = substr(INSTANCE_BASE_PATH, strlen(SELFSERVICE_ROOT) + 1);
-                            $link = '../' . $instancesRelativePath . '/' . ($inst['user_id'] ?? '') . '/index.php';
+                            $link = lifecycle_instance_url((string)($inst['user_id'] ?? ''));
+                            $linkJson = htmlspecialchars(json_encode($link, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8');
                             ?>
-                            <a href="<?php echo $link; ?>" target="_blank" class="btn btn-sm btn-info btn-action" title="Acessar">
+                            <a href="<?php echo htmlspecialchars($link, ENT_QUOTES, 'UTF-8'); ?>" target="_blank" class="btn btn-sm btn-info btn-action" title="Acessar">
                                 <i class="fas fa-external-link-alt"></i>
                             </a>
-                            <button class="btn btn-sm btn-primary btn-action" onclick="copiarLink('<?php echo $link; ?>')" title="Copiar Link">
+                            <button class="btn btn-sm btn-primary btn-action" onclick="copiarLink(<?php echo $linkJson; ?>)" title="Copiar Link">
                                 <i class="fas fa-copy"></i>
                             </button>
                         </td>

@@ -73,6 +73,30 @@ function lifecycle_instance_url(string $userId, ?string $baseUrl = null): string
     return $baseUrl . '/' . $publicBase . '/' . rawurlencode($userId) . $suffix;
 }
 
+/**
+ * Retorna a data/hora do cadastro mais recente de uma instância.
+ *
+ * A consulta é apenas para leitura e não inicializa nem altera o banco da
+ * instância, pois ela é usada para acompanhamento no painel administrativo.
+ */
+function lifecycle_ultimo_cadastro(string $userId): ?string {
+    $root = lifecycle_instance_root($userId);
+    if ($root === null) return null;
+
+    $databasePath = $root . '/data/instance.db';
+    if (!is_file($databasePath) || !is_readable($databasePath)) return null;
+
+    try {
+        $database = new PDO('sqlite:' . $databasePath, null, null, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        ]);
+        $latestRegistration = $database->query('SELECT MAX(created_at) FROM cadastros')->fetchColumn();
+        return is_string($latestRegistration) && $latestRegistration !== '' ? $latestRegistration : null;
+    } catch (Throwable $error) {
+        return null;
+    }
+}
+
 function lifecycle_criar_token_acao(string $userId, string $purpose, int $hours): string {
     if (!lifecycle_validar_user_id($userId) || !in_array($purpose, ['quarantine', 'recover'], true)) {
         throw new InvalidArgumentException('Dados inválidos para token de instância.');

@@ -1246,7 +1246,9 @@ function processarMarkdownSimples($texto) {
 
         // Copiar link
         function copiarLink(link) {
-            const fullLink = window.location.origin + window.location.pathname.replace('admin.php', '') + link;
+            const fullLink = /^https?:\/\//i.test(link)
+                ? link
+                : window.location.origin + window.location.pathname.replace('admin.php', '') + link;
 
             if (navigator.clipboard) {
                 navigator.clipboard.writeText(fullLink).then(() => {
