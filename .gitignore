@@ -37,6 +37,7 @@ composer.phar
 # Dados do sistema
 /selfservice/data/*.txt
 /selfservice/data/*.log
+/selfservice/data/*.lock
 /selfservice/data/*.db
 /ebi/i/**/data/*.db
 /ebi/template/data/*.db

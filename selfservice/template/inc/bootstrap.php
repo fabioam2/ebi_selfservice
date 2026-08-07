@@ -106,7 +106,9 @@ function obter_versao_sistema() {
 
     // Tenta obter data do último commit git
     $gitDir = dirname(dirname(__DIR__));
-    if (is_dir($gitDir . '/.git')) {
+    // shell_exec pode estar em disable_functions; chamá-la nesse caso lança um
+    // Error fatal que o operador @ não suprime.
+    if (function_exists('shell_exec') && is_dir($gitDir . '/.git')) {
         $comando = "cd " . escapeshellarg($gitDir) . " && git log -1 --format=%cd --date=format:'%Y%m%d%H%M' 2>/dev/null";
         $output = @shell_exec($comando);
         if ($output && preg_match('/^\d{12}$/', trim($output))) {

@@ -143,8 +143,39 @@ foreach ($directories as $dir) {
     }
 }
 
+/**
+ * Data do último commit no formato aaaammddhhMM.
+ *
+ * shell_exec costuma estar em disable_functions nas hospedagens compartilhadas.
+ * Nesse caso a função é removida da tabela de funções do PHP e chamá-la lança um
+ * Error fatal — que o operador @ NÃO suprime. Por isso a checagem com
+ * function_exists() é obrigatória antes da chamada.
+ *
+ * Sem shell_exec, cai para a data de modificação da referência do git, que muda
+ * a cada commit/deploy e é bem mais estável que date() a cada minuto.
+ */
+function versaoDoUltimoCommit(string $gitRoot): string {
+    if (function_exists('shell_exec')) {
+        $saida = @shell_exec('git -C ' . escapeshellarg($gitRoot)
+            . " log -1 --format=%cd --date=format:'%Y%m%d%H%M' 2>/dev/null");
+        if ($saida !== null && preg_match('/^\d{12}$/', trim((string)$saida))) {
+            return trim((string)$saida);
+        }
+    }
+
+    $head = $gitRoot . '/.git/HEAD';
+    if (is_file($head)) {
+        $ref = trim((string)@file_get_contents($head));
+        $alvo = (strpos($ref, 'ref:') === 0)
+            ? $gitRoot . '/.git/' . trim(substr($ref, 4))
+            : $head;
+        $mtime = @filemtime(is_file($alvo) ? $alvo : $head);
+        if ($mtime) return date('YmdHi', $mtime);
+    }
+
+    return date('YmdHi');
+}
+
 if (!defined('VERSAO_SISTEMA')) {
-    $_vg = @shell_exec('git -C ' . escapeshellarg(PROJECT_ROOT) . " log -1 --format=%cd --date=format:'%Y%m%d%H%M' 2>/dev/null");
-    define('VERSAO_SISTEMA', ($_vg && preg_match('/^\d{12}$/', trim($_vg))) ? trim($_vg) : date('YmdHi'));
-    unset($_vg);
+    define('VERSAO_SISTEMA', versaoDoUltimoCommit(PROJECT_ROOT));
 }

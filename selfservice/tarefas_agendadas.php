@@ -10,6 +10,13 @@ if (PHP_SAPI !== 'cli') {
     exit('Este script só pode ser executado pela linha de comando.' . PHP_EOL);
 }
 
+// Em CLI os erros SEMPRE aparecem, independente do DEBUG_MODE do painel (que
+// desliga display_errors em inc/paths.php). Sem isto, uma falha fatal — extensão
+// ausente, permissão negada, .env ilegível — encerraria o script em silêncio
+// absoluto, sem nada na tela nem no log.
+error_reporting(E_ALL);
+ini_set('display_errors', 'stderr');
+
 if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
     require __DIR__ . '/../vendor/autoload.php';
     if (class_exists('Dotenv\Dotenv') && file_exists(__DIR__ . '/../.env')) {
@@ -18,11 +25,65 @@ if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
 }
 
 require_once __DIR__ . '/inc/paths.php';
+
+// paths.php desliga display_errors quando DEBUG_MODE está off. Reafirma aqui,
+// antes dos demais require, para que uma falha em qualquer um deles apareça.
+error_reporting(E_ALL);
+ini_set('display_errors', 'stderr');
+
 require_once __DIR__ . '/inc/db_manager.php';
 require_once __DIR__ . '/inc/instance_lifecycle.php';
 require_once __DIR__ . '/inc/email_manager.php';
 
 $force = in_array('--force', $argv, true);
+
+// --status: mostra o estado atual sem executar nenhuma tarefa. Serve para
+// confirmar rapidamente que o agendamento está funcionando.
+if (in_array('--status', $argv, true)) {
+    $logFile = DATA_PATH . '/tarefas_agendadas.log';
+    $agora = time();
+
+    fwrite(STDOUT, "Estado das tarefas agendadas\n");
+    fwrite(STDOUT, str_repeat('-', 60) . "\n");
+    fwrite(STDOUT, 'Data/hora atual : ' . date('Y-m-d H:i:s') . "\n");
+    fwrite(STDOUT, 'Arquivo de log  : ' . $logFile . "\n");
+
+    if (is_file($logFile)) {
+        $idade = $agora - (int)@filemtime($logFile);
+        fwrite(STDOUT, 'Última escrita  : ' . date('Y-m-d H:i:s', (int)@filemtime($logFile))
+            . ' (' . floor($idade / 60) . " min atrás)\n");
+        fwrite(STDOUT, 'Tamanho         : ' . number_format((float)@filesize($logFile)) . " bytes\n");
+    } else {
+        fwrite(STDOUT, "Última escrita  : arquivo ainda não existe\n");
+    }
+
+    fwrite(STDOUT, "\nTarefas registradas no banco:\n");
+    $tarefas = lifecycle_listar_tarefas();
+    if (empty($tarefas)) {
+        fwrite(STDOUT, "  (nenhuma execução registrada até agora)\n");
+    } else {
+        foreach ($tarefas as $t) {
+            $ts = strtotime((string)$t['last_run_at']);
+            $min = $ts !== false ? floor(($agora - $ts) / 60) : '?';
+            fwrite(STDOUT, sprintf(
+                "  %-26s %s (%s min atrás)  status=%s  %s\n",
+                $t['task_name'],
+                (string)$t['last_run_at'],
+                (string)$min,
+                (string)$t['last_status'],
+                (string)$t['details']
+            ));
+        }
+    }
+
+    $lockFile = DATA_PATH . '/tarefas_agendadas.lock';
+    fwrite(STDOUT, "\nLock: " . (is_file($lockFile) ? 'presente (normal entre execuções)' : 'ausente') . "\n");
+    fwrite(STDOUT, "\nÚltimas linhas do log:\n");
+    $linhas = lifecycle_ler_log($logFile, 10);
+    fwrite(STDOUT, empty($linhas) ? "  (log vazio)\n" : '  ' . implode("\n  ", $linhas) . "\n");
+    exit(0);
+}
+
 $lockFile = DATA_PATH . '/tarefas_agendadas.lock';
 $lock = fopen($lockFile, 'c');
 if ($lock === false || !flock($lock, LOCK_EX | LOCK_NB)) {

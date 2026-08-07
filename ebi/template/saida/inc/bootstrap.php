@@ -148,7 +148,11 @@ if (!defined('VERSAO_SISTEMA')) {
     $_saida_git_root = defined('INSTANCE_DIR')
         ? dirname(dirname(dirname(INSTANCE_DIR)))
         : dirname(dirname(dirname(__DIR__)));
-    $_saida_vg = @shell_exec('git -C ' . escapeshellarg($_saida_git_root) . " log -1 --format=%cd --date=format:'%Y%m%d%H%M' 2>/dev/null");
+    // shell_exec pode estar em disable_functions; chamá-la nesse caso lança um
+    // Error fatal que o operador @ não suprime.
+    $_saida_vg = function_exists('shell_exec')
+        ? @shell_exec('git -C ' . escapeshellarg($_saida_git_root) . " log -1 --format=%cd --date=format:'%Y%m%d%H%M' 2>/dev/null")
+        : null;
     define('VERSAO_SISTEMA', ($_saida_vg && preg_match('/^\d{12}$/', trim($_saida_vg))) ? trim($_saida_vg) : date('YmdHi'));
     unset($_saida_git_root, $_saida_vg);
 }

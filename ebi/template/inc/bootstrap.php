@@ -256,7 +256,9 @@ function obter_versao_sistema(): string {
         : (defined('INSTANCE_DIR')
             ? dirname(dirname(dirname(INSTANCE_DIR)))
             : dirname(dirname(dirname(__DIR__))));
-    if (is_dir($gitDir . '/.git')) {
+    // shell_exec pode estar em disable_functions; chamá-la nesse caso lança um
+    // Error fatal que o operador @ não suprime.
+    if (function_exists('shell_exec') && is_dir($gitDir . '/.git')) {
         $cmd = "cd " . escapeshellarg($gitDir) . " && git log -1 --format=%cd --date=format:'%Y%m%d%H%M' 2>/dev/null";
         $out = @shell_exec($cmd);
         if ($out && preg_match('/^\d{12}$/', trim($out))) {
