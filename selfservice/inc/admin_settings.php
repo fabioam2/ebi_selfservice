@@ -85,6 +85,7 @@
                     ['label' => 'SMTP_HOST configurado',          'ok' => !empty($smtpHost)],
                     ['label' => 'SMTP_USER configurado',          'ok' => !empty($smtpUser)],
                     ['label' => 'proc_open disponível (para instalar pela UI)', 'ok' => function_exists('proc_open')],
+                    ['label' => 'shell_exec disponível (versão exata pelo git; há alternativa se faltar)', 'ok' => function_exists('shell_exec')],
                 ];
                 ?>
 
