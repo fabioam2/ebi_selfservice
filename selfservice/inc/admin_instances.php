@@ -9,44 +9,15 @@ foreach ($instancias as &$instancia) {
     $instancia['LINK_ACESSO'] = lifecycle_instance_url($userId);
 }
 unset($instancia);
+
+usort($instancias, static function (array $instanciaA, array $instanciaB): int {
+    return strcmp((string)($instanciaB['DATA_CRIACAO'] ?? ''), (string)($instanciaA['DATA_CRIACAO'] ?? ''));
+});
 ?>
 
 <div class="content-header">
     <h2><i class="fas fa-server mr-2"></i>Gerenciamento de Instâncias</h2>
     <p class="text-muted mb-0">Visualize, gerencie e remova instâncias do sistema</p>
-</div>
-
-<!-- Estatísticas Rápidas -->
-<div class="row mb-4">
-    <div class="col-md-4">
-        <div class="card stats-card primary">
-            <div class="text-center">
-                <i class="fas fa-server icon"></i>
-                <h3 class="mb-0"><?php echo $totalInstancias; ?></h3>
-                <p class="mb-0">Total de Instâncias</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-4">
-        <div class="card stats-card success">
-            <div class="text-center">
-                <i class="fas fa-calendar-day icon"></i>
-                <h3 class="mb-0"><?php echo $instanciasHoje; ?></h3>
-                <p class="mb-0">Criadas Hoje</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-4">
-        <div class="card stats-card warning">
-            <div class="text-center">
-                <i class="fas fa-chart-line icon"></i>
-                <h3 class="mb-0"><?php echo count($instancias) > 0 ? round(($instanciasHoje / count($instancias)) * 100, 1) : 0; ?>%</h3>
-                <p class="mb-0">Taxa Hoje</p>
-            </div>
-        </div>
-    </div>
 </div>
 
 <!-- Barra de Ações (aparece quando houver seleção) -->
@@ -99,9 +70,9 @@ unset($instancia);
                 <th>Email</th>
                 <th>Cidade</th>
                 <th>Comum</th>
-                <th aria-sort="none">
+                <th aria-sort="descending">
                     <button type="button" class="instance-sort-button" data-sort-button="criacao" onclick="ordenarInstancias('criacao', this)" title="Ordenar por data de criação">
-                        Data Criação <i class="fas fa-sort" aria-hidden="true"></i>
+                        Data Criação <i class="fas fa-sort-down" aria-hidden="true"></i>
                     </button>
                 </th>
                 <th aria-sort="none">
@@ -187,14 +158,12 @@ unset($instancia);
             <?php endif; ?>
         </tbody>
     </table>
-</div>
-
-<div class="text-center mt-4 mb-4">
-    <p class="text-muted">
-        <i class="fas fa-info-circle"></i>
-        Total de <?php echo $totalInstancias; ?> instância(s) |
-        Última atualização: <?php echo date('d/m/Y H:i:s'); ?>
-    </p>
+    <div class="instance-table-footer">
+        <span id="instancePaginationSummary"></span>
+        <nav aria-label="Paginação de instâncias">
+            <ul class="pagination pagination-sm mb-0" id="instancePagination"></ul>
+        </nav>
+    </div>
 </div>
 
 <!-- Form oculto para quarentena única -->
@@ -273,10 +242,78 @@ unset($instancia);
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    if (typeof setupTableSearch === 'function') {
-        setupTableSearch('searchInput', 'tabelaInstancias');
-    }
+    document.getElementById('searchInput').addEventListener('input', function() {
+        paginaInstanciasAtual = 1;
+        atualizarPaginacaoInstancias();
+    });
+    atualizarPaginacaoInstancias();
 });
+
+const INSTANCIAS_POR_PAGINA = 10;
+let paginaInstanciasAtual = 1;
+
+function obterLinhasInstancias() {
+    return Array.from(document.querySelectorAll('#tabelaInstancias tbody tr[data-sort-criacao]'));
+}
+
+function obterLinhasInstanciasFiltradas() {
+    const termo = document.getElementById('searchInput').value.trim().toLocaleLowerCase();
+    return obterLinhasInstancias().filter(function(linha) {
+        return termo === '' || linha.textContent.toLocaleLowerCase().includes(termo);
+    });
+}
+
+function atualizarPaginacaoInstancias() {
+    const linhas = obterLinhasInstancias();
+    const linhasFiltradas = obterLinhasInstanciasFiltradas();
+    const total = linhasFiltradas.length;
+    const totalPaginas = Math.max(1, Math.ceil(total / INSTANCIAS_POR_PAGINA));
+    paginaInstanciasAtual = Math.min(paginaInstanciasAtual, totalPaginas);
+
+    linhas.forEach(function(linha) {
+        linha.style.display = 'none';
+    });
+
+    const inicio = (paginaInstanciasAtual - 1) * INSTANCIAS_POR_PAGINA;
+    const fim = Math.min(inicio + INSTANCIAS_POR_PAGINA, total);
+    linhasFiltradas.slice(inicio, fim).forEach(function(linha) {
+        linha.style.display = '';
+    });
+
+    const resumo = document.getElementById('instancePaginationSummary');
+    resumo.textContent = total === 0
+        ? 'Nenhuma instância encontrada'
+        : 'Exibindo ' + (inicio + 1) + '–' + fim + ' de ' + total + ' instância(s)';
+
+    renderizarPaginacaoInstancias(totalPaginas);
+}
+
+function renderizarPaginacaoInstancias(totalPaginas) {
+    const paginacao = document.getElementById('instancePagination');
+    const paginas = new Set([1, totalPaginas, paginaInstanciasAtual - 1, paginaInstanciasAtual, paginaInstanciasAtual + 1]);
+    const paginasOrdenadas = Array.from(paginas).filter(function(pagina) {
+        return pagina >= 1 && pagina <= totalPaginas;
+    }).sort(function(paginaA, paginaB) {
+        return paginaA - paginaB;
+    });
+
+    let html = '<li class="page-item ' + (paginaInstanciasAtual === 1 ? 'disabled' : '') + '"><button type="button" class="page-link" onclick="irParaPaginaInstancias(' + (paginaInstanciasAtual - 1) + ')" ' + (paginaInstanciasAtual === 1 ? 'disabled' : '') + '>Anterior</button></li>';
+    let paginaAnterior = 0;
+    paginasOrdenadas.forEach(function(pagina) {
+        if (paginaAnterior > 0 && pagina > paginaAnterior + 1) {
+            html += '<li class="page-item disabled"><span class="page-link">…</span></li>';
+        }
+        html += '<li class="page-item ' + (pagina === paginaInstanciasAtual ? 'active' : '') + '"><button type="button" class="page-link" onclick="irParaPaginaInstancias(' + pagina + ')" ' + (pagina === paginaInstanciasAtual ? 'aria-current="page"' : '') + '>' + pagina + '</button></li>';
+        paginaAnterior = pagina;
+    });
+    html += '<li class="page-item ' + (paginaInstanciasAtual === totalPaginas ? 'disabled' : '') + '"><button type="button" class="page-link" onclick="irParaPaginaInstancias(' + (paginaInstanciasAtual + 1) + ')" ' + (paginaInstanciasAtual === totalPaginas ? 'disabled' : '') + '>Próxima</button></li>';
+    paginacao.innerHTML = html;
+}
+
+function irParaPaginaInstancias(pagina) {
+    paginaInstanciasAtual = pagina;
+    atualizarPaginacaoInstancias();
+}
 
 function ordenarInstancias(campo, button) {
     const tabela = document.getElementById('tabelaInstancias');
@@ -304,6 +341,7 @@ function ordenarInstancias(campo, button) {
     });
     tabela.dataset.sortCampo = campo;
     tabela.dataset.sortDirecao = direcao;
+    paginaInstanciasAtual = 1;
 
     document.querySelectorAll('[data-sort-button]').forEach(function(botao) {
         const cabecalho = botao.closest('th');
@@ -314,6 +352,7 @@ function ordenarInstancias(campo, button) {
 
     button.closest('th').setAttribute('aria-sort', direcao === 'asc' ? 'ascending' : 'descending');
     button.querySelector('i').className = direcao === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down';
+    atualizarPaginacaoInstancias();
 }
 
 // Abrir modal de redefinir senha
@@ -396,21 +435,12 @@ function verDetalhes(jsonData) {
 function exportarTabela() {
     let csv = 'Nome,Email,Cidade,Comum,Data Criação,Último Cadastro,User ID\n';
 
-    $('#tabelaInstancias tbody tr').each(function() {
-        if ($(this).is(':visible') && $(this).find('td').length > 1) {
-            const cells = $(this).find('td');
-            const row = [
-                $(cells[1]).text().trim(),
-                $(cells[2]).text().trim(),
-                $(cells[3]).text().trim(),
-                $(cells[4]).text().trim(),
-                $(cells[5]).text().trim(),
-                $(cells[6]).text().trim(),
-                $(cells[7]).text().trim()
-            ];
-
-            csv += row.map(v => `"${v}"`).join(',') + '\n';
-        }
+    obterLinhasInstanciasFiltradas().forEach(function(linha) {
+        const cells = linha.querySelectorAll('td');
+        const row = [1, 2, 3, 4, 5, 6, 7].map(function(index) {
+            return cells[index].textContent.trim().replace(/"/g, '""');
+        });
+        csv += row.map(function(value) { return '"' + value + '"'; }).join(',') + '\n';
     });
 
     // Download

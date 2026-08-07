@@ -739,15 +739,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     'RATE_LIMIT_ENABLED' => $_POST['rate_limit_enabled'] ?? 'false',
                     'RATE_LIMIT_MAX_REQUESTS' => $_POST['rate_limit_max_requests'] ?? '60',
                     'RATE_LIMIT_TIME_WINDOW' => $_POST['rate_limit_time_window'] ?? '60',
-                    'ALLOW_MULTIPLE_INSTANCES' => $_POST['allow_multiple_instances'] ?? 'false',
-                    'CLEANUP_INACTIVE_HOURS' => $_POST['cleanup_inactive_hours'] ?? '6',
                     'SENSITIVE_DATA_RETENTION_HOURS' => $_POST['sensitive_data_retention_hours'] ?? '24',
                     'INACTIVITY_WARNING_DAYS' => $_POST['inactivity_warning_days'] ?? '30',
                     'INACTIVITY_GRACE_DAYS' => $_POST['inactivity_grace_days'] ?? '30',
                     'INACTIVITY_REMINDER_DAYS' => $_POST['inactivity_reminder_days'] ?? '7',
                     'QUARANTINE_RETENTION_DAYS' => $_POST['quarantine_retention_days'] ?? '7',
                     'INSTANCE_ACTION_TOKEN_HOURS' => $_POST['instance_action_token_hours'] ?? '168',
-                    'LOG_LEVEL' => $_POST['log_level'] ?? 'warning',
                     'DEBUG_MODE' => $_POST['debug_mode'] ?? 'false',
                     'EMAIL_ENABLED' => $_POST['email_enabled'] ?? 'false',
                     'SMTP_HOST' => $_POST['smtp_host'] ?? 'smtp.hostinger.com',
@@ -1064,6 +1061,24 @@ function processarMarkdownSimples($texto) {
 
         .instance-table {
             overflow: visible;
+        }
+
+        .instance-table-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.75rem 1rem;
+            border-top: 1px solid #e9ecef;
+            color: #6c757d;
+            font-size: 0.875rem;
+        }
+
+        @media (max-width: 575.98px) {
+            .instance-table-footer {
+                align-items: flex-start;
+                flex-direction: column;
+            }
         }
 
         .instance-sort-button {

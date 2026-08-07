@@ -9,15 +9,33 @@
     <p class="text-muted mb-0">Gerencie configurações do administrador e do sistema</p>
 </div>
 
+<style>
+    .settings-topic > summary {
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        list-style: none;
+    }
+    .settings-topic > summary::-webkit-details-marker { display: none; }
+    .settings-topic-icon { transition: transform .15s ease; }
+    .settings-topic[open] > summary .settings-topic-icon { transform: rotate(180deg); }
+    .settings-subtopic { border-bottom: 1px solid #dee2e6; margin-bottom: 1rem; padding-bottom: 1rem; }
+    .settings-subtopic:last-of-type { border-bottom: 0; margin-bottom: 0; padding-bottom: 0; }
+    .settings-subtopic > summary { cursor: pointer; font-weight: 600; list-style: none; }
+    .settings-subtopic > summary::-webkit-details-marker { display: none; }
+</style>
+
 <div class="row">
     <!-- Coluna Esquerda -->
     <div class="col-md-6">
 
         <!-- Alterar Senha do Admin -->
-        <div class="card mb-4">
-            <div class="card-header bg-primary text-white">
+        <details class="card mb-4 settings-topic">
+            <summary class="card-header bg-primary text-white">
                 <h5 class="mb-0"><i class="fas fa-key mr-2"></i>Alterar Senha do Administrador</h5>
-            </div>
+                <i class="fas fa-chevron-down settings-topic-icon" aria-hidden="true"></i>
+            </summary>
             <div class="card-body">
                 <form method="post" action="admin.php?page=settings">
                     <?php echo admin_csrf_field(); ?>
@@ -48,13 +66,14 @@
                     </button>
                 </form>
             </div>
-        </div>
+        </details>
 
         <!-- Configurar Envio de Email (diagnóstico + setup) -->
-        <div class="card mb-4">
-            <div class="card-header bg-secondary text-white">
-                <h5 class="mb-0"><i class="fas fa-envelope-open-text mr-2"></i>Configurar Envio de Email</h5>
-            </div>
+        <details class="card mb-4 settings-topic">
+            <summary class="card-header bg-secondary text-white">
+                <h5 class="mb-0"><i class="fas fa-envelope-open-text mr-2"></i>Diagnóstico de Envio de Email</h5>
+                <i class="fas fa-chevron-down settings-topic-icon" aria-hidden="true"></i>
+            </summary>
             <div class="card-body">
                 <?php
                 $projectRoot = realpath(__DIR__ . '/../..');
@@ -187,13 +206,14 @@ EMAIL_FROM_NAME="EBI Self-Service"</code></pre>
                     </small>
                 </div>
             </div>
-        </div>
+        </details>
 
         <!-- Informações do Arquivo .env -->
-        <div class="card mb-4">
-            <div class="card-header bg-info text-white">
+        <details class="card mb-4 settings-topic">
+            <summary class="card-header bg-info text-white">
                 <h5 class="mb-0"><i class="fas fa-file-code mr-2"></i>Arquivo .env</h5>
-            </div>
+                <i class="fas fa-chevron-down settings-topic-icon" aria-hidden="true"></i>
+            </summary>
             <div class="card-body">
                 <?php
                 $envFile = __DIR__ . '/../../.env';
@@ -214,10 +234,7 @@ EMAIL_FROM_NAME="EBI Self-Service"</code></pre>
                         $chave = $m[1];
                         $valor = $m[2];
                         if (preg_match($padroes, $chave) && trim($valor, "'\" ") !== '') {
-                            // Mostra só primeiros 4 chars
-                            $vLimpo = trim($valor, "'\" ");
-                            $mascarado = substr($vLimpo, 0, 4) . str_repeat('•', max(3, strlen($vLimpo) - 4));
-                            $linhas[$i] = $chave . '="' . $mascarado . '"';
+                            $linhas[$i] = $chave . '="••••••••"';
                         }
                     }
                     return implode("\n", $linhas);
@@ -264,7 +281,7 @@ EMAIL_FROM_NAME="EBI Self-Service"</code></pre>
                     <?php if ($mostrarEnv): ?>
                         <div class="alert alert-warning">
                             <i class="fas fa-shield-alt mr-2"></i>
-                            <small>Valores de <code>PASSWORD</code>, <code>SECRET</code>, <code>TOKEN</code>, <code>HASH</code> e <code>KEY</code> são exibidos parcialmente mascarados.</small>
+                            <small>Valores de <code>PASSWORD</code>, <code>SECRET</code>, <code>TOKEN</code>, <code>HASH</code> e <code>KEY</code> ficam ocultos.</small>
                         </div>
                         <pre class="bg-dark text-white p-3 rounded" style="max-height:420px;overflow:auto;font-size:.82rem"><code><?php
                             echo htmlspecialchars($mascararEnv(file_get_contents($envFile)));
@@ -297,7 +314,7 @@ EMAIL_FROM_NAME="EBI Self-Service"</code></pre>
                     <?php endif; ?>
                 <?php endif; ?>
             </div>
-        </div>
+        </details>
 
     </div>
 
@@ -330,10 +347,11 @@ EMAIL_FROM_NAME="EBI Self-Service"</code></pre>
         }
         usort($rlLista, fn($a, $b) => $b['reqs'] <=> $a['reqs']);
         ?>
-        <div class="card mb-4">
-            <div class="card-header bg-warning text-dark">
+        <details class="card mb-4 settings-topic">
+            <summary class="card-header bg-warning text-dark">
                 <h5 class="mb-0"><i class="fas fa-traffic-light mr-2"></i>Rate Limiting — status e desbloqueio</h5>
-            </div>
+                <i class="fas fa-chevron-down settings-topic-icon" aria-hidden="true"></i>
+            </summary>
             <div class="card-body">
                 <p class="mb-2">
                     Estado atual:
@@ -343,7 +361,7 @@ EMAIL_FROM_NAME="EBI Self-Service"</code></pre>
                         <span class="badge badge-secondary">DESATIVADO</span>
                     <?php endif; ?>
                     — máx. <strong><?php echo $rlMax; ?></strong> requisições por <strong><?php echo $rlWin; ?>s</strong>
-                    (configure abaixo).
+                    (ajuste no tópico Proteção contra abuso).
                 </p>
                 <p class="small text-muted mb-3">
                     Seu IP atual: <code><?php echo htmlspecialchars($rlMeuIp); ?></code>
@@ -401,18 +419,21 @@ EMAIL_FROM_NAME="EBI Self-Service"</code></pre>
                     Apagar o arquivo do IP libera imediatamente o acesso. Para ajustar os limites use o formulário abaixo.
                 </small>
             </div>
-        </div>
+        </details>
 
         <!-- Configurações do Sistema -->
-        <div class="card mb-4">
-            <div class="card-header bg-success text-white">
-                <h5 class="mb-0"><i class="fas fa-sliders-h mr-2"></i>Configurações do Sistema</h5>
-            </div>
+        <details class="card mb-4 settings-topic" open>
+            <summary class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-sliders-h mr-2"></i>Configurações Operacionais</h5>
+                <i class="fas fa-chevron-down settings-topic-icon" aria-hidden="true"></i>
+            </summary>
             <div class="card-body">
                 <form method="post" action="admin.php?page=settings">
                     <?php echo admin_csrf_field(); ?>
 
-                    <h6 class="border-bottom pb-2 mb-3"><i class="fas fa-shield-alt mr-2"></i>Segurança e Rate Limiting</h6>
+                    <details class="settings-subtopic" open>
+                        <summary><i class="fas fa-shield-alt mr-2"></i>Proteção contra abuso</summary>
+                        <div class="pt-3">
 
                     <div class="form-group">
                         <div class="custom-control custom-switch">
@@ -445,20 +466,12 @@ EMAIL_FROM_NAME="EBI Self-Service"</code></pre>
                         </div>
                     </div>
 
-                    <hr>
-
-                    <h6 class="border-bottom pb-2 mb-3"><i class="fas fa-database mr-2"></i>Instâncias</h6>
-
-                    <div class="form-group">
-                        <div class="custom-control custom-switch">
-                            <input type="checkbox" class="custom-control-input" id="allow_multiple_instances"
-                                   name="allow_multiple_instances" value="true"
-                                   <?php echo ($configAtual['ALLOW_MULTIPLE_INSTANCES'] ?? 'false') === 'true' ? 'checked' : ''; ?>>
-                            <label class="custom-control-label" for="allow_multiple_instances">
-                                Permitir Múltiplas Instâncias por Email
-                            </label>
                         </div>
-                    </div>
+                    </details>
+
+                    <details class="settings-subtopic">
+                        <summary><i class="fas fa-database mr-2"></i>Ciclo de vida das instâncias</summary>
+                        <div class="pt-3">
 
                     <div class="form-group">
                         <label>Retenção de dados sensíveis (horas)</label>
@@ -514,9 +527,12 @@ EMAIL_FROM_NAME="EBI Self-Service"</code></pre>
                         <small class="form-text text-muted">Links de exclusão enviados por e-mail precisam ser confirmados dentro desse prazo.</small>
                     </div>
 
-                    <hr>
+                        </div>
+                    </details>
 
-                    <h6 class="border-bottom pb-2 mb-3"><i class="fas fa-envelope mr-2"></i>Configurações de Email</h6>
+                    <details class="settings-subtopic">
+                        <summary><i class="fas fa-envelope mr-2"></i>Envio de email</summary>
+                        <div class="pt-3">
 
                     <div class="form-group">
                         <div class="custom-control custom-switch">
@@ -568,7 +584,6 @@ EMAIL_FROM_NAME="EBI Self-Service"</code></pre>
                     <div class="form-group">
                         <label>Senha SMTP</label>
                         <input type="password" name="smtp_password" class="form-control"
-                               value="<?php echo htmlspecialchars($configAtual['SMTP_PASSWORD'] ?? ''); ?>"
                                placeholder="Deixe em branco para manter a atual">
                         <small class="form-text text-muted">Deixe vazio para não alterar</small>
                     </div>
@@ -591,24 +606,12 @@ EMAIL_FROM_NAME="EBI Self-Service"</code></pre>
                         <i class="fas fa-paper-plane mr-2"></i>Testar Conexão SMTP
                     </button>
 
-                    <hr>
+                        </div>
+                    </details>
 
-                    <h6 class="border-bottom pb-2 mb-3"><i class="fas fa-bug mr-2"></i>Desenvolvimento e Logs</h6>
-
-                    <div class="form-group">
-                        <label>Nível de Log</label>
-                        <select name="log_level" class="form-control">
-                            <?php
-                            $logLevels = ['debug', 'info', 'notice', 'warning', 'error', 'critical'];
-                            $currentLogLevel = $configAtual['LOG_LEVEL'] ?? 'warning';
-                            foreach ($logLevels as $level):
-                            ?>
-                                <option value="<?php echo $level; ?>" <?php echo $level === $currentLogLevel ? 'selected' : ''; ?>>
-                                    <?php echo ucfirst($level); ?>
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
+                    <details class="settings-subtopic">
+                        <summary><i class="fas fa-bug mr-2"></i>Diagnóstico técnico</summary>
+                        <div class="pt-3">
 
                     <div class="form-group">
                         <div class="custom-control custom-switch">
@@ -624,212 +627,37 @@ EMAIL_FROM_NAME="EBI Self-Service"</code></pre>
                         </small>
                     </div>
 
+                        </div>
+                    </details>
+
                     <button type="submit" name="atualizar_config" class="btn btn-success btn-block">
                         <i class="fas fa-save mr-2"></i>Salvar Configurações
                     </button>
                 </form>
             </div>
-        </div>
+        </details>
 
-        <!-- Informações de Backup -->
-        <div class="card mb-4">
-            <div class="card-header bg-warning text-dark">
-                <h5 class="mb-0"><i class="fas fa-archive mr-2"></i>Backup</h5>
-            </div>
-            <div class="card-body">
-                <?php
-                $backupPath = __DIR__ . '/../../backups';
-                $backupExists = is_dir($backupPath);
-                ?>
-
-                <?php if ($backupExists): ?>
-                    <?php
-                    $backups = glob($backupPath . '/*.{zip,tar.gz}', GLOB_BRACE);
-                    $totalBackups = count($backups);
-                    $totalSize = 0;
-
-                    foreach ($backups as $backup) {
-                        if (file_exists($backup)) {
-                            $totalSize += filesize($backup);
-                        }
-                    }
-                    ?>
-
-                    <div class="row text-center mb-3">
-                        <div class="col-6">
-                            <h3 class="text-primary"><?php echo $totalBackups; ?></h3>
-                            <small class="text-muted">Backups</small>
-                        </div>
-                        <div class="col-6">
-                            <h3 class="text-success"><?php echo number_format($totalSize / 1024 / 1024, 2); ?> MB</h3>
-                            <small class="text-muted">Tamanho Total</small>
-                        </div>
-                    </div>
-
-                    <button class="btn btn-primary btn-block" onclick="alert('Funcionalidade em desenvolvimento')">
-                        <i class="fas fa-plus mr-2"></i>Criar Novo Backup
-                    </button>
-
-                    <a href="?page=backups" class="btn btn-secondary btn-block">
-                        <i class="fas fa-list mr-2"></i>Ver Todos os Backups
-                    </a>
-                <?php else: ?>
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle mr-2"></i>
-                        Diretório de backups não existe. Será criado automaticamente quando necessário.
-                    </div>
-                <?php endif; ?>
-
-                <div class="alert alert-info mt-3">
-                    <small>
-                        <strong>Configurações de Backup:</strong><br>
-                        • Máximo: <?php echo $configAtual['MAX_BACKUPS'] ?? '10'; ?> backups por instância<br>
-                        • Backup antes de remover: <?php echo ($configAtual['BACKUP_BEFORE_REMOVE'] ?? 'true') === 'true' ? 'Sim' : 'Não'; ?>
-                    </small>
-                </div>
-            </div>
-        </div>
-
-    </div>
-</div>
-
-<!-- Configurações Avançadas -->
-<div class="card mb-4">
-    <div class="card-header bg-dark text-white">
-        <h5 class="mb-0"><i class="fas fa-code mr-2"></i>Configurações Avançadas</h5>
-    </div>
-    <div class="card-body">
-        <div class="alert alert-info">
-            <i class="fas fa-info-circle mr-2"></i>
-            <strong>Variáveis de Ambiente Carregadas</strong>
-        </div>
-
-        <div class="table-responsive">
-            <table class="table table-sm table-bordered">
-                <thead class="thead-dark">
-                    <tr>
-                        <th>Variável</th>
-                        <th>Valor</th>
-                        <th>Descrição</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php
-                    $configDescriptions = [
-                        'ADMIN_PASSWORD_HASH' => 'Hash da senha do administrador',
-                        'INSTANCE_BASE_PATH' => 'Diretório das instâncias',
-                        'TEMPLATE_PATH' => 'Diretório do template',
-                        'DATA_PATH' => 'Diretório de dados',
-                        'LOG_FILE' => 'Arquivo de log principal',
-                        'BASE_URL' => 'URL base do sistema',
-                        'RATE_LIMIT_ENABLED' => 'Rate limiting ativo',
-                        'RATE_LIMIT_MAX_REQUESTS' => 'Máximo de requisições',
-                        'RATE_LIMIT_TIME_WINDOW' => 'Janela de tempo (segundos)',
-                        'ALLOW_MULTIPLE_INSTANCES' => 'Permitir múltiplas instâncias',
-                        'SENSITIVE_DATA_RETENTION_HOURS' => 'Retenção dos dados sensíveis (horas)',
-                        'INACTIVITY_WARNING_DAYS' => 'Inatividade antes do primeiro aviso',
-                        'INACTIVITY_GRACE_DAYS' => 'Prazo após o aviso de inatividade',
-                        'INACTIVITY_REMINDER_DAYS' => 'Intervalo de lembretes de inatividade',
-                        'QUARANTINE_RETENTION_DAYS' => 'Prazo de recuperação na quarentena',
-                        'INSTANCE_ACTION_TOKEN_HOURS' => 'Validade dos links enviados por e-mail',
-                        'LOG_LEVEL' => 'Nível de log',
-                        'DEBUG_MODE' => 'Modo debug',
-                        'APP_ENV' => 'Ambiente da aplicação',
-                        'BACKUP_PATH' => 'Diretório de backups',
-                        'MAX_BACKUPS' => 'Máximo de backups'
-                    ];
-
-                    foreach ($configDescriptions as $key => $desc):
-                        if (isset($configAtual[$key])):
-                            $value = $configAtual[$key];
-
-                            // Ocultar senha
-                            if ($key === 'ADMIN_PASSWORD_HASH') {
-                                $value = '••••••••••••••••';
-                            }
-                    ?>
-                        <tr>
-                            <td><code><?php echo $key; ?></code></td>
-                            <td><small><?php echo htmlspecialchars($value); ?></small></td>
-                            <td><small class="text-muted"><?php echo $desc; ?></small></td>
-                        </tr>
-                    <?php
-                        endif;
-                    endforeach;
-                    ?>
-                </tbody>
-            </table>
-        </div>
-
-        <div class="alert alert-warning">
-            <i class="fas fa-exclamation-triangle mr-2"></i>
-            <strong>Atenção:</strong> Para editar essas configurações, edite manualmente o arquivo <code>.env</code> no diretório raiz.
-        </div>
-    </div>
-</div>
-
-<!-- Ações do Sistema -->
-<div class="card mb-4">
-    <div class="card-header bg-danger text-white">
-        <h5 class="mb-0"><i class="fas fa-exclamation-triangle mr-2"></i>Ações do Sistema</h5>
-    </div>
-    <div class="card-body">
-        <div class="row">
-            <div class="col-md-4">
-                <button class="btn btn-outline-warning btn-block" onclick="limparCache()">
-                    <i class="fas fa-broom mr-2"></i>Limpar Cache
-                </button>
-            </div>
-            <div class="col-md-4">
-                <button class="btn btn-outline-info btn-block" onclick="verificarSistema()">
-                    <i class="fas fa-heartbeat mr-2"></i>Verificar Sistema
-                </button>
-            </div>
-            <div class="col-md-4">
-                <button class="btn btn-outline-danger btn-block" onclick="reiniciarSessao()">
-                    <i class="fas fa-sync-alt mr-2"></i>Reiniciar Sessão
-                </button>
-            </div>
-        </div>
     </div>
 </div>
 
 <script>
-// Validar senhas
-$('#senha_nova, #senha_confirmar').on('keyup', function() {
-    const senha1 = $('#senha_nova').val();
-    const senha2 = $('#senha_confirmar').val();
+document.addEventListener('DOMContentLoaded', function() {
+    const senhaNova = document.getElementById('senha_nova');
+    const senhaConfirmar = document.getElementById('senha_confirmar');
+    if (!senhaNova || !senhaConfirmar) return;
 
-    if (senha1 && senha2) {
-        if (senha1 === senha2) {
-            $('#senha_confirmar').removeClass('is-invalid').addClass('is-valid');
-        } else {
-            $('#senha_confirmar').removeClass('is-valid').addClass('is-invalid');
+    const validarSenhas = function() {
+        if (!senhaNova.value || !senhaConfirmar.value) {
+            senhaConfirmar.classList.remove('is-valid', 'is-invalid');
+            return;
         }
-    }
+        senhaConfirmar.classList.toggle('is-valid', senhaNova.value === senhaConfirmar.value);
+        senhaConfirmar.classList.toggle('is-invalid', senhaNova.value !== senhaConfirmar.value);
+    };
+
+    senhaNova.addEventListener('input', validarSenhas);
+    senhaConfirmar.addEventListener('input', validarSenhas);
 });
-
-// Ações do sistema
-function limparCache() {
-    if (confirm('Deseja limpar o cache do sistema?')) {
-        alert('Funcionalidade em desenvolvimento');
-    }
-}
-
-function verificarSistema() {
-    alert('Sistema verificado:\n\n' +
-          '✅ PHP: <?php echo phpversion(); ?>\n' +
-          '✅ Servidor: <?php echo $_SERVER['SERVER_SOFTWARE'] ?? 'N/A'; ?>\n' +
-          '✅ Instâncias: <?php echo $totalInstancias; ?>\n' +
-          '✅ Usuários: <?php echo $userStats['total']; ?>\n' +
-          '\nTudo funcionando normalmente!');
-}
-
-function reiniciarSessao() {
-    if (confirm('Deseja reiniciar sua sessão?\n\nVocê será desconectado.')) {
-        window.location.href = '?logout=1';
-    }
-}
 
 function testarEmail() {
     if (!confirm('Deseja testar a conexão SMTP?\n\nIsso verificará se as credenciais estão corretas.')) {
