@@ -19,7 +19,11 @@ $taskDefinitions = [
     ],
 ];
 
-$cronCommand = '*/15 * * * * /usr/bin/php ' . SELFSERVICE_ROOT . '/tarefas_agendadas.php >> ' . DATA_PATH . '/tarefas_agendadas.log 2>&1';
+$scriptPath = SELFSERVICE_ROOT . '/tarefas_agendadas.php';
+$cronCommand = '*/15 * * * * /usr/bin/php ' . $scriptPath . ' >> ' . DATA_PATH . '/tarefas_agendadas.log 2>&1';
+$comandoStatus = 'php ' . $scriptPath . ' --status';
+$comandoTeste = 'php ' . $scriptPath;
+$comandoForce = 'php ' . $scriptPath . ' --force';
 
 // Logs isolados por finalidade
 $cronLogFile = DATA_PATH . '/tarefas_agendadas.log';
@@ -159,10 +163,53 @@ $instanciasAtivas = lifecycle_listar_usuarios_ativos();
     </div>
     <div class="card-body">
         <p>Adicione a linha abaixo ao crontab do usuário que executa o PHP no servidor:</p>
-        <pre class="bg-light p-3 mb-3" style="overflow-x:auto;white-space:pre-wrap;word-break:break-all"><code><?php echo htmlspecialchars($cronCommand); ?></code></pre>
+        <pre class="bg-light p-3 mb-2" style="overflow-x:auto;white-space:pre-wrap;word-break:break-all"><code><?php echo htmlspecialchars($cronCommand); ?></code></pre>
+        <div class="alert alert-warning small mb-3">
+            <i class="fas fa-exclamation-triangle mr-1"></i>
+            <strong>Esta linha é só para o crontab.</strong> O trecho final
+            <code>&gt;&gt; ... .log 2&gt;&amp;1</code> desvia toda a saída para o arquivo de log —
+            se você colar a linha inteira no terminal, <strong>nada aparece na tela</strong>
+            (a saída foi para o log). Para testar na mão, use os comandos abaixo.
+        </div>
         <a class="btn btn-outline-primary" href="?page=docs&amp;doc=TAREFAS_AGENDADAS.md">
             <i class="fas fa-book mr-1"></i>Ver documentação completa
         </a>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-secondary text-white">
+        <h5 class="mb-0"><i class="fas fa-vial mr-2"></i>Testar pelo terminal</h5>
+    </div>
+    <div class="card-body">
+        <p class="small text-muted">Execute como o mesmo usuário do cron. Copie apenas o comando, sem redirecionamento.</p>
+
+        <p class="mb-1"><strong>1. Ver o estado atual</strong> <span class="text-muted small">— não executa nada, só mostra o diagnóstico</span></p>
+        <pre class="bg-light p-2 mb-3" style="overflow-x:auto;white-space:pre-wrap;word-break:break-all"><code><?php echo htmlspecialchars($comandoStatus); ?></code></pre>
+
+        <p class="mb-1"><strong>2. Executar respeitando os intervalos</strong> <span class="text-muted small">— é o que o cron faz</span></p>
+        <pre class="bg-light p-2 mb-3" style="overflow-x:auto;white-space:pre-wrap;word-break:break-all"><code><?php echo htmlspecialchars($comandoTeste); ?></code></pre>
+
+        <p class="mb-1"><strong>3. Forçar a execução agora</strong> <span class="text-muted small">— ignora os intervalos, útil para testar</span></p>
+        <pre class="bg-light p-2 mb-3" style="overflow-x:auto;white-space:pre-wrap;word-break:break-all"><code><?php echo htmlspecialchars($comandoForce); ?></code></pre>
+
+        <div class="alert alert-info small mb-3">
+            <i class="fas fa-lightbulb mr-1"></i>
+            <strong>Se a saída disser "ainda não é hora de executar", está funcionando.</strong>
+            Significa que a tarefa já rodou dentro do intervalo (1&nbsp;h para a limpeza, 24&nbsp;h para o ciclo diário)
+            e o sistema evitou repetir. Use <code>--force</code> para rodar mesmo assim.
+        </div>
+
+        <p class="mb-1"><strong>Se não aparecer absolutamente nada</strong></p>
+        <p class="small text-muted mb-2">
+            Primeiro veja o código de saída — <code>0</code> é sucesso, <code>255</code> indica erro fatal:
+        </p>
+        <pre class="bg-light p-2 mb-2" style="overflow-x:auto;white-space:pre-wrap;word-break:break-all"><code><?php echo htmlspecialchars($comandoTeste); ?>; echo "EXIT: $?"</code></pre>
+        <p class="small text-muted mb-2">
+            Se o código for <code>255</code>, force a exibição do erro com o comando abaixo
+            (<code>-d display_errors</code> sozinho não resolve — a configuração interna do sistema o sobrescreve):
+        </p>
+        <pre class="bg-light p-2 mb-0" style="overflow-x:auto;white-space:pre-wrap;word-break:break-all"><code>php -d log_errors=On -d error_log=/dev/stderr <?php echo htmlspecialchars($scriptPath); ?></code></pre>
     </div>
 </div>
 
