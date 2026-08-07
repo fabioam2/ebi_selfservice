@@ -30,7 +30,8 @@ if ($basename !== '' && $basename[0] === '.') {
 
 // Extensão proibida
 $ext = strtolower(pathinfo($basename, PATHINFO_EXTENSION));
-if (in_array($ext, $blockedExt, true)) {
+$publicSigningCertificate = preg_match('#/assets/signing/digital-certificate\.txt$#', $uri) === 1;
+if (in_array($ext, $blockedExt, true) && !$publicSigningCertificate) {
     http_response_code(403);
     echo "403 Forbidden (extensão bloqueada: .$ext)";
     return true;

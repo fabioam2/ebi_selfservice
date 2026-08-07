@@ -3,7 +3,6 @@
 header('Content-Type: text/plain');
 
 $privateKeyPath = __DIR__ . '/private-key.pem';
-$privateKey     = file_get_contents($privateKeyPath);
 $request        = $_GET['request'] ?? '';
 
 if (empty($request)) {
@@ -11,6 +10,12 @@ if (empty($request)) {
     exit('Requisição vazia');
 }
 
+if (!is_file($privateKeyPath) || !is_readable($privateKeyPath)) {
+    http_response_code(503);
+    exit('Assinatura não configurada no servidor.');
+}
+
+$privateKey = file_get_contents($privateKeyPath);
 $pkey = openssl_pkey_get_private($privateKey);
 if (!$pkey) {
     http_response_code(500);

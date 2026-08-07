@@ -3,7 +3,10 @@
     <span class="text-muted small">Acesso restrito ao admin autenticado</span>
 </div>
 
-<?php $qzCertificateDownload = '../ebi/template/download.php?file=cert'; ?>
+<?php
+$qzCertificateDownload = '../ebi/template/download.php?file=cert';
+$qzSigningBaseUrl = '../ebi/template/assets/signing/';
+?>
 
 <div class="card table-custom p-4">
     <p class="text-muted mb-4">Atalhos centrais do sistema para operação e suporte.</p>
@@ -46,7 +49,7 @@
     <div class="row">
         <div class="col-md-7">
             <ol class="small">
-                <li class="mb-2"><strong>Instale o QZ Tray</strong> em cada desktop → <a href="https://qz.io/download/" target="_blank">qz.io/download</a></li>
+                <li class="mb-2"><strong>Instale o QZ Tray</strong> em cada desktop → <a href="https://github.com/qzind/tray/releases/download/v2.2.5/qz-tray-2.2.5-x86_64.exe" target="_blank">QZ Tray 2.2.5 x64 (.exe)</a></li>
                 <li class="mb-2"><strong>Baixe o certificado</strong> → <a href="<?php echo $qzCertificateDownload; ?>">Baixar certificado (.zip)</a>
                     <br>Após baixar, descompacte o arquivo no desktop. Você precisará do certificado na próxima etapa.
                 </li>
@@ -72,9 +75,13 @@
                 </a>
                 <hr class="my-2">
                 <h6 class="mb-2"><i class="fas fa-shield-alt mr-1"></i> Verificação</h6>
-                <p class="small text-muted mb-1">Testar no navegador:</p>
-                <code class="small d-block mb-1" style="word-break:break-all;">assets/signing/digital-certificate.txt → 200 OK</code>
-                <code class="small d-block" style="word-break:break-all;">assets/signing/sign-message.php?request=teste → base64</code>
+                <p class="small text-muted mb-2">Após o passo 4, abra os dois links para confirmar a comunicação com o servidor. O certificado deve carregar e o teste deve mostrar uma assinatura codificada.</p>
+                <a href="<?php echo $qzSigningBaseUrl; ?>digital-certificate.txt" target="_blank" class="d-block mb-2 small">
+                    <i class="fas fa-certificate mr-1"></i> Abrir certificado
+                </a>
+                <a href="<?php echo $qzSigningBaseUrl; ?>sign-message.php?request=teste" target="_blank" class="d-block small">
+                    <i class="fas fa-check-circle mr-1"></i> Testar assinatura
+                </a>
             </div>
         </div>
     </div>
