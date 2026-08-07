@@ -88,7 +88,7 @@ unset($instancia);
 </div>
 
 <!-- Tabela de Instâncias -->
-<div class="table-custom">
+<div class="table-custom instance-table">
     <table class="table table-hover mb-0" id="tabelaInstancias">
         <thead>
             <tr>
@@ -99,8 +99,16 @@ unset($instancia);
                 <th>Email</th>
                 <th>Cidade</th>
                 <th>Comum</th>
-                <th>Data Criação</th>
-                <th>Último Cadastro</th>
+                <th aria-sort="none">
+                    <button type="button" class="instance-sort-button" data-sort-button="criacao" onclick="ordenarInstancias('criacao', this)" title="Ordenar por data de criação">
+                        Data Criação <i class="fas fa-sort" aria-hidden="true"></i>
+                    </button>
+                </th>
+                <th aria-sort="none">
+                    <button type="button" class="instance-sort-button" data-sort-button="ultimo-cadastro" onclick="ordenarInstancias('ultimo-cadastro', this)" title="Ordenar por último cadastro">
+                        Último Cadastro <i class="fas fa-sort" aria-hidden="true"></i>
+                    </button>
+                </th>
                 <th>User ID</th>
                 <th class="text-center">Ações</th>
             </tr>
@@ -118,8 +126,13 @@ unset($instancia);
                 </tr>
             <?php else: ?>
                 <?php foreach ($instancias as $inst): ?>
-                    <?php $ultimoCadastro = strtotime((string)($inst['ULTIMO_CADASTRO'] ?? '')); ?>
-                    <tr>
+                    <?php
+                    $dataCriacao = (string)($inst['DATA_CRIACAO'] ?? '');
+                    $ultimoCadastroTexto = (string)($inst['ULTIMO_CADASTRO'] ?? '');
+                    $dataCriacaoTimestamp = strtotime($dataCriacao);
+                    $ultimoCadastro = strtotime($ultimoCadastroTexto);
+                    ?>
+                    <tr data-sort-criacao="<?php echo htmlspecialchars($dataCriacao, ENT_QUOTES, 'UTF-8'); ?>" data-sort-ultimo-cadastro="<?php echo htmlspecialchars($ultimoCadastroTexto, ENT_QUOTES, 'UTF-8'); ?>">
                         <td>
                             <input type="checkbox" class="instance-checkbox checkbox-lg"
                                    name="instance_ids[]"
@@ -129,33 +142,45 @@ unset($instancia);
                         <td><?php echo htmlspecialchars($inst['EMAIL'] ?? 'N/A'); ?></td>
                         <td><?php echo htmlspecialchars($inst['CIDADE'] ?? 'N/A'); ?></td>
                         <td><?php echo htmlspecialchars($inst['COMUM'] ?? 'N/A'); ?></td>
-                        <td><?php echo isset($inst['DATA_CRIACAO']) ? date('d/m/Y H:i', strtotime($inst['DATA_CRIACAO'])) : 'N/A'; ?></td>
+                        <td><?php echo $dataCriacaoTimestamp !== false ? date('d/m/Y H:i', $dataCriacaoTimestamp) : 'N/A'; ?></td>
                         <td><?php echo $ultimoCadastro !== false ? date('d/m/Y H:i', $ultimoCadastro) : 'Nenhum cadastro'; ?></td>
                         <td><small><code><?php echo htmlspecialchars($inst['user_id'] ?? 'N/A'); ?></code></small></td>
                         <td class="text-center">
                             <?php
                             $link = (string)($inst['LINK_ACESSO'] ?? '');
                             $linkJson = htmlspecialchars(json_encode($link, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8');
+                            $userIdJson = htmlspecialchars(json_encode((string)($inst['user_id'] ?? ''), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8');
+                            $nomeJson = htmlspecialchars(json_encode((string)($inst['NOME'] ?? ''), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8');
+                            $emailJson = htmlspecialchars(json_encode((string)($inst['EMAIL'] ?? ''), JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8');
+                            $instanciaJson = htmlspecialchars(json_encode($inst, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8');
                             ?>
-                            <a href="<?php echo htmlspecialchars($link, ENT_QUOTES, 'UTF-8'); ?>" target="_blank" class="btn btn-sm btn-info btn-action" title="Acessar Sistema">
-                                <i class="fas fa-external-link-alt"></i>
-                            </a>
-                            <button class="btn btn-sm btn-primary btn-action" onclick="copiarLink(<?php echo $linkJson; ?>)" title="Copiar Link">
-                                <i class="fas fa-copy"></i>
-                            </button>
-                            <button class="btn btn-sm btn-warning btn-action" onclick="verDetalhes('<?php echo htmlspecialchars(json_encode($inst), ENT_QUOTES); ?>')" title="Ver Detalhes">
-                                <i class="fas fa-info-circle"></i>
-                            </button>
-                            <button class="btn btn-sm btn-secondary btn-action" onclick="abrirResetSenha('<?php echo htmlspecialchars($inst['user_id'] ?? ''); ?>', '<?php echo htmlspecialchars($inst['NOME'] ?? ''); ?>')" title="Redefinir senha">
-                                <i class="fas fa-key"></i>
-                            </button>
-                            <?php $emailInst = htmlspecialchars($inst['EMAIL'] ?? '', ENT_QUOTES); ?>
-                            <button class="btn btn-sm btn-success btn-action" onclick="resetSenhaEmail('<?php echo htmlspecialchars($inst['user_id'] ?? ''); ?>', '<?php echo htmlspecialchars($inst['NOME'] ?? ''); ?>', '<?php echo $emailInst; ?>')" title="Enviar nova senha por email">
-                                <i class="fas fa-envelope"></i>
-                            </button>
-                            <button class="btn btn-sm btn-warning btn-action" onclick="confirmarRemocao('<?php echo htmlspecialchars($inst['user_id'] ?? ''); ?>', '<?php echo htmlspecialchars($inst['NOME'] ?? 'este usuário'); ?>')" title="Colocar em quarentena">
-                                <i class="fas fa-shield-alt"></i>
-                            </button>
+                            <div class="dropdown instance-action-menu">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Ações da instância" aria-label="Ações da instância">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                                <div class="dropdown-menu dropdown-menu-right">
+                                    <a href="<?php echo htmlspecialchars($link, ENT_QUOTES, 'UTF-8'); ?>" target="_blank" class="dropdown-item">
+                                        <i class="fas fa-external-link-alt fa-fw mr-2"></i>Acessar sistema
+                                    </a>
+                                    <button type="button" class="dropdown-item" onclick="copiarLink(<?php echo $linkJson; ?>)">
+                                        <i class="fas fa-copy fa-fw mr-2"></i>Copiar link
+                                    </button>
+                                    <button type="button" class="dropdown-item" onclick="verDetalhes(<?php echo $instanciaJson; ?>)">
+                                        <i class="fas fa-info-circle fa-fw mr-2"></i>Ver detalhes
+                                    </button>
+                                    <div class="dropdown-divider"></div>
+                                    <button type="button" class="dropdown-item" onclick="abrirResetSenha(<?php echo $userIdJson; ?>, <?php echo $nomeJson; ?>)">
+                                        <i class="fas fa-key fa-fw mr-2"></i>Redefinir senha
+                                    </button>
+                                    <button type="button" class="dropdown-item" onclick="resetSenhaEmail(<?php echo $userIdJson; ?>, <?php echo $nomeJson; ?>, <?php echo $emailJson; ?>)">
+                                        <i class="fas fa-envelope fa-fw mr-2"></i>Enviar nova senha por e-mail
+                                    </button>
+                                    <div class="dropdown-divider"></div>
+                                    <button type="button" class="dropdown-item text-danger" onclick="confirmarRemocao(<?php echo $userIdJson; ?>, <?php echo $nomeJson; ?>)">
+                                        <i class="fas fa-shield-alt fa-fw mr-2"></i>Colocar em quarentena
+                                    </button>
+                                </div>
+                            </div>
                         </td>
                     </tr>
                 <?php endforeach; ?>
@@ -247,10 +272,49 @@ unset($instancia);
 </div>
 
 <script>
-$(document).ready(function() {
-    // Setup busca
-    setupTableSearch('searchInput', 'tabelaInstancias');
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof setupTableSearch === 'function') {
+        setupTableSearch('searchInput', 'tabelaInstancias');
+    }
 });
+
+function ordenarInstancias(campo, button) {
+    const tabela = document.getElementById('tabelaInstancias');
+    const corpo = tabela.tBodies[0];
+    const atributo = 'data-sort-' + campo;
+    const linhas = Array.from(corpo.querySelectorAll('tr[' + atributo + ']'));
+    if (linhas.length === 0) return;
+
+    const mesmaOrdenacao = tabela.dataset.sortCampo === campo;
+    const direcao = mesmaOrdenacao && tabela.dataset.sortDirecao === 'asc' ? 'desc' : 'asc';
+
+    linhas.sort(function(linhaA, linhaB) {
+        const valorA = linhaA.getAttribute(atributo) || '';
+        const valorB = linhaB.getAttribute(atributo) || '';
+        if (valorA === valorB) return 0;
+        if (valorA === '') return 1;
+        if (valorB === '') return -1;
+
+        const comparacao = valorA.localeCompare(valorB);
+        return direcao === 'asc' ? comparacao : -comparacao;
+    });
+
+    linhas.forEach(function(linha) {
+        corpo.appendChild(linha);
+    });
+    tabela.dataset.sortCampo = campo;
+    tabela.dataset.sortDirecao = direcao;
+
+    document.querySelectorAll('[data-sort-button]').forEach(function(botao) {
+        const cabecalho = botao.closest('th');
+        const icone = botao.querySelector('i');
+        cabecalho.setAttribute('aria-sort', 'none');
+        icone.className = 'fas fa-sort';
+    });
+
+    button.closest('th').setAttribute('aria-sort', direcao === 'asc' ? 'ascending' : 'descending');
+    button.querySelector('i').className = direcao === 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down';
+}
 
 // Abrir modal de redefinir senha
 function abrirResetSenha(userId, nome) {

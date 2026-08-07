@@ -585,6 +585,55 @@ function caminhoConfigInstancia(string $user_id): ?string {
 }
 
 /**
+ * Atualiza as credenciais de uma configuração de instância sem deixar que os
+ * caracteres "$" do bcrypt sejam interpretados pela substituição de regex.
+ */
+function atualizarSenhasConfigInstancia(string $conteudo, string $hash): string {
+    $credenciais = [
+        'SENHA_ADMIN_HASH' => $hash,
+        'SENHA_PAINEL_HASH' => $hash,
+        'SENHA_ADMIN_REAL' => '',
+        'SENHA_PAINEL' => '',
+    ];
+    $ausentes = [];
+
+    foreach ($credenciais as $chave => $valor) {
+        $pattern = '/^\s*' . preg_quote($chave, '/') . '\s*=.*$/mi';
+        if (preg_match($pattern, $conteudo)) {
+            $conteudo = preg_replace_callback(
+                $pattern,
+                static fn(): string => $chave . ' = "' . $valor . '"',
+                $conteudo
+            );
+        } else {
+            $ausentes[$chave] = $valor;
+        }
+    }
+
+    if (!empty($ausentes)) {
+        $linhas = [];
+        foreach ($ausentes as $chave => $valor) {
+            $linhas[] = $chave . ' = "' . $valor . '"';
+        }
+        $novasCredenciais = implode(PHP_EOL, $linhas);
+        $substituicoes = 0;
+        $conteudo = preg_replace_callback(
+            '/^\[SEGURANCA\]\s*$/mi',
+            static fn(array $match): string => $match[0] . PHP_EOL . $novasCredenciais,
+            $conteudo,
+            1,
+            $substituicoes
+        );
+
+        if ($substituicoes === 0) {
+            $conteudo = rtrim($conteudo) . PHP_EOL . PHP_EOL . '[SEGURANCA]' . PHP_EOL . $novasCredenciais . PHP_EOL;
+        }
+    }
+
+    return $conteudo;
+}
+
+/**
  * Redefine a senha de uma instância (ADMIN e PAINEL usam o mesmo hash).
  *
  * @param string $user_id      Id da instância
@@ -605,6 +654,9 @@ function redefinirSenhaInstancia(string $user_id, string $novaSenha): array {
     }
 
     $hash = password_hash($novaSenha, PASSWORD_BCRYPT, ['cost' => 12]);
+    if ($hash === false) {
+        return ['sucesso' => false, 'erro' => 'Falha ao gerar o hash bcrypt'];
+    }
 
     foreach ($configFiles as $configFile) {
         $conteudo = file_get_contents($configFile);
@@ -612,33 +664,20 @@ function redefinirSenhaInstancia(string $user_id, string $novaSenha): array {
             return ['sucesso' => false, 'erro' => 'Falha ao ler config.ini'];
         }
 
-        // Substitui hashes e zera qualquer senha legada em texto plano
-        $substituicoes = [
-            '/^\s*SENHA_ADMIN_HASH\s*=.*$/mi'  => 'SENHA_ADMIN_HASH = "' . $hash . '"',
-            '/^\s*SENHA_PAINEL_HASH\s*=.*$/mi' => 'SENHA_PAINEL_HASH = "' . $hash . '"',
-            '/^\s*SENHA_ADMIN_REAL\s*=.*$/mi'  => 'SENHA_ADMIN_REAL = ""',
-            '/^\s*SENHA_PAINEL\s*=.*$/mi'      => 'SENHA_PAINEL = ""',
-        ];
-        foreach ($substituicoes as $pattern => $replacement) {
-            $conteudo = preg_replace($pattern, $replacement, $conteudo);
-        }
-
-        // Se alguma chave não existia, adiciona na seção [SEGURANCA]
-        foreach (['SENHA_ADMIN_HASH', 'SENHA_PAINEL_HASH'] as $chave) {
-            if (!preg_match('/^\s*' . $chave . '\s*=/mi', $conteudo)) {
-                $conteudo = preg_replace(
-                    '/^\[SEGURANCA\].*$/mi',
-                    "[SEGURANCA]\n$chave = \"$hash\"",
-                    $conteudo,
-                    1
-                );
-            }
-        }
+        $conteudo = atualizarSenhasConfigInstancia($conteudo, $hash);
 
         if (file_put_contents($configFile, $conteudo, LOCK_EX) === false) {
             return ['sucesso' => false, 'erro' => 'Falha ao gravar config.ini'];
         }
         @chmod($configFile, 0600);
+
+        $configSalva = parse_ini_file($configFile, true, INI_SCANNER_RAW);
+        $seguranca = is_array($configSalva) ? ($configSalva['SEGURANCA'] ?? []) : [];
+        $hashAdmin = (string)($seguranca['SENHA_ADMIN_HASH'] ?? '');
+        $hashPainel = (string)($seguranca['SENHA_PAINEL_HASH'] ?? '');
+        if (!password_verify($novaSenha, $hashAdmin) || !password_verify($novaSenha, $hashPainel)) {
+            return ['sucesso' => false, 'erro' => 'Não foi possível validar a senha salva no config.ini'];
+        }
     }
 
     // Log

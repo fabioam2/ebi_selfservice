@@ -1058,6 +1058,31 @@ function processarMarkdownSimples($texto) {
             box-shadow: 0 3px 10px rgba(0,0,0,0.2);
         }
 
+        .instance-action-menu .dropdown-menu {
+            min-width: 13.5rem;
+        }
+
+        .instance-table {
+            overflow: visible;
+        }
+
+        .instance-sort-button {
+            color: inherit;
+            background: transparent;
+            border: 0;
+            padding: 0;
+            font: inherit;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .instance-sort-button:hover,
+        .instance-sort-button:focus {
+            color: white;
+            text-decoration: underline;
+            outline: 0;
+        }
+
         .search-box {
             background: white;
             padding: 20px;
