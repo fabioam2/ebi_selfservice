@@ -285,6 +285,57 @@ $page = $_GET['page'] ?? 'dashboard';
 // --- AÇÕES DE INSTÂNCIAS ---
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
+    // Limpeza manual dos dados de crianças (preserva estatísticas)
+    if (isset($_POST['limpar_dados_instancia'])) {
+        if (!admin_csrf_validate()) {
+            $mensagem = "Requisição inválida (token de segurança).";
+            $tipo_mensagem = "danger";
+        } else {
+            $user_id = $_POST['user_id'] ?? '';
+            if ($user_id === '') {
+                $mensagem = "Selecione uma instância para limpar.";
+                $tipo_mensagem = "warning";
+            } else {
+                try {
+                    $resultado = lifecycle_limpar_dados_manual((string)$user_id);
+                    if (!empty($resultado['limpa'])) {
+                        $mensagem = "Dados da instância {$user_id} limpos: {$resultado['cadastros']} cadastro(s) e "
+                            . "{$resultado['saidas']} saída(s) removidos. As estatísticas foram preservadas.";
+                        $tipo_mensagem = "success";
+                    } else {
+                        $mensagem = "Nada foi limpo: " . ($resultado['motivo'] ?? 'motivo desconhecido');
+                        $tipo_mensagem = "warning";
+                    }
+                } catch (Throwable $error) {
+                    $mensagem = "Erro ao limpar dados: " . $error->getMessage();
+                    $tipo_mensagem = "danger";
+                }
+            }
+        }
+    }
+
+    // Limpeza manual em todas as instâncias ativas
+    if (isset($_POST['limpar_dados_todas'])) {
+        if (!admin_csrf_validate()) {
+            $mensagem = "Requisição inválida (token de segurança).";
+            $tipo_mensagem = "danger";
+        } elseif (($_POST['confirmar_limpeza_total'] ?? '') !== 'LIMPAR') {
+            $mensagem = 'Para limpar todas as instâncias, digite LIMPAR no campo de confirmação.';
+            $tipo_mensagem = "warning";
+        } else {
+            $resultado = lifecycle_limpar_dados_manual_todas();
+            $mensagem = "Limpeza concluída em {$resultado['instancias']} instância(s): "
+                . "{$resultado['cadastros']} cadastro(s) e {$resultado['saidas']} saída(s) removidos. "
+                . "As estatísticas foram preservadas.";
+            if ($resultado['erros'] > 0) {
+                $mensagem .= " {$resultado['erros']} instância(s) com erro.";
+                $tipo_mensagem = "warning";
+            } else {
+                $tipo_mensagem = "success";
+            }
+        }
+    }
+
     // Remover instância única
     if (isset($_POST['remover_instancia'])) {
         if (!admin_csrf_validate()) {
