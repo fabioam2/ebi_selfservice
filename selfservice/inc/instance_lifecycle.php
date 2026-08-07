@@ -367,6 +367,101 @@ function lifecycle_limpar_dados_sensiveis(string $userId, int $hours): array {
     return ['limpa' => true, 'cadastros' => $cadastros, 'saidas' => $saidas];
 }
 
+/**
+ * Limpeza manual (sob demanda) dos dados de crianças de uma instância.
+ *
+ * Diferente de lifecycle_limpar_dados_sensiveis(), não respeita o prazo de
+ * retenção — apaga imediatamente. As estatísticas agregadas (stats_daily na
+ * instância e admin_daily_stats no banco central) NÃO são tocadas.
+ */
+function lifecycle_limpar_dados_manual(string $userId): array {
+    $root = lifecycle_instance_root($userId);
+    if ($root === null) return ['limpa' => false, 'motivo' => 'instância não encontrada'];
+
+    $database = $root . '/data/instance.db';
+    if (!is_file($database)) return ['limpa' => false, 'motivo' => 'banco de dados não encontrado'];
+
+    $pdo = new PDO('sqlite:' . $database, null, null, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    ]);
+
+    $pdo->beginTransaction();
+    try {
+        $saidas = $pdo->exec('DELETE FROM saidas');
+        $cadastros = $pdo->exec('DELETE FROM cadastros');
+        $pdo->commit();
+    } catch (Throwable $error) {
+        if ($pdo->inTransaction()) $pdo->rollBack();
+        throw $error;
+    }
+
+    lifecycle_registrar_log(
+        'LIMPEZA_MANUAL',
+        $userId,
+        'cadastros=' . $cadastros . '|saidas=' . $saidas . '|estatisticas=preservadas'
+    );
+
+    return ['limpa' => true, 'cadastros' => (int)$cadastros, 'saidas' => (int)$saidas];
+}
+
+/**
+ * Executa a limpeza manual em todas as instâncias ativas.
+ */
+function lifecycle_limpar_dados_manual_todas(): array {
+    $summary = ['instancias' => 0, 'cadastros' => 0, 'saidas' => 0, 'erros' => 0, 'detalhes_erros' => []];
+
+    foreach (lifecycle_listar_usuarios_ativos() as $usuario) {
+        $userId = (string)$usuario['user_id'];
+        try {
+            $result = lifecycle_limpar_dados_manual($userId);
+            if (!empty($result['limpa'])) {
+                $summary['instancias']++;
+                $summary['cadastros'] += (int)($result['cadastros'] ?? 0);
+                $summary['saidas'] += (int)($result['saidas'] ?? 0);
+            }
+        } catch (Throwable $error) {
+            $summary['erros']++;
+            $summary['detalhes_erros'][] = $userId . ': ' . $error->getMessage();
+            lifecycle_registrar_log('ERRO_LIMPEZA_MANUAL', $userId, $error->getMessage());
+        }
+    }
+
+    lifecycle_registrar_log(
+        'LIMPEZA_MANUAL_LOTE',
+        'todas',
+        'instancias=' . $summary['instancias'] . '|cadastros=' . $summary['cadastros']
+            . '|saidas=' . $summary['saidas'] . '|erros=' . $summary['erros']
+    );
+
+    return $summary;
+}
+
+/**
+ * Lê as últimas linhas de um arquivo de log, sem carregar o arquivo inteiro.
+ */
+function lifecycle_ler_log(string $file, int $maxLines = 200, int $maxBytes = 65536): array {
+    if (!is_file($file) || !is_readable($file)) return [];
+
+    $handle = fopen($file, 'rb');
+    if ($handle === false) return [];
+
+    $size = (int)filesize($file);
+    $start = max(0, $size - $maxBytes);
+    fseek($handle, $start);
+    if ($start > 0) {
+        fgets($handle); // descarta a primeira linha, provavelmente truncada
+    }
+
+    $lines = [];
+    while (($line = fgets($handle)) !== false) {
+        $lines[] = rtrim($line, "\r\n");
+    }
+    fclose($handle);
+
+    return array_slice($lines, -$maxLines);
+}
+
 function lifecycle_listar_usuarios_ativos(): array {
     return central_db()->query('SELECT user_id, email, nome, cidade, comum FROM ss_users WHERE active = 1 ORDER BY user_id')
         ->fetchAll();
