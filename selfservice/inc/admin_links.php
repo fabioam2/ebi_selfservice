@@ -3,6 +3,8 @@
     <span class="text-muted small">Acesso restrito ao admin autenticado</span>
 </div>
 
+<?php $qzCertificateDownload = '../ebi/template/download.php?file=cert'; ?>
+
 <div class="card table-custom p-4">
     <p class="text-muted mb-4">Atalhos centrais do sistema para operação e suporte.</p>
 
@@ -44,29 +46,26 @@
     <div class="row">
         <div class="col-md-7">
             <ol class="small">
-                <li class="mb-2"><strong>Instalar QZ Tray</strong> em cada desktop → <a href="https://qz.io/download/" target="_blank">qz.io/download</a></li>
-                <li class="mb-2"><strong>Gerar chaves DEMO</strong> em UM computador:
-                    <br><code>QZ Tray (bandeja) → Botão direito → Advanced → Site Manager → "+" → Create New</code>
-                    <br>Clicar <strong>Yes</strong> em todas as perguntas (criar, instalar, copiar override)
+                <li class="mb-2"><strong>Instale o QZ Tray</strong> em cada desktop → <a href="https://qz.io/download/" target="_blank">qz.io/download</a></li>
+                <li class="mb-2"><strong>Baixe o certificado</strong> → <a href="<?php echo $qzCertificateDownload; ?>">Baixar certificado (.zip)</a>
+                    <br>Após baixar, descompacte o arquivo no desktop. Você precisará do certificado na próxima etapa.
                 </li>
-                <li class="mb-2"><strong>Copiar para o servidor</strong> os 2 arquivos gerados (pasta "QZ Tray Demo Cert" na Área de Trabalho):
-                    <br><code>digital-certificate.txt</code> → <code>ebi/template/assets/signing/</code>
-                    <br><code>private-key.pem</code> → <code>ebi/template/assets/signing/</code>
+                <li class="mb-2"><strong>Instale o certificado baixado</strong>:
+                    <br>Clique no ícone do QZ Tray ao lado do relógio, no canto inferior direito.
+                    <br><code>Advanced → Site Manager → "+" → Browse</code>
+                    <br>Localize o arquivo descompactado e selecione <code>digital-certificate.txt</code>.
                 </li>
-                <li class="mb-2"><strong>Distribuir override.crt</strong> para TODOS os desktops:
-                    <br>Copiar <code>C:\Program Files\QZ Tray\override.crt</code> da máquina geradora para todas as outras no mesmo caminho
-                </li>
-                <li class="mb-2"><strong>Reiniciar QZ Tray</strong> em cada máquina (fechar no tray e reabrir)</li>
+                <li class="mb-2"><strong>Reinicie o QZ Tray</strong> em cada máquina: clique no ícone do QZ Tray e escolha <strong>Reload</strong>.</li>
             </ol>
         </div>
         <div class="col-md-5">
             <div class="card bg-light p-3">
                 <h6 class="mb-2"><i class="fas fa-link mr-1"></i> Links úteis</h6>
-                <a href="https://qz.io/docs/signing" target="_blank" class="d-block mb-2 small">
-                    <i class="fas fa-file-signature mr-1"></i> Documentação de Assinatura
-                </a>
                 <a href="https://qz.io/download/" target="_blank" class="d-block mb-2 small">
                     <i class="fas fa-download mr-1"></i> Download QZ Tray
+                </a>
+                <a href="<?php echo $qzCertificateDownload; ?>" class="d-block mb-2 small">
+                    <i class="fas fa-shield-alt mr-1"></i> Baixar certificado (.zip)
                 </a>
                 <a href="https://github.com/qzind/tray/releases/download/v2.2.5/qz-tray-2.2.5-x86_64.exe" target="_blank" class="d-block mb-2 small">
                     <i class="fas fa-windows mr-1"></i> QZ Tray 2.2.5 x64 (.exe)

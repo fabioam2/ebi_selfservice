@@ -320,7 +320,7 @@
                     <div class="dropdown-submenu">
                         <a class="dropdown-item dropdown-toggle" href="#" id="menuInstalar">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download mr-1" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/></svg>
-                            Instalar
+                            Instalar Impressora
                         </a>
                         <div class="dropdown-menu">
                             <?php
@@ -334,6 +334,11 @@
                                 ? $projectUrlPrefix . 'qrcode/qrcode.2.php'
                                 : '../../qrcode/qrcode.2.php';
                             ?>
+                            <button class="dropdown-item" type="button" onclick="abrirModalHowToQZ()" id="menuHowToQZ">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-question-circle mr-1" viewBox="0 0 16 16"><path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/></svg>
+                                Como Instalar (How To)
+                            </button>
+                            <div class="dropdown-divider"></div>
                             <a class="dropdown-item" href="<?php echo $qzDownload; ?>?file=qztray">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-zip mr-1" viewBox="0 0 16 16"><path d="M5 7.5a1 1 0 0 1 1-1h1a1 1 0 0 1 1 1v.938l.4 1.599a1 1 0 0 1-.416 1.074l-.93.62a1 1 0 0 1-1.11 0l-.929-.62a1 1 0 0 1-.416-1.074L5 8.438zm2 0h-1v.938a1 1 0 0 1-.03.243l-.4 1.598.93.62.929-.62-.4-1.598A1 1 0 0 1 7 8.438z"/><path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5z"/></svg>
                                 QZ Tray + Certificados (.zip)
@@ -346,11 +351,6 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download mr-1" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/></svg>
                                 QZ Tray 2.2.5 x64 (.exe)
                             </a>
-                            <div class="dropdown-divider"></div>
-                            <button class="dropdown-item" type="button" onclick="abrirModalHowToQZ()" id="menuHowToQZ">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-question-circle mr-1" viewBox="0 0 16 16"><path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/></svg>
-                                Como Instalar (How To)
-                            </button>
                         </div>
                     </div>
                     <div class="dropdown-divider"></div>
@@ -783,29 +783,26 @@
                         <div class="row">
                             <div class="col-md-7">
                                 <ol class="small">
-                                    <li class="mb-2"><strong>Instalar QZ Tray</strong> em cada desktop → <a href="https://qz.io/download/" target="_blank">qz.io/download</a></li>
-                                    <li class="mb-2"><strong>Gerar chaves DEMO</strong> em UM computador:
-                                        <br><code>QZ Tray (bandeja) → Botão direito → Advanced → Site Manager → "+" → Create New</code>
-                                        <br>Clicar <strong>Yes</strong> em todas as perguntas (criar, instalar, copiar override)
+                                    <li class="mb-2"><strong>Instale o QZ Tray</strong> em cada desktop → <a href="https://qz.io/download/" target="_blank">qz.io/download</a></li>
+                                    <li class="mb-2"><strong>Baixe o certificado</strong> → <a href="<?php echo $qzDownload; ?>?file=cert">Baixar certificado (.zip)</a>
+                                        <br>Após baixar, descompacte o arquivo no desktop. Você precisará do certificado na próxima etapa.
                                     </li>
-                                    <li class="mb-2"><strong>Copiar para o servidor</strong> os 2 arquivos gerados (pasta "QZ Tray Demo Cert" na Área de Trabalho):
-                                        <br><code>digital-certificate.txt</code> → <code>ebi/template/assets/signing/</code>
-                                        <br><code>private-key.pem</code> → <code>ebi/template/assets/signing/</code>
+                                    <li class="mb-2"><strong>Instale o certificado baixado</strong>:
+                                        <br>Clique no ícone do QZ Tray ao lado do relógio, no canto inferior direito.
+                                        <br><code>Advanced → Site Manager → "+" → Browse</code>
+                                        <br>Localize o arquivo descompactado e selecione <code>digital-certificate.txt</code>.
                                     </li>
-                                    <li class="mb-2"><strong>Distribuir override.crt</strong> para TODOS os desktops:
-                                        <br>Copiar <code>C:\Program Files\QZ Tray\override.crt</code> da máquina geradora para todas as outras no mesmo caminho
-                                    </li>
-                                    <li class="mb-2"><strong>Reiniciar QZ Tray</strong> em cada máquina (fechar no tray e reabrir)</li>
+                                    <li class="mb-2"><strong>Reinicie o QZ Tray</strong> em cada máquina: clique no ícone do QZ Tray e escolha <strong>Reload</strong>.</li>
                                 </ol>
                             </div>
                             <div class="col-md-5">
                                 <div class="card bg-light p-3">
                                     <h6 class="mb-2"><i class="fas fa-link mr-1"></i> Links úteis</h6>
-                                    <a href="https://qz.io/docs/signing" target="_blank" class="d-block mb-2 small">
-                                        <i class="fas fa-file-signature mr-1"></i> Documentação de Assinatura
-                                    </a>
                                     <a href="https://qz.io/download/" target="_blank" class="d-block mb-2 small">
                                         <i class="fas fa-download mr-1"></i> Download QZ Tray
+                                    </a>
+                                    <a href="<?php echo $qzDownload; ?>?file=cert" class="d-block mb-2 small">
+                                        <i class="fas fa-shield-alt mr-1"></i> Baixar certificado (.zip)
                                     </a>
                                     <a href="https://github.com/qzind/tray/releases/download/v2.2.5/qz-tray-2.2.5-x86_64.exe" target="_blank" class="d-block mb-2 small">
                                         <i class="fas fa-windows mr-1"></i> QZ Tray 2.2.5 x64 (.exe)
