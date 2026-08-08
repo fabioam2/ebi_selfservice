@@ -9,6 +9,8 @@
  */
 
 // Horários administrativos, logs e tarefas devem usar o horário de Brasília.
+// SQLite usa a timezone do processo em suas funções localtime(), não a do PHP.
+putenv('TZ=America/Sao_Paulo');
 date_default_timezone_set('America/Sao_Paulo');
 
 // Diretório raiz do projeto (pai de selfservice/)

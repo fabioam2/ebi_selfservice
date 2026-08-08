@@ -28,6 +28,7 @@ $ebiTimezone = (string)($config['GERAL']['TIMEZONE'] ?? 'America/Sao_Paulo');
 if (!in_array($ebiTimezone, timezone_identifiers_list(), true)) {
     $ebiTimezone = 'America/Sao_Paulo';
 }
+putenv('TZ=' . $ebiTimezone);
 date_default_timezone_set($ebiTimezone);
 
 // ── Constantes de banco de dados ─────────────────────────────────────────────

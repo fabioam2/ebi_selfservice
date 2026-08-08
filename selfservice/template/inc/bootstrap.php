@@ -19,6 +19,7 @@ $templateTimezone = (string)($config['GERAL']['TIMEZONE'] ?? 'America/Sao_Paulo'
 if (!in_array($templateTimezone, timezone_identifiers_list(), true)) {
     $templateTimezone = 'America/Sao_Paulo';
 }
+putenv('TZ=' . $templateTimezone);
 date_default_timezone_set($templateTimezone);
 
 $baseDir = dirname(__DIR__);

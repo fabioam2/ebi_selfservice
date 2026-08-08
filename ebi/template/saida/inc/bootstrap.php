@@ -24,6 +24,7 @@ $saidaTimezone = (string)($config['GERAL']['TIMEZONE'] ?? 'America/Sao_Paulo');
 if (!in_array($saidaTimezone, timezone_identifiers_list(), true)) {
     $saidaTimezone = 'America/Sao_Paulo';
 }
+putenv('TZ=' . $saidaTimezone);
 date_default_timezone_set($saidaTimezone);
 
 // ── Constantes de BD ──────────────────────────────────────────────────────────
