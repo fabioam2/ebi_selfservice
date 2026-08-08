@@ -166,9 +166,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['criar_nova_instancia']
         $comum = $_SESSION['dados_cadastro']['comum'] ?? '';
         $senha = $_SESSION['dados_cadastro']['senha'] ?? '';
 
-        if (empty($nome) || empty($email) || empty($senha)) {
+        if (empty($nome) || empty($email) || strlen($senha) < 8) {
             $tipo_mensagem = 'danger';
-            $mensagem = 'Dados do cadastro não encontrados. Por favor, preencha o formulário novamente.';
+            $mensagem = 'Dados do cadastro inválidos ou incompletos. A senha deve ter pelo menos 8 caracteres.';
             unset($_SESSION['instancia_existente']);
             unset($_SESSION['user_id_existente']);
         } else {
@@ -256,8 +256,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['cadastrar'])) {
         $erros[] = "Comum é obrigatório";
     }
     
-    if (empty($senha) || strlen($senha) < 6) {
-        $erros[] = "Senha deve ter no mínimo 6 caracteres";
+    if (empty($senha) || strlen($senha) < 8) {
+        $erros[] = "Senha deve ter no mínimo 8 caracteres";
     }
     
     if ($senha !== $confirmar_senha) {
@@ -608,6 +608,51 @@ if (!empty($_SESSION['contas_existentes'])) {
             color: #fff;
             box-shadow: 0 7px 16px rgba(31, 157, 97, 0.35);
         }
+
+        .acoes-sistema {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .acoes-sistema .btn-acessar,
+        .acoes-sistema .btn-copy {
+            align-items: center;
+            display: inline-flex;
+            flex: 1 1 210px;
+            justify-content: center;
+            margin: 0;
+            min-height: 48px;
+            padding: 12px 20px;
+        }
+
+        .modal-favorito .modal-content {
+            border: 0;
+            border-radius: 14px;
+            overflow: hidden;
+        }
+
+        .modal-favorito .modal-header {
+            background: linear-gradient(135deg, var(--brand), var(--brand-strong));
+            color: #fff;
+        }
+
+        .modal-favorito .close {
+            color: #fff;
+            opacity: 0.85;
+        }
+
+        .favorito-link {
+            background: #f3f8fb;
+            border: 1px solid #cfe0ea;
+            border-radius: 8px;
+            color: #173146;
+            font-family: monospace;
+            font-size: 0.8rem;
+            overflow-wrap: anywhere;
+            padding: 10px;
+        }
         
         .info-box {
             background: #eff9ff;
@@ -855,13 +900,15 @@ if (!empty($_SESSION['contas_existentes'])) {
                     </a>
                 </div>
 
-                <button class="btn btn-acessar" onclick="window.open('<?php echo htmlspecialchars($link_sistema); ?>', '_blank')">
-                    <i class="fas fa-external-link-alt"></i> Acessar Sistema
-                </button>
+                <div class="acoes-sistema">
+                    <button type="button" class="btn btn-acessar" onclick="solicitarAcessoSistema()">
+                        <i class="fas fa-external-link-alt mr-2"></i> Acessar Sistema
+                    </button>
 
-                <button class="btn btn-copy mt-2" onclick="copiarLink()">
-                    <i class="fas fa-copy"></i> Copiar Link
-                </button>
+                    <button type="button" class="btn btn-copy" onclick="copiarLink()">
+                        <i class="fas fa-copy mr-2"></i> Copiar Link
+                    </button>
+                </div>
 
                 <hr class="my-4">
 
@@ -956,14 +1003,14 @@ if (!empty($_SESSION['contas_existentes'])) {
                 <div class="form-group password-toggle">
                     <label for="senha"><i class="fas fa-lock"></i> Senha</label>
                     <input type="password" class="form-control" id="senha" name="senha" 
-                           placeholder="Mínimo 6 caracteres" required>
+                          placeholder="Mínimo 8 caracteres" minlength="8" required autocomplete="new-password">
                     <i class="fas fa-eye" onclick="togglePassword('senha')"></i>
                 </div>
                 
                 <div class="form-group password-toggle">
                     <label for="confirmar_senha"><i class="fas fa-lock"></i> Confirmar Senha</label>
                     <input type="password" class="form-control" id="confirmar_senha" name="confirmar_senha" 
-                           placeholder="Digite a senha novamente" required>
+                          placeholder="Digite a senha novamente" minlength="8" required autocomplete="new-password">
                     <i class="fas fa-eye" onclick="togglePassword('confirmar_senha')"></i>
                 </div>
                 
@@ -983,6 +1030,29 @@ if (!empty($_SESSION['contas_existentes'])) {
             </form>
         <?php endif; ?>
     </div>
+
+    <?php if ($mostrar_sucesso): ?>
+    <div class="modal fade modal-favorito" id="modalSalvarFavorito" tabindex="-1" role="dialog" aria-labelledby="tituloSalvarFavorito" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tituloSalvarFavorito"><i class="fas fa-star mr-2"></i>Salve seu acesso</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Fechar"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-2">Adicione este endereço aos favoritos antes de sair para não perder o acesso ao seu sistema.</p>
+                    <div class="favorito-link mb-3"><?php echo htmlspecialchars($link_sistema); ?></div>
+                    <p class="small text-muted mb-0" id="instrucaoFavorito">No computador, use Ctrl+D. No celular, abra o menu do navegador e escolha adicionar aos favoritos.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-copy" onclick="copiarLink()"><i class="fas fa-copy mr-1"></i> Copiar Link</button>
+                    <button type="button" class="btn btn-acessar d-none" id="btnContinuarAcesso" onclick="acessarSistemaAposFavoritar()"><i class="fas fa-external-link-alt mr-1"></i> Continuar para o Sistema</button>
+                    <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
 
     <div class="quick-links">
         <a href="admin.php" class="btn btn-sm quick-link-btn">
@@ -1040,6 +1110,24 @@ if (!empty($_SESSION['contas_existentes'])) {
             } else {
                 copiarLinkFallback(link);
             }
+        }
+
+        function solicitarAcessoSistema() {
+            const modal = $('#modalSalvarFavorito');
+            if (!modal.length) {
+                return;
+            }
+            $('#btnContinuarAcesso').removeClass('d-none');
+            modal.modal('show');
+        }
+
+        function acessarSistemaAposFavoritar() {
+            const linkElement = document.getElementById('linkSistema');
+            if (!linkElement) {
+                return;
+            }
+            window.open(linkElement.href, '_blank', 'noopener');
+            $('#modalSalvarFavorito').modal('hide');
         }
 
         function copiarLinkExistente() {
@@ -1105,6 +1193,16 @@ if (!empty($_SESSION['contas_existentes'])) {
             $('#email_recuperacao').val(email);
             $('#formRecuperarContaEmail').trigger('submit');
         });
+
+        <?php if ($mostrar_sucesso): ?>
+        $(function() {
+            const instruction = $('#instrucaoFavorito');
+            if (/Mac|iPhone|iPad/.test(navigator.platform)) {
+                instruction.text('No computador, use Command+D. No celular, abra o menu do navegador e escolha adicionar aos favoritos.');
+            }
+            $('#modalSalvarFavorito').modal('show');
+        });
+        <?php endif; ?>
     </script>
     <div class="text-center mt-4 mb-2" style="font-size:9px;color:#b0b0b0;opacity:0.6">v<?php echo defined('VERSAO_SISTEMA') ? VERSAO_SISTEMA : date('YmdHi'); ?></div>
 </body>
