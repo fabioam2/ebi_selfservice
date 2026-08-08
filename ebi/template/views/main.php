@@ -847,10 +847,6 @@
                             </button>
                         </div>
                         <div class="modal-body">
-                            <div class="alert alert-info">
-                                <strong>Atenção:</strong> As medidas e os dados da instância são salvos no arquivo config.ini. A impressora QZ Tray é configurada neste computador.
-                            </div>
-
                             <div class="border rounded p-3 mb-4">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
