@@ -602,6 +602,7 @@
                 </div>
                 <!-- Badge status QZ Tray -->
                 <span id="qzStatusBadge" class="badge badge-secondary mr-2" style="font-size:0.75rem; cursor:pointer; padding: 6px 10px; vertical-align: middle;" onclick="abrirModalConfigImpressora()" title="Status do QZ Tray — clique para configurar">
+                    <i class="fas fa-print mr-1" aria-hidden="true" title="Impressora térmica"></i>
                     <span id="qzStatusDot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#dc3545;margin-right:4px;vertical-align:middle;"></span>
                     <span id="qzStatusText">QZ: Desconectado</span>
                 </span>
@@ -899,10 +900,10 @@
                                     <div>
                                         <strong>Impressora QZ Tray</strong>
                                         <small class="d-block text-muted" id="qzConfigPrinterInfo">Verificando conexão...</small>
-                                        <small class="d-block text-muted">Impressora homologada: Elgin/Bematech L42DT. Após conectar, selecione <strong>4BARCODE 4B-2074B</strong> e use esta impressora.</small>
                                     </div>
-                                    <div class="d-flex">
-                                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="abrirModalQZTray()">Gerenciar Impressora</button>
+                                    <div class="d-flex flex-wrap">
+                                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="abrirModalQZTray()"><i class="fas fa-print mr-1"></i>Gerenciar Impressora</button>
+                                        <button type="button" class="btn btn-outline-primary btn-sm ml-2" onclick="abrirModalHowToQZ()" title="Instalar impressora"><i class="fas fa-download mr-1"></i>Instalar Impressora</button>
                                         <a href="calibrar.php" target="_blank" class="btn btn-outline-secondary btn-sm ml-2" title="Calibrar impressora">
                                             <i class="fas fa-sliders-h mr-1"></i>Calibrar Impressora
                                         </a>
@@ -2252,7 +2253,24 @@
         }
 
         function abrirModalHowToQZ() {
-            $('#modalHowToQZ').modal('show');
+            var modalConfig = $('#modalConfigImpressora');
+            var modalHowTo = $('#modalHowToQZ');
+            var configAberta = modalConfig.hasClass('show');
+            if (configAberta) {
+                modalConfig.one('hide.bs.modal', function() {
+                    window.setTimeout(function() {
+                        modalHowTo.modal('show');
+                    }, 350);
+                });
+                modalHowTo.one('hide.bs.modal', function() {
+                    window.setTimeout(function() {
+                        modalConfig.modal('show');
+                    }, 350);
+                });
+                modalConfig.modal('hide');
+                return;
+            }
+            modalHowTo.modal('show');
         }
 
         async function qzConectar() {
