@@ -844,6 +844,9 @@
                                     <li class="mb-2"><strong>Clique em MENU → Impressora QZ Tray</strong>.
                                         <br>Clique em <strong>Conectar</strong>, selecione a impressora com nome similar a <strong>4BARCODE 4B-2074B</strong> e clique em <strong>Usar esta impressora</strong>.
                                     </li>
+                                    <li class="mb-2"><strong>Faça uma calibração antes de começar</strong>.
+                                        <br>Clique em <strong>MENU → Calibrar</strong>, selecione a impressora e clique em <strong>Calibrar Tudo Automaticamente</strong>.
+                                    </li>
                                 </ol>
                             </div>
                             <div class="col-md-5">

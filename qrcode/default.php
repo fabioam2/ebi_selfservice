@@ -184,8 +184,9 @@
         }
 
         select.form-control {
+            height: 42px;
             font-size: 0.82rem;
-            padding: 10px 30px 10px 10px;
+            padding: 7px 24px 7px 10px;
             text-overflow: ellipsis;
             white-space: nowrap;
             overflow: hidden;
@@ -355,6 +356,9 @@
             .qr-container { padding: 24px 18px; border-radius: 18px; }
             .qr-header h1 { font-size: 1.3rem; }
             .qr-header .icon-header { font-size: 2.4rem; }
+            .child-card .form-row .form-group:nth-child(1) { flex: 0 0 42%; max-width: 42%; }
+            .child-card .form-row .form-group:nth-child(2) { flex: 0 0 58%; max-width: 58%; }
+            .child-card .form-row .form-group:nth-child(3) { flex: 0 0 100%; max-width: 100%; padding-top: 2px; }
         }
     </style>
 </head>
