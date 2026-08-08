@@ -383,7 +383,7 @@ if (isset($_POST['salvar_config_impressora'])) {
         // Validar inputs
         $printer_name = trim($_POST['config_printer_name'] ?? 'ZDesigner 105SL');
         $palavra_contador_comum = trim($_POST['config_palavra_contador_comum'] ?? 'bonfim');
-        $lista_palavras_contador_comum = trim($_POST['config_lista_palavras_contador_comum'] ?? 'parque, parqui, par que');
+        $lista_palavras_contador_comum = trim($_POST['config_lista_palavras_contador_comum'] ?? '');
         $tampulseira = intval($_POST['config_tampulseira'] ?? 269);
         $dots = intval($_POST['config_dots'] ?? 8);
         $fecho = intval($_POST['config_fecho'] ?? 30);
