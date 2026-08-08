@@ -1046,7 +1046,6 @@ if (!empty($_SESSION['contas_existentes'])) {
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-copy" onclick="copiarLink()"><i class="fas fa-copy mr-1"></i> Copiar Link</button>
-                    <button type="button" class="btn btn-acessar d-none" id="btnContinuarAcesso" onclick="acessarSistemaAposFavoritar()"><i class="fas fa-external-link-alt mr-1"></i> Continuar para o Sistema</button>
                     <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Fechar</button>
                 </div>
             </div>
@@ -1113,21 +1112,11 @@ if (!empty($_SESSION['contas_existentes'])) {
         }
 
         function solicitarAcessoSistema() {
-            const modal = $('#modalSalvarFavorito');
-            if (!modal.length) {
-                return;
-            }
-            $('#btnContinuarAcesso').removeClass('d-none');
-            modal.modal('show');
-        }
-
-        function acessarSistemaAposFavoritar() {
             const linkElement = document.getElementById('linkSistema');
             if (!linkElement) {
                 return;
             }
             window.open(linkElement.href, '_blank', 'noopener');
-            $('#modalSalvarFavorito').modal('hide');
         }
 
         function copiarLinkExistente() {
