@@ -14,6 +14,8 @@ if (isset($_POST['cadastrar'])) {
     $idades            = $_POST['idade']             ?? [];
     $telefones         = $_POST['telefone']          ?? [];
     $comuns            = $_POST['comum']             ?? [];
+    $cidades            = $_POST['cidade']           ?? [];
+    $estados            = $_POST['estado']           ?? [];
     $datasNascimento   = $_POST['data_nascimento']   ?? [];
     $sexos             = $_POST['sexo']              ?? [];
     $portariaCadastro  = strtoupper(trim($_POST['portaria_cadastro'] ?? ''));
@@ -39,6 +41,8 @@ if (isset($_POST['cadastrar'])) {
                 $idade    = trim($idades[$i]            ?? '');
                 $tel      = trim($telefones[$i]         ?? '');
                 $comum    = trim($comuns[$i]            ?? '');
+                $cidade   = trim($cidades[$i]           ?? '');
+                $estado   = strtoupper(trim($estados[$i] ?? ''));
                 $dataNasc = trim($datasNascimento[$i]   ?? '');
                 $sexo     = trim($sexos[$i]             ?? '');
 
@@ -48,6 +52,11 @@ if (isset($_POST['cadastrar'])) {
 
                 if ($nome === '' || $resp === '' || $idade === '' || $tel === '' || $comum === '') {
                     $erros[] = 'Linha ' . ($i + 1) . ': Todos os campos são obrigatórios se a linha for preenchida.';
+                    continue;
+                }
+
+                if ($estado !== '' && !in_array($estado, ['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'], true)) {
+                    $erros[] = 'Linha ' . ($i + 1) . ': UF inválida.';
                     continue;
                 }
 
@@ -64,7 +73,9 @@ if (isset($_POST['cadastrar'])) {
                     $portariaCadastro,
                     $codResp,
                     sanitize_for_file($dataNasc),
-                    sanitize_for_file($sexo)
+                    sanitize_for_file($sexo),
+                    sanitize_for_file($cidade),
+                    $estado
                 );
 
                 $novosParaStats[] = [

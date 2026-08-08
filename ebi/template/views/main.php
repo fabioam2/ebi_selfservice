@@ -38,15 +38,16 @@
         #formNovoCadastro .form-registro-linha .form-group { margin-bottom: 0.1rem; padding-left: 4px; padding-right: 4px; }
         #formNovoCadastro .form-control-sm { font-size: 0.82rem; }
 
-        .col-nome-crianca { flex: 0 0 20%; max-width: 20%; }
-        .col-responsavel { flex: 0 0 20%; max-width: 20%; }
-        .col-idade { flex: 0 0 7%; max-width: 7%; }
-        .col-telefone { flex: 0 0 15%; max-width: 15%; }
-        .col-comum { flex: 0 0 14%; max-width: 14%; }
+        .col-nome-crianca { flex: 0 0 16%; max-width: 16%; }
+        .col-responsavel { flex: 0 0 15%; max-width: 15%; }
+        .col-idade { flex: 0 0 6%; max-width: 6%; }
+        .col-telefone { flex: 0 0 12%; max-width: 12%; }
+        .col-cidade { flex: 0 0 10%; max-width: 10%; }
+        .col-estado { flex: 0 0 6%; max-width: 6%; }
+        .col-comum { flex: 0 0 10%; max-width: 10%; }
         .col-sexo { flex: 0 0 5%; max-width: 5%; }
         .col-nascimento { flex: 0 0 7%; max-width: 7%; }
         .col-acao { flex: 0 0 9%; max-width: 9%; }
-        .badge-teste-v2 { font-size: .6rem; vertical-align: middle; background: linear-gradient(135deg, #f59e0b, #d97706); border: none; }
 
         .dropdown-menu { border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); border: 1px solid #e2e8f0; }
         .dropdown-menu button.dropdown-item, .dropdown-menu a.dropdown-item { cursor: pointer; font-size: 0.85rem; border-radius: 6px; margin: 2px 6px; padding: 6px 12px; }
@@ -326,8 +327,8 @@
                                 ? $projectUrlPrefix . 'ebi/template/assets/signing/'
                                 : 'assets/signing/';
                             $qrcodeUrl = defined('INSTANCE_DIR')
-                                ? $projectUrlPrefix . 'qrcode/qrcode.2.php'
-                                : '../../qrcode/qrcode.2.php';
+                                ? $projectUrlPrefix . 'qrcode/default.php'
+                                : '../../qrcode/default.php';
                             ?>
                             <button class="dropdown-item" type="button" onclick="abrirModalHowToQZ()" id="menuHowToQZ">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-question-circle mr-1" viewBox="0 0 16 16"><path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/></svg>
@@ -425,8 +426,10 @@
                 <div class="col col-idade text-center">Idade</div>
                 <div class="col col-telefone">Telefone</div>
                 <div class="col col-comum">Comum</div>
+                <div class="col col-cidade" title="Cidade (opcional)">Cidade</div>
+                <div class="col col-estado text-center" title="Estado / UF (opcional)">UF</div>
                 <div class="col col-sexo text-center" title="M/F">M/F</div>
-                <div class="col col-nascimento text-center" title="Data de Nascimento">DT</div>
+                <div class="col col-nascimento text-center" title="Data de Nascimento">Data</div>
                 <div class="col col-acao text-center">Ação</div>
             </div>
 
@@ -452,21 +455,58 @@
                     <label for="input_<?php echo $linha; ?>_4" class="d-md-none">Comum <?php echo $linha + 1; ?>:</label>
                     <input type="text" class="form-control form-control-sm cadastro-input" id="input_<?php echo $linha; ?>_4" name="comum[]" data-linha="<?php echo $linha; ?>" data-col="4" placeholder="Comum">
                 </div>
+                <div class="form-group col-md col-cidade">
+                    <label for="input_<?php echo $linha; ?>_5" class="d-md-none">Cidade <?php echo $linha + 1; ?>:</label>
+                    <input type="text" class="form-control form-control-sm cadastro-input" id="input_<?php echo $linha; ?>_5" name="cidade[]" data-linha="<?php echo $linha; ?>" data-col="5" placeholder="Cidade (opcional)">
+                </div>
+                <div class="form-group col-md col-estado">
+                    <label for="input_<?php echo $linha; ?>_6" class="d-md-none" title="Estado (UF)">UF <?php echo $linha + 1; ?>:</label>
+                    <select class="form-control form-control-sm cadastro-input text-center" id="input_<?php echo $linha; ?>_6" name="estado[]" data-linha="<?php echo $linha; ?>" data-col="6" title="Estado (UF)" style="font-size:0.7rem;padding:0.2rem;">
+                        <option value=""></option>
+                        <option value="AC">AC</option>
+                        <option value="AL">AL</option>
+                        <option value="AP">AP</option>
+                        <option value="AM">AM</option>
+                        <option value="BA">BA</option>
+                        <option value="CE">CE</option>
+                        <option value="DF">DF</option>
+                        <option value="ES">ES</option>
+                        <option value="GO">GO</option>
+                        <option value="MA">MA</option>
+                        <option value="MT">MT</option>
+                        <option value="MS">MS</option>
+                        <option value="MG">MG</option>
+                        <option value="PA">PA</option>
+                        <option value="PB">PB</option>
+                        <option value="PR">PR</option>
+                        <option value="PE">PE</option>
+                        <option value="PI">PI</option>
+                        <option value="RJ">RJ</option>
+                        <option value="RN">RN</option>
+                        <option value="RS">RS</option>
+                        <option value="RO">RO</option>
+                        <option value="RR">RR</option>
+                        <option value="SC">SC</option>
+                        <option value="SP">SP</option>
+                        <option value="SE">SE</option>
+                        <option value="TO">TO</option>
+                    </select>
+                </div>
                 <div class="form-group col-md col-sexo">
-                    <label for="input_<?php echo $linha; ?>_5" class="d-md-none" title="M/F">M/F <?php echo $linha + 1; ?>:</label>
-                    <select class="form-control form-control-sm cadastro-input text-center" id="input_<?php echo $linha; ?>_5" name="sexo[]" data-linha="<?php echo $linha; ?>" data-col="5" title="M/F" style="font-size:0.7rem;padding:0.2rem;">
+                    <label for="input_<?php echo $linha; ?>_7" class="d-md-none" title="M/F">M/F <?php echo $linha + 1; ?>:</label>
+                    <select class="form-control form-control-sm cadastro-input text-center" id="input_<?php echo $linha; ?>_7" name="sexo[]" data-linha="<?php echo $linha; ?>" data-col="7" title="M/F" style="font-size:0.7rem;padding:0.2rem;">
                         <option value=""></option>
                         <option value="M">M</option>
                         <option value="F">F</option>
                     </select>
                 </div>
                 <div class="form-group col-md col-nascimento">
-                    <label for="input_<?php echo $linha; ?>_6" class="d-md-none" title="Data de Nascimento">DT <?php echo $linha + 1; ?>:</label>
-                    <input type="text" inputmode="numeric" class="form-control form-control-sm data-nascimento-mask cadastro-input text-center" id="input_<?php echo $linha; ?>_6" name="data_nascimento[]" data-linha="<?php echo $linha; ?>" data-col="6" title="Data de Nascimento" placeholder="dd/mm" maxlength="10" style="font-size:0.7rem;padding:0.2rem;">
+                    <label for="input_<?php echo $linha; ?>_8" class="d-md-none" title="Data de Nascimento">Data <?php echo $linha + 1; ?>:</label>
+                    <input type="text" inputmode="numeric" class="form-control form-control-sm data-nascimento-mask cadastro-input text-center" id="input_<?php echo $linha; ?>_8" name="data_nascimento[]" data-linha="<?php echo $linha; ?>" data-col="8" title="Data de Nascimento" placeholder="dd/mm" maxlength="10" style="font-size:0.7rem;padding:0.2rem;">
                 </div>
                 <div class="form-group col-md col-acao px-1 d-flex align-items-center justify-content-center">
                     <?php if ($linha > 0): ?>
-                    <button type="button" class="btn btn-primary btn-sm btn-copiar-quadrado btn-copiar-dados" data-target-linha="<?php echo $linha; ?>" title="Copiar Responsável, Telefone e Comum da Linha 1">
+                    <button type="button" class="btn btn-primary btn-sm btn-copiar-quadrado btn-copiar-dados" data-target-linha="<?php echo $linha; ?>" title="Copiar Responsável, Telefone, Comum, Cidade e UF da Linha 1">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-files" viewBox="0 0 16 16">
                             <path d="M13 0H6a2 2 0 0 0-2 2 2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2 2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm0 13V4a2 2 0 0 0-2-2H5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1zM3 4a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4z"/>
                         </svg>
@@ -1067,8 +1107,8 @@
     <script>
         var csrfToken = <?php echo json_encode(csrf_token()); ?>;
         const NUM_LINHAS_FORM_CADASTRO = <?php echo NUM_LINHAS_FORMULARIO_CADASTRO; ?>;
-        // QR v2 usa sete colunas por linha, incluindo sexo e data de nascimento.
-        const NUM_CAMPOS_POR_LINHA_CADASTRO = 7;
+        // QR Code inclui cidade, UF, sexo e data de nascimento em nove colunas.
+        const NUM_CAMPOS_POR_LINHA_CADASTRO = 9;
 
         function focarPrimeiroCampoCadastro() {
             $('#input_0_0').focus();
@@ -1080,7 +1120,10 @@
             $('#input_' + linha + '_2').val('');
             $('#input_' + linha + '_3').val('').trigger('input');
             $('#input_' + linha + '_4').val('');
-            $('#input_' + linha + '_5').val('').trigger('input');
+            $('#input_' + linha + '_5').val('');
+            $('#input_' + linha + '_6').val('');
+            $('#input_' + linha + '_7').val('').trigger('input');
+            $('#input_' + linha + '_8').val('').trigger('input');
         }
 
         $(document).ready(function(){
@@ -1409,10 +1452,14 @@
                 const responsavelLinha0 = $('#input_0_1').val();
                 const telefoneLinha0 = $('#input_0_3').val();
                 const comumLinha0 = $('#input_0_4').val();
+                const cidadeLinha0 = $('#input_0_5').val();
+                const estadoLinha0 = $('#input_0_6').val();
 
                 $('#input_' + targetLinha + '_1').val(responsavelLinha0);
                 $('#input_' + targetLinha + '_3').val(telefoneLinha0).trigger('input'); 
                 $('#input_' + targetLinha + '_4').val(comumLinha0);
+                $('#input_' + targetLinha + '_5').val(cidadeLinha0);
+                $('#input_' + targetLinha + '_6').val(estadoLinha0);
             });
 
             $('#btnLimparCadastro').on('click', function() {
@@ -1463,7 +1510,7 @@
 
             // Função auxiliar para extrair dados visíveis da tabela
             function extrairDadosTabelaVisivel() {
-                var headers = ['Impresso', 'Portaria', 'Codigo', 'Cod Resp', 'Nome da Crianca', 'Nome do Responsavel', 'Telefone', 'Idade', 'M/F', 'DT', 'Comum'];
+                var headers = ['Impresso', 'Portaria', 'Codigo', 'Cod Resp', 'Nome da Crianca', 'Nome do Responsavel', 'Telefone', 'Idade', 'M/F', 'Data', 'Comum'];
                 var rows = [];
                 $('#lista-criancas tr').each(function() {
                     if ($(this).is(':visible')) {

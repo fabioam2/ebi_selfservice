@@ -39,6 +39,8 @@ function _ebi_db_init(PDO $pdo): void {
             cod_resp         INTEGER NOT NULL DEFAULT 0,
             data_nascimento  TEXT    NOT NULL DEFAULT '',
             sexo             TEXT    NOT NULL DEFAULT '',
+            cidade           TEXT    NOT NULL DEFAULT '',
+            estado           TEXT    NOT NULL DEFAULT '',
             created_at       TEXT    NOT NULL
                 DEFAULT (strftime('%Y-%m-%d %H:%M:%S','now','localtime'))
         );
@@ -77,23 +79,23 @@ function _ebi_db_init(PDO $pdo): void {
         );
     ");
 
-    // Migration: adicionar coluna data_nascimento em BDs existentes
+    // Migration: adicionar colunas de cadastro em BDs existentes
     $cols = $pdo->query("PRAGMA table_info(cadastros)")->fetchAll();
-    $hasDataNasc = false;
-    foreach ($cols as $col) {
-        if ($col['name'] === 'data_nascimento') { $hasDataNasc = true; break; }
-    }
+    $columnNames = array_column($cols, 'name');
+    $hasDataNasc = in_array('data_nascimento', $columnNames, true);
     if (!$hasDataNasc) {
         $pdo->exec("ALTER TABLE cadastros ADD COLUMN data_nascimento TEXT NOT NULL DEFAULT ''");
     }
 
-    // Migration: adicionar coluna sexo em BDs existentes
-    $hasSexo = false;
-    foreach ($cols as $col) {
-        if ($col['name'] === 'sexo') { $hasSexo = true; break; }
-    }
+    $hasSexo = in_array('sexo', $columnNames, true);
     if (!$hasSexo) {
         $pdo->exec("ALTER TABLE cadastros ADD COLUMN sexo TEXT NOT NULL DEFAULT ''");
+    }
+
+    foreach (['cidade', 'estado'] as $column) {
+        if (!in_array($column, $columnNames, true)) {
+            $pdo->exec("ALTER TABLE cadastros ADD COLUMN {$column} TEXT NOT NULL DEFAULT ''");
+        }
     }
 
     $statsColumns = array_column($pdo->query('PRAGMA table_info(stats_daily)')->fetchAll(), 'name');
@@ -115,22 +117,24 @@ function db_inserir_cadastro(
     string $portaria,
     int    $codResp,
     string $dataNascimento = '',
-    string $sexo = ''
+    string $sexo = '',
+    string $cidade = '',
+    string $estado = ''
 ): int {
     $pdo  = ebi_db();
     $stmt = $pdo->prepare(
         'INSERT INTO cadastros
-            (nome_crianca, nome_responsavel, telefone, idade, comum, portaria, cod_resp, data_nascimento, sexo)
-         VALUES (?,?,?,?,?,?,?,?,?)'
+            (nome_crianca, nome_responsavel, telefone, idade, comum, portaria, cod_resp, data_nascimento, sexo, cidade, estado)
+         VALUES (?,?,?,?,?,?,?,?,?,?,?)'
     );
-    $stmt->execute([$nomeCrianca, $nomeResponsavel, $telefone, $idade, $comum, $portaria, $codResp, $dataNascimento, $sexo]);
+    $stmt->execute([$nomeCrianca, $nomeResponsavel, $telefone, $idade, $comum, $portaria, $codResp, $dataNascimento, $sexo, $cidade, $estado]);
     return (int)$pdo->lastInsertId();
 }
 
 function db_listar_cadastros(): array {
     $rows = ebi_db()->query(
         'SELECT id, nome_crianca, nome_responsavel, telefone, idade, comum,
-                status_impresso, portaria, cod_resp, data_nascimento, sexo, created_at
+                status_impresso, portaria, cod_resp, data_nascimento, sexo, cidade, estado, created_at
          FROM cadastros ORDER BY id ASC'
     )->fetchAll();
 
@@ -148,6 +152,8 @@ function db_listar_cadastros(): array {
             'cod_resp'        => (string)$r['cod_resp'],
             'dataNascimento'  => $r['data_nascimento'] ?? '',
             'sexo'            => $r['sexo'] ?? '',
+            'cidade'          => $r['cidade'] ?? '',
+            'estado'          => $r['estado'] ?? '',
             'created_at'      => $r['created_at'] ?? '',
         ];
     }

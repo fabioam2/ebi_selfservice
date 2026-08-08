@@ -183,6 +183,15 @@
             outline: none;
         }
 
+        select.form-control {
+            font-size: 0.82rem;
+            padding: 10px 30px 10px 10px;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+            background-position: right 10px center;
+        }
+
         .error {
             color: var(--danger);
             font-size: 0.78rem;
@@ -383,15 +392,58 @@
                 </div>
 
                 <div class="form-row">
-                    <div class="form-group col-7">
+                    <div class="form-group col-12">
                         <label for="telefone">Telefone</label>
                         <input type="text" inputmode="tel" class="form-control" id="telefone" name="telefone" placeholder="(00) 00000-0000" autocomplete="tel">
                         <span id="errorTelefone" class="error"></span>
                     </div>
-                    <div class="form-group col-5">
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-6">
                         <label for="comum">Comum</label>
                         <input type="text" class="form-control" id="comum" name="comum" placeholder="Ex: Central">
                         <span id="errorComum" class="error"></span>
+                    </div>
+                    <div class="form-group col-6">
+                        <label for="cidade">Cidade <span class="text-muted" style="font-weight:400;">(opcional)</span></label>
+                        <input type="text" class="form-control" id="cidade" name="cidade" placeholder="Ex: São Paulo">
+                        <span id="errorCidade" class="error"></span>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group col-12">
+                        <label for="estado">Estado <span class="text-muted" style="font-weight:400;">(opcional)</span></label>
+                        <select class="form-control" id="estado" name="estado">
+                            <option value="">—</option>
+                            <option value="AC">AC - Acre</option>
+                            <option value="AL">AL - Alagoas</option>
+                            <option value="AP">AP - Amapá</option>
+                            <option value="AM">AM - Amazonas</option>
+                            <option value="BA">BA - Bahia</option>
+                            <option value="CE">CE - Ceará</option>
+                            <option value="DF">DF - Distrito Federal</option>
+                            <option value="ES">ES - Espírito Santo</option>
+                            <option value="GO">GO - Goiás</option>
+                            <option value="MA">MA - Maranhão</option>
+                            <option value="MT">MT - Mato Grosso</option>
+                            <option value="MS">MS - Mato Grosso do Sul</option>
+                            <option value="MG">MG - Minas Gerais</option>
+                            <option value="PA">PA - Pará</option>
+                            <option value="PB">PB - Paraíba</option>
+                            <option value="PR">PR - Paraná</option>
+                            <option value="PE">PE - Pernambuco</option>
+                            <option value="PI">PI - Piauí</option>
+                            <option value="RJ">RJ - Rio de Janeiro</option>
+                            <option value="RN">RN - Rio Grande do Norte</option>
+                            <option value="RS">RS - Rio Grande do Sul</option>
+                            <option value="RO">RO - Rondônia</option>
+                            <option value="RR">RR - Roraima</option>
+                            <option value="SC">SC - Santa Catarina</option>
+                            <option value="SP">SP - São Paulo</option>
+                            <option value="SE">SE - Sergipe</option>
+                            <option value="TO">TO - Tocantins</option>
+                        </select>
+                        <span id="errorEstado" class="error"></span>
                     </div>
                 </div>
 
@@ -409,11 +461,18 @@
                             <span id="errorNomeFilho1" class="error"></span>
                         </div>
                         <div class="form-row">
-                            <div class="form-group col-7">
+                            <div class="form-group col-4">
+                                <label for="sexoFilho1">Gênero</label>
+                                <select class="form-control" id="sexoFilho1" name="sexoFilho1">
+                                    <option value="M">Menino</option>
+                                    <option value="F">Menina</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-5">
                                 <label for="dataNascimentoMaskFilho1">Data de Nascimento</label>
                                 <input type="text" inputmode="numeric" class="form-control" id="dataNascimentoMaskFilho1" name="dataNascimentoMaskFilho1" placeholder="dd/mm/aaaa" maxlength="10">
                             </div>
-                            <div class="form-group col-5">
+                            <div class="form-group col-3">
                                 <label>&nbsp;</label>
                                 <span id="idadeDisplay1" class="idade-display"></span>
                             </div>
@@ -551,11 +610,18 @@
                         <span id="errorNomeFilho${childCount}" class="error"></span>
                     </div>
                     <div class="form-row">
-                        <div class="form-group col-7">
+                        <div class="form-group col-4">
+                            <label for="sexoFilho${childCount}">Gênero</label>
+                            <select class="form-control" id="sexoFilho${childCount}" name="sexoFilho${childCount}">
+                                <option value="M">Menino</option>
+                                <option value="F">Menina</option>
+                            </select>
+                        </div>
+                        <div class="form-group col-5">
                             <label for="dataNascimentoMaskFilho${childCount}">Data de Nascimento</label>
                             <input type="text" inputmode="numeric" class="form-control" id="dataNascimentoMaskFilho${childCount}" name="dataNascimentoMaskFilho${childCount}" placeholder="dd/mm/aaaa" maxlength="10">
                         </div>
-                        <div class="form-group col-5">
+                        <div class="form-group col-3">
                             <label>&nbsp;</label>
                             <span id="idadeDisplay${childCount}" class="idade-display"></span>
                         </div>
@@ -594,6 +660,12 @@
                     children[i].querySelector('input[name^="nomeFilho"]').name = `nomeFilho${newId}`;
                     children[i].querySelector('span[id^="errorNomeFilho"]').id = `errorNomeFilho${newId}`;
 
+                    // GÊNERO
+                    children[i].querySelector('label[for^="sexoFilho"]').setAttribute('for', `sexoFilho${newId}`);
+                    const sexoInput = children[i].querySelector('select[id^="sexoFilho"]');
+                    sexoInput.id = `sexoFilho${newId}`;
+                    sexoInput.name = `sexoFilho${newId}`;
+
                     // DATA DE NASCIMENTO (mask input)
                     children[i].querySelector('label[for^="dataNascimentoMaskFilho"]').setAttribute('for', `dataNascimentoMaskFilho${newId}`);
                     const maskInput = children[i].querySelector('input[id^="dataNascimentoMaskFilho"]');
@@ -623,6 +695,8 @@
         function generateQRCode() {
             var nomePai = removeAccents(document.getElementById('nomePai').value);
             var telefone = removeAccents(document.getElementById('telefone').value);
+            var cidade = removeAccents(document.getElementById('cidade').value);
+            var estado = document.getElementById('estado').value;
             var comum = removeAccents(document.getElementById('comum').value);
 
             var qrData = "";
@@ -631,6 +705,8 @@
             // Limpa mensagens de erro do Responsável
             document.getElementById('errorNomePai').innerText = '';
             document.getElementById('errorTelefone').innerText = '';
+            document.getElementById('errorCidade').innerText = '';
+            document.getElementById('errorEstado').innerText = '';
             document.getElementById('errorComum').innerText = '';
 
             // Validação dos dados do Responsável
@@ -677,12 +753,12 @@
                 }
 
                 if (isValid && nomeFilho && idade !== null) {
-                    // Estrutura de dados por linha (uma criança):
-                    // NomeFilho \t NomePai \t IdadeFilho \t TelefonePai \t ComumPai
-                    qrData += `${nomeFilho}\t${nomePai}\t${idade}\t${telefone}\t${comum}`;
+                    // Nome, responsável, idade, telefone, comum, cidade, UF, sexo e nascimento.
+                    const sexoFilho = document.getElementById(`sexoFilho${i}`).value || 'M';
+                    qrData += `${nomeFilho}\t${nomePai}\t${idade}\t${telefone}\t${comum}\t${cidade}\t${estado}\t${sexoFilho}\t${dataNascimentoMaskValue}`;
 
                     if (i < childCount) {
-                        qrData += '\r'; // Separador de registros (crianças)
+                        qrData += '\t'; // Tab entre crianças; Enter fica reservado ao fim da leitura.
                     }
                 }
             }

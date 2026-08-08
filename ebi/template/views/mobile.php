@@ -314,6 +314,7 @@ $totalHoje = count($cadastrosHojeMobile);
             h+='<div class="line"><span class="lbl">Responsável</span><span>'+esc(d.resp)+'</span></div>';
             h+='<div class="line"><span class="lbl">Idade</span><span>'+esc(d.idade)+' anos</span></div>';
             h+='<div class="line"><span class="lbl">Comum</span><span>'+esc(d.comum)+'</span></div>';
+            if(d.cidade || d.estado) h+='<div class="line"><span class="lbl">Cidade/UF</span><span>'+esc([d.cidade,d.estado].filter(Boolean).join(' - '))+'</span></div>';
         }
         resultData.innerHTML=h; result.classList.add('show');
         btnCad.classList.add('show');
@@ -330,6 +331,8 @@ $totalHoje = count($cadastrosHojeMobile);
             f+='<input type="hidden" name="idade[]" value="'+attr(d.idade)+'">';
             f+='<input type="hidden" name="telefone[]" value="'+attr(d.tel)+'">';
             f+='<input type="hidden" name="comum[]" value="'+attr(d.comum)+'">';
+            f+='<input type="hidden" name="cidade[]" value="'+attr(d.cidade)+'">';
+            f+='<input type="hidden" name="estado[]" value="'+attr(d.estado)+'">';
             f+='<input type="hidden" name="sexo[]" value="'+attr(d.sexo)+'">';
             f+='<input type="hidden" name="data_nascimento[]" value="'+attr(d.nasc)+'">';
         }
@@ -361,6 +364,8 @@ $totalHoje = count($cadastrosHojeMobile);
                         idade: fields[index + 2],
                         tel: fields[index + 3],
                         comum: fields[index + 4],
+                        cidade: fieldsPerChild === 9 ? fields[index + 5] : '',
+                        estado: fieldsPerChild === 9 ? fields[index + 6].toUpperCase() : '',
                         sexo: fields[index + sexoIndex].toUpperCase(),
                         nasc: fields[index + nascimentoIndex],
                     });
@@ -401,6 +406,8 @@ $totalHoje = count($cadastrosHojeMobile);
             idade: fields[2],
             tel: fields[3],
             comum: fields[4],
+            cidade: fieldsPerChild === 9 ? fields[5] : '',
+            estado: fieldsPerChild === 9 ? fields[6].toUpperCase() : '',
             sexo: sexo,
             nasc: nascimento,
         };
