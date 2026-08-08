@@ -301,14 +301,6 @@
                     </div>
                     <div class="dropdown-divider"></div>
                     <h6 class="dropdown-header">Impressora</h6>
-                    <button class="dropdown-item" type="button" onclick="toggleModoDebugImpressao()" id="btnToggleDebug">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bug mr-1" viewBox="0 0 16 16"><path d="M4.355.522a.5.5 0 0 1 .623.333l.291.956A4.979 4.979 0 0 1 8 1c1.007 0 1.946.298 2.731.811l.29-.956a.5.5 0 1 1 .957.29l-.41 1.352A4.985 4.985 0 0 1 13 6h.5a.5.5 0 0 0 0-1h-.538l-.853-2.56a.5.5 0 1 1 .957-.29l.956 2.87A2 2 0 0 1 15.5 7.5v1a2 2 0 0 1-2 2h-.5v.5a5 5 0 0 1-10 0V10h-.5a2 2 0 0 1-2-2v-1a2 2 0 0 1 1.478-1.93l.956-2.87a.5.5 0 1 1 .957.29L2.538 5H2a.5.5 0 0 0 0 1h.5a4.985 4.985 0 0 1 1.432-3.503l-.41-1.352a.5.5 0 0 1 .333-.623zM4 7v4a4 4 0 0 0 8 0V7a4 4 0 0 0-8 0z"/></svg>
-                        <span id="labelDebugMode">Modo Debug: OFF</span>
-                    </button>
-                    <button class="dropdown-item" type="button" onclick="toggleModoTesteImpressao()" id="btnToggleTeste">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tag mr-1" viewBox="0 0 16 16"><path d="M6 4.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm-1 0a.5.5 0 1 0-1 0 .5.5 0 0 0 1 0z"/><path d="M2 1h4.586a1 1 0 0 1 .707.293l7 7a1 1 0 0 1 0 1.414l-4.586 4.586a1 1 0 0 1-1.414 0l-7-7A1 1 0 0 1 1 6.586V2a1 1 0 0 1 1-1zm0 5.586 7 7L13.586 9l-7-7H2v4.586z"/></svg>
-                        <span id="labelTesteMode">Testar Impressão: OFF</span>
-                    </button>
                     <a class="dropdown-item" href="calibrar.php" target="_blank" id="menuCalibrar">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sliders mr-1" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3h9.05zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8h2.05zm9.45 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm-2.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1h9.05z"/></svg>
                         Calibrar
@@ -350,6 +342,22 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download mr-1" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/></svg>
                                 QZ Tray 2.2.5 x64 (.exe)
                             </a>
+                        </div>
+                    </div>
+                    <div class="dropdown-submenu">
+                        <a class="dropdown-item dropdown-toggle" href="#" id="menuAvancado">
+                            <i class="fas fa-tools mr-1"></i>
+                            Avançado
+                        </a>
+                        <div class="dropdown-menu">
+                            <button class="dropdown-item" type="button" onclick="toggleModoDebugImpressao()" id="btnToggleDebug">
+                                <i class="fas fa-bug mr-1"></i>
+                                <span id="labelDebugMode">Modo Debug: OFF</span>
+                            </button>
+                            <button class="dropdown-item" type="button" onclick="toggleModoTesteImpressao()" id="btnToggleTeste">
+                                <i class="fas fa-tag mr-1"></i>
+                                <span id="labelTesteMode">Teste de Impressão: OFF</span>
+                            </button>
                         </div>
                     </div>
                     <div class="dropdown-divider"></div>
@@ -846,13 +854,15 @@
                             <div class="border rounded p-3 mb-4">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <a href="calibrar.php" target="_blank" class="text-primary mr-1" title="Calibrar impressora" aria-label="Calibrar impressora">
-                                            <i class="fas fa-sliders-h"></i>
-                                        </a>
                                         <strong>Impressora QZ Tray</strong>
                                         <small class="d-block text-muted" id="qzConfigPrinterInfo">Verificando conexão...</small>
                                     </div>
-                                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="abrirModalQZTray()">Gerenciar Impressora</button>
+                                    <div class="d-flex">
+                                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="abrirModalQZTray()">Gerenciar Impressora</button>
+                                        <a href="calibrar.php" target="_blank" class="btn btn-outline-secondary btn-sm ml-2" title="Calibrar impressora">
+                                            <i class="fas fa-sliders-h mr-1"></i>Calibrar Impressora
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
 
