@@ -43,7 +43,7 @@
         .col-idade { flex: 0 0 6%; max-width: 6%; }
         .col-telefone { flex: 0 0 12%; max-width: 12%; }
         .col-cidade { flex: 0 0 10%; max-width: 10%; }
-        .col-estado { flex: 0 0 6%; max-width: 6%; }
+        .col-estado { flex: 0 0 5%; max-width: 5%; }
         .col-comum { flex: 0 0 10%; max-width: 10%; }
         .col-sexo { flex: 0 0 5%; max-width: 5%; }
         .col-nascimento { flex: 0 0 7%; max-width: 7%; }
@@ -457,7 +457,7 @@
                 </div>
                 <div class="form-group col-md col-cidade">
                     <label for="input_<?php echo $linha; ?>_5" class="d-md-none">Cidade <?php echo $linha + 1; ?>:</label>
-                    <input type="text" class="form-control form-control-sm cadastro-input" id="input_<?php echo $linha; ?>_5" name="cidade[]" data-linha="<?php echo $linha; ?>" data-col="5" placeholder="Cidade (opcional)">
+                    <input type="text" class="form-control form-control-sm cadastro-input" id="input_<?php echo $linha; ?>_5" name="cidade[]" data-linha="<?php echo $linha; ?>" data-col="5">
                 </div>
                 <div class="form-group col-md col-estado">
                     <label for="input_<?php echo $linha; ?>_6" class="d-md-none" title="Estado (UF)">UF <?php echo $linha + 1; ?>:</label>
@@ -502,7 +502,7 @@
                 </div>
                 <div class="form-group col-md col-nascimento">
                     <label for="input_<?php echo $linha; ?>_8" class="d-md-none" title="Data de Nascimento">Data <?php echo $linha + 1; ?>:</label>
-                    <input type="text" inputmode="numeric" class="form-control form-control-sm data-nascimento-mask cadastro-input text-center" id="input_<?php echo $linha; ?>_8" name="data_nascimento[]" data-linha="<?php echo $linha; ?>" data-col="8" title="Data de Nascimento" placeholder="dd/mm" maxlength="10" style="font-size:0.7rem;padding:0.2rem;">
+                    <input type="text" inputmode="numeric" class="form-control form-control-sm data-nascimento-mask cadastro-input text-center" id="input_<?php echo $linha; ?>_8" name="data_nascimento[]" data-linha="<?php echo $linha; ?>" data-col="8" title="Data de Nascimento" placeholder="dd/mm/aaaa" maxlength="10" style="font-size:0.7rem;padding:0.2rem;">
                 </div>
                 <div class="form-group col-md col-acao px-1 d-flex align-items-center justify-content-center">
                     <?php if ($linha > 0): ?>
@@ -830,6 +830,7 @@
                         <div class="row">
                             <div class="col-md-7">
                                 <ol class="small">
+                                    <li class="mb-2"><strong>Conecte a impressora Elgin/Bematech L42DT</strong>. Apenas este modelo está homologado. O driver será instalado automaticamente e a impressora aparecerá como <strong>4BARCODE 4B-2074B</strong>.</li>
                                     <li class="mb-2"><strong>Instale o QZ Tray</strong> em cada desktop → <a href="https://github.com/qzind/tray/releases/download/v2.2.5/qz-tray-2.2.5-x86_64.exe" target="_blank">QZ Tray 2.2.5 x64 (.exe)</a></li>
                                     <li class="mb-2"><strong>Baixe o certificado</strong> → <a href="<?php echo $qzDownload; ?>?file=cert">Baixar certificado (.zip)</a>
                                         <br>Após baixar, descompacte o arquivo no desktop. Você precisará do certificado na próxima etapa.
@@ -840,6 +841,9 @@
                                         <br>Localize o arquivo descompactado e selecione <code>digital-certificate.txt</code>.
                                     </li>
                                     <li class="mb-2"><strong>Reinicie o QZ Tray</strong> em cada máquina: clique no ícone do QZ Tray e escolha <strong>Reload</strong>.</li>
+                                    <li class="mb-2"><strong>Clique em MENU → Impressora QZ Tray</strong>.
+                                        <br>Clique em <strong>Conectar</strong>, selecione a impressora com nome similar a <strong>4BARCODE 4B-2074B</strong> e clique em <strong>Usar esta impressora</strong>.
+                                    </li>
                                 </ol>
                             </div>
                             <div class="col-md-5">
@@ -892,6 +896,7 @@
                                     <div>
                                         <strong>Impressora QZ Tray</strong>
                                         <small class="d-block text-muted" id="qzConfigPrinterInfo">Verificando conexão...</small>
+                                        <small class="d-block text-muted">Impressora homologada: Elgin/Bematech L42DT. Após conectar, selecione <strong>4BARCODE 4B-2074B</strong> e use esta impressora.</small>
                                     </div>
                                     <div class="d-flex">
                                         <button type="button" class="btn btn-outline-primary btn-sm" onclick="abrirModalQZTray()">Gerenciar Impressora</button>
