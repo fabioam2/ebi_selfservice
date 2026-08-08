@@ -58,6 +58,10 @@ define('TEMPO_BLOQUEIO',      (int)($config['SEGURANCA']['TEMPO_BLOQUEIO']   ?? 
 
 // ── Sessão ────────────────────────────────────────────────────────────────────
 if (session_status() === PHP_SESSION_NONE) {
+    // Keep the gate's login independent from every other instance and module.
+    $_saida_session_root = realpath($_saida_instance_root) ?: $_saida_instance_root;
+    session_name('EBI_SAIDA_' . substr(hash('sha256', $_saida_session_root), 0, 24));
+    ini_set('session.use_strict_mode', '1');
     $cookieParams = [
         'lifetime' => 0, 'path' => '/', 'domain' => '',
         'secure'   => !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off',
@@ -73,6 +77,7 @@ if (session_status() === PHP_SESSION_NONE) {
         );
     }
     session_start();
+    unset($_saida_session_root);
 }
 
 // ── Headers de segurança ──────────────────────────────────────────────────────

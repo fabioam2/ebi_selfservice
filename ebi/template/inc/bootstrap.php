@@ -99,6 +99,10 @@ $_ebi_tempo_sessao = (int)($config['SEGURANCA']['TEMPO_SESSAO'] ?? 1800);
 define('TEMPO_SESSAO', $_ebi_tempo_sessao);
 
 if (session_status() === PHP_SESSION_NONE) {
+    // Each instance needs an independent cookie to prevent cross-instance authentication.
+    $_ebi_session_root = realpath($_ebi_instance_root) ?: $_ebi_instance_root;
+    session_name('EBI_MAIN_' . substr(hash('sha256', $_ebi_session_root), 0, 24));
+    ini_set('session.use_strict_mode', '1');
     $cookieParams = [
         'lifetime' => 0,
         'path'     => '/',
@@ -117,6 +121,7 @@ if (session_status() === PHP_SESSION_NONE) {
         );
     }
     session_start();
+    unset($_ebi_session_root);
 }
 
 // ── Headers de segurança HTTP ─────────────────────────────────────────────────
