@@ -528,15 +528,6 @@
                 document.getElementById('errorNomePai').innerText = 'Este campo é obrigatório';
                 isValid = false;
             }
-            if (!telefone) {
-                document.getElementById('errorTelefone').innerText = 'Este campo é obrigatório';
-                isValid = false;
-            }
-            if (!comum) {
-                document.getElementById('errorComum').innerText = 'Este campo é obrigatório';
-                isValid = false;
-            }
-
             if (!funcao) {
                 document.getElementById('errorFuncao').innerText = 'Selecione uma função';
                 isValid = false;

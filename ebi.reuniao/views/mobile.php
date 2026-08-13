@@ -91,6 +91,18 @@ $totalHoje = count($cadastrosHojeMobile);
             50% { box-shadow: 0 0 0 10px rgba(22,163,74,0); }
         }
 
+        .manual-field { margin-bottom: 12px; }
+        .manual-field label { display: block; margin-bottom: 5px; font-size: 0.78rem; font-weight: 700; color: var(--text-main); }
+        .manual-field input,
+        .manual-field select { width: 100%; min-height: 42px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 10px; color: var(--text-main); font: inherit; font-size: 0.88rem; background: #fff; }
+        .manual-field input:focus,
+        .manual-field select:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
+        .btn-manual {
+            width: 100%; padding: 14px; border: none; border-radius: 12px;
+            background: linear-gradient(135deg, #16a34a, #15803d);
+            color: #fff; font-weight: 800; font-size: 1rem; cursor: pointer;
+        }
+
         .lista-card { max-height: 260px; overflow-y: auto; }
         .lista-item { display: flex; align-items: center; padding: 7px 0; border-bottom: 1px solid #eee; font-size: 0.78rem; }
         .lista-item:last-child { border-bottom: none; }
@@ -149,6 +161,29 @@ $totalHoje = count($cadastrosHojeMobile);
         </button>
     </div>
 
+    <div class="card">
+        <h2><i class="fas fa-user-plus"></i> Cadastro Manual</h2>
+        <div class="manual-field">
+            <label for="manualFuncao">Função</label>
+            <select id="manualFuncao">
+                <option value="">Selecione a função</option>
+                <option value="Coordenadora">Coordenadora</option>
+                <option value="Colaboradora">Colaboradora</option>
+                <option value="Ancião">Ancião</option>
+                <option value="Cooperador do Ofício">Cooperador do Ofício</option>
+                <option value="Cooperador de Jovens">Cooperador de Jovens</option>
+                <option value="Diácono">Diácono</option>
+                <option value="Adm">Adm</option>
+                <option value="Outros">Outros</option>
+            </select>
+        </div>
+        <div class="manual-field">
+            <label for="manualNome">Nome</label>
+            <input type="text" id="manualNome" autocomplete="name" placeholder="Nome e sobrenome">
+        </div>
+        <button type="button" class="btn-manual" id="btnCadManual" onclick="cadastrarManual()"><i class="fas fa-check-circle mr-1"></i> Cadastrar</button>
+    </div>
+
     <!-- Lista dos cadastros de hoje -->
     <div class="card" id="listaHojeCard">
         <h2><i class="fas fa-list"></i> Registros de Hoje (<?php echo $totalHoje; ?>)</h2>
@@ -188,6 +223,7 @@ $totalHoje = count($cadastrosHojeMobile);
     const port = el('portaria'), btn = el('btnScan'), status = el('status');
     const result = el('result'), resultData = el('resultData');
     const btnCad = el('btnCad'), frmPort = el('frmPort'), frmFields = el('frmFields');
+    const manualFuncao = el('manualFuncao'), manualNome = el('manualNome');
 
     // Persistir portaria
     const sv = localStorage.getItem('ebi_mobile_portaria');
@@ -235,12 +271,11 @@ $totalHoje = count($cadastrosHojeMobile);
         btnCad.classList.add('show');
     }
 
-    window.cadastrar = function() {
+    function enviarCadastro(registros) {
         frmPort.value = port.value.toUpperCase();
         if(!frmPort.value){ toast('Defina a Portaria!','err'); return; }
-        if(!data.length){ toast('Escaneie um QR primeiro','err'); return; }
         let f='';
-        for(const d of data){
+        for(const d of registros){
             f+='<input type="hidden" name="nome_crianca[]" value="'+attr(d.nome)+'">';
             f+='<input type="hidden" name="nome_responsavel[]" value="'+attr(d.resp)+'">';
             f+='<input type="hidden" name="idade[]" value="'+attr(d.idade)+'">';
@@ -253,6 +288,32 @@ $totalHoje = count($cadastrosHojeMobile);
         }
         frmFields.innerHTML=f;
         el('frm').submit();
+    }
+
+    window.cadastrar = function() {
+        if(!data.length){ toast('Escaneie um QR primeiro','err'); return; }
+        enviarCadastro(data);
+    };
+
+    window.cadastrarManual = function() {
+        const funcao = manualFuncao.value.trim();
+        const nome = manualNome.value.trim();
+        if (!funcao || !nome) {
+            toast('Informe Função e Nome','err');
+            if (!funcao) manualFuncao.focus(); else manualNome.focus();
+            return;
+        }
+        enviarCadastro([{
+            nome: funcao,
+            resp: nome,
+            idade: '3',
+            tel: '',
+            comum: '',
+            cidade: '',
+            estado: '',
+            sexo: 'X',
+            nasc: '01/01/2023',
+        }]);
     };
 
     function parseQrPayload(text) {

@@ -55,8 +55,8 @@ if (isset($_POST['cadastrar'])) {
                 $sexo     = 'X';
                 $dataNasc = '01/01/2023';
 
-                if ($nome === '' || $resp === '' || $idade === '' || $tel === '' || $comum === '') {
-                    $erros[] = 'Linha ' . ($i + 1) . ': Todos os campos são obrigatórios se a linha for preenchida.';
+                if ($nome === '' || $resp === '') {
+                    $erros[] = 'Linha ' . ($i + 1) . ': Função e Nome são obrigatórios.';
                     continue;
                 }
 

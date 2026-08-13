@@ -449,7 +449,7 @@
                 </div>
                 <div class="form-group col-md col-idade">
                     <label for="input_<?php echo $linha; ?>_2" class="d-md-none">X:</label>
-                    <input type="text" class="form-control form-control-sm cadastro-input text-center meeting-fixed-value" id="input_<?php echo $linha; ?>_2" name="idade[]" data-linha="<?php echo $linha; ?>" data-col="2" value="X" readonly>
+                    <input type="text" class="form-control form-control-sm cadastro-input text-center meeting-fixed-value" id="input_<?php echo $linha; ?>_2" name="idade[]" data-linha="<?php echo $linha; ?>" data-col="2" value="X">
                 </div>
                 <div class="form-group col-md col-telefone">
                     <label for="input_<?php echo $linha; ?>_3" class="d-md-none">Telefone <?php echo $linha + 1; ?>:</label>
@@ -498,11 +498,11 @@
                 </div>
                 <div class="form-group col-md col-sexo">
                     <label for="input_<?php echo $linha; ?>_7" class="d-md-none" title="M/F">X:</label>
-                    <input type="text" class="form-control form-control-sm cadastro-input text-center meeting-fixed-value" id="input_<?php echo $linha; ?>_7" name="sexo[]" data-linha="<?php echo $linha; ?>" data-col="7" title="M/F" value="X" readonly style="font-size:0.7rem;padding:0.2rem;">
+                    <input type="text" class="form-control form-control-sm cadastro-input text-center meeting-fixed-value" id="input_<?php echo $linha; ?>_7" name="sexo[]" data-linha="<?php echo $linha; ?>" data-col="7" title="M/F" value="X" style="font-size:0.7rem;padding:0.2rem;">
                 </div>
                 <div class="form-group col-md col-nascimento">
                     <label for="input_<?php echo $linha; ?>_8" class="d-md-none" title="Data de Nascimento">X:</label>
-                    <input type="text" class="form-control form-control-sm cadastro-input text-center meeting-fixed-value" id="input_<?php echo $linha; ?>_8" name="data_nascimento[]" data-linha="<?php echo $linha; ?>" data-col="8" title="Data de Nascimento" value="X" readonly style="font-size:0.7rem;padding:0.2rem;">
+                    <input type="text" class="form-control form-control-sm cadastro-input text-center meeting-fixed-value" id="input_<?php echo $linha; ?>_8" name="data_nascimento[]" data-linha="<?php echo $linha; ?>" data-col="8" title="Data de Nascimento" value="X" style="font-size:0.7rem;padding:0.2rem;">
                 </div>
                 <div class="form-group col-md col-acao px-1 d-flex align-items-center justify-content-center">
                     <?php if ($linha > 0): ?>
@@ -1153,6 +1153,7 @@
             <?php if ($focarPrimeiroCampoAposCadastro): ?>
                 focarPrimeiroCampoCadastro();
                 $('#formNovoCadastro .cadastro-input').not('.meeting-fixed-value').val('');
+                $('.meeting-fixed-value').val('X');
                 // Auto-imprimir: apenas os cadastros recém-feitos (últimos N)
                 if (localStorage.getItem('autoImpressao') === 'true') {
                     var cadastrosRecentes = <?php echo (int)$cadastrosRecentesCount; ?>;
@@ -1805,13 +1806,6 @@
                 tourPosicionarTooltip($el, passo);
             }
         });
-
-        // Mostrar automaticamente no primeiro acesso
-        (function() {
-            if (!localStorage.getItem('ebi_tour_guiado_visto')) {
-                setTimeout(iniciarTourGuiado, 600);
-            }
-        })();
 
         // ============ FUNÇÕES DE CONFIGURAÇÃO E DEBUG ============
 
