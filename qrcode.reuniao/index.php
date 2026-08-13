@@ -385,8 +385,6 @@
             </details>
 
             <form id="qrForm">
-                <div class="section-title"><i class="fas fa-user"></i>Dados do Responsável</div>
-
                 <div class="form-group">
                     <label for="nomePai">Nome:</label>
                     <input type="text" class="form-control" id="nomePai" name="nomePai" placeholder="Nome e sobrenome" autocomplete="name">
