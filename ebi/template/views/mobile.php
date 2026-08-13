@@ -382,7 +382,7 @@ $totalHoje = count($cadastrosHojeMobile);
         const sexoIndex = fieldsPerChild - 2;
         const nascimentoIndex = fieldsPerChild - 1;
         for (let index = 0; index < fields.length; index += fieldsPerChild) {
-            if (!/^[MF]$/i.test(fields[index + sexoIndex]) || !/^\d{2}\/\d{2}\/\d{4}$/.test(fields[index + nascimentoIndex])) {
+            if (!/^[MFX]$/i.test(fields[index + sexoIndex]) || !/^\d{2}\/\d{2}\/\d{4}$/.test(fields[index + nascimentoIndex])) {
                 return false;
             }
         }
