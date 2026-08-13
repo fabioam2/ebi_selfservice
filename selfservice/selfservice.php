@@ -771,6 +771,48 @@ if (!empty($_SESSION['contas_existentes'])) {
             background: rgba(255, 255, 255, 0.18);
         }
 
+        .meeting-links {
+            position: relative;
+            z-index: 1;
+            max-width: 720px;
+            margin: 0 auto 20px;
+            padding: 12px 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .meeting-links-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .meeting-links-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .meeting-link-btn {
+            border: 1px solid rgba(255, 255, 255, 0.62);
+            color: #fff;
+            border-radius: 999px;
+            background: rgba(14, 116, 144, 0.42);
+            font-weight: 700;
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+
+        .meeting-link-btn:hover {
+            color: #fff;
+            transform: translateY(-1px);
+            background: rgba(14, 116, 144, 0.68);
+        }
+
         .test-links {
             position: relative;
             z-index: 1;
@@ -1064,6 +1106,18 @@ if (!empty($_SESSION['contas_existentes'])) {
             <i class="fas fa-eye mr-1"></i>Experimentar EBI
         </a>
     </div>
+
+    <section class="meeting-links" aria-labelledby="reuniao-links-heading">
+        <span class="meeting-links-label" id="reuniao-links-heading"><i class="fas fa-users mr-1"></i>Reunião</span>
+        <div class="meeting-links-buttons">
+            <a href="../ebi.reuniao/index.php" class="btn btn-sm meeting-link-btn" target="_blank" rel="noopener">
+                <i class="fas fa-door-open mr-1"></i>EBI Reunião
+            </a>
+            <a href="../qrcode.reuniao/index.php" class="btn btn-sm meeting-link-btn" target="_blank" rel="noopener">
+                <i class="fas fa-qrcode mr-1"></i>QR Code Reunião
+            </a>
+        </div>
+    </section>
 
     <div class="test-links">
         <span class="test-links-label"><i class="fas fa-flask mr-1"></i>DEV</span>

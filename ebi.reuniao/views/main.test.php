@@ -1,0 +1,2393 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Crianças (TESTE v2 — QR Code)</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-1: #0f766e; --bg-2: #0b4f8a;
+            --brand: #0e7490; --brand-strong: #0b5f76;
+            --surface: rgba(255,255,255,0.97);
+            --text-main: #10273b; --text-soft: #4b647c;
+        }
+        body { font-family: 'Manrope', sans-serif; background: linear-gradient(135deg, var(--bg-1) 0%, var(--bg-2) 60%, #083358 100%); min-height: 100vh; }
+        .container { margin-top: 16px; padding: 20px; background: var(--surface); border-radius: 18px; box-shadow: 0 12px 40px rgba(1,27,49,0.25); max-width: 1340px; border: 1px solid rgba(15,23,42,0.06); }
+        .tabela-scrollable { max-height: 400px; overflow-y: auto; margin-bottom: 20px; border: 1px solid #e2e8f0; border-radius: 12px; }
+        .tabela-scrollable table { width: 100%; margin-bottom: 0; }
+        .tabela-scrollable th { background: linear-gradient(135deg, var(--brand), var(--brand-strong)); color: white; position: sticky; top: 0; z-index: 10; font-size: 0.82rem; padding: 0.5rem; text-align: center; font-weight: 600; }
+        .tabela-scrollable td { font-size: 0.82rem; padding: 0.4rem; vertical-align: middle; }
+        .tabela-scrollable th:nth-child(6), .tabela-scrollable th:nth-child(7), .tabela-scrollable th:nth-child(11) { text-align: left;}
+        .tabela-scrollable td:nth-child(6), .tabela-scrollable td:nth-child(7), .tabela-scrollable td:nth-child(11) { text-align: left;}
+        .tabela-scrollable tbody tr:hover { background-color: rgba(14,116,144,0.06); }
+
+        .form-control-sm { height: calc(1.5em + .5rem + 2px); padding: .25rem .5rem; font-size: .85rem; line-height: 1.5; border-radius: 6px; }
+        .btn { margin-right: 6px; border-radius: 8px; padding: 7px 14px; transition: all 0.15s ease; font-weight: 600; }
+        .btn:hover { transform: translateY(-1px); box-shadow: 0 3px 8px rgba(0,0,0,0.15); }
+        .alert { border-radius: 10px; margin-bottom: 14px; }
+        header h1 img { border: 2px solid var(--brand); }
+        .form-control { border-radius: 6px; border-color: #d1d5db; }
+        .form-control:focus { border-color: var(--brand); box-shadow: 0 0 0 0.2rem rgba(14,116,144,0.2); }
+
+        #formNovoCadastro { background: linear-gradient(180deg, #f8fafc, #f1f5f9) !important; border-color: #e2e8f0 !important; border-radius: 14px !important; }
+        #formNovoCadastro .form-labels .col { font-weight: 600; color: var(--text-main); padding-bottom: 0.2rem; font-size: 0.8rem; white-space: nowrap; }
+        #formNovoCadastro .form-registro-linha { margin-bottom: 0.25rem; padding: 0.15rem 0; }
+        #formNovoCadastro .form-registro-linha .form-group { margin-bottom: 0.1rem; padding-left: 4px; padding-right: 4px; }
+        #formNovoCadastro .form-control-sm { font-size: 0.82rem; }
+
+        .col-nome-crianca { flex: 0 0 16%; max-width: 16%; }
+        .col-responsavel { flex: 0 0 15%; max-width: 15%; }
+        .col-idade { flex: 0 0 6%; max-width: 6%; }
+        .col-telefone { flex: 0 0 12%; max-width: 12%; }
+        .col-cidade { flex: 0 0 10%; max-width: 10%; }
+        .col-estado { flex: 0 0 6%; max-width: 6%; }
+        .col-comum { flex: 0 0 10%; max-width: 10%; }
+        .col-sexo { flex: 0 0 5%; max-width: 5%; }
+        .col-nascimento { flex: 0 0 7%; max-width: 7%; }
+        .col-acao { flex: 0 0 9%; max-width: 9%; }
+        .badge-teste-v2 { font-size: .6rem; vertical-align: middle; background: linear-gradient(135deg, #f59e0b, #d97706); border: none; }
+
+        .dropdown-menu { border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); border: 1px solid #e2e8f0; }
+        .dropdown-menu button.dropdown-item, .dropdown-menu a.dropdown-item { cursor: pointer; font-size: 0.85rem; border-radius: 6px; margin: 2px 6px; padding: 6px 12px; }
+        .dropdown-item:hover { background-color: rgba(14,116,144,0.08); }
+        .dropdown-header { font-size: 0.7rem; font-weight: 700; color: var(--brand); text-transform: uppercase; letter-spacing: 0.05em; }
+        .dropdown-submenu { position: relative; }
+        .dropdown-submenu .dropdown-menu { top: 0; left: 100%; margin-top: -4px; display: none; }
+        .dropdown-submenu:hover .dropdown-menu { display: block; }
+        .dropdown-submenu > a::after { float: right; margin-top: 5px; }
+        .btn-ajuda { font-size: .78rem; padding: 4px 10px; }
+        .modal-backdrop.show { opacity: .5; }
+        .modal.show { display: block; }
+        .modal-content { border-radius: 14px; border: none; box-shadow: 0 16px 48px rgba(0,0,0,0.2); }
+        .modal-header { border-radius: 14px 14px 0 0; }
+        #backupPreviewContent { font-size: 0.8em; white-space: pre-wrap; max-height: 100px; overflow-y: auto; background-color: #f8f9fa; border: 1px solid #dee2e6; padding: 5px; margin-top: 10px; border-radius: 6px;}
+        .status-icon svg { vertical-align: middle; }
+
+        .filtro-portaria-container { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .filtro-portaria-container .form-label { margin-right: 0.5rem; margin-bottom: 0; white-space: nowrap;}
+        #filtroPortaria {
+            height: calc(1.5em + .5rem + 2px); 
+            padding-left: 0.3rem !important; 
+            padding-right: 0.3rem !important;
+            margin-right: 0.5rem;
+            width: auto; 
+            min-width: 100px; 
+            display: inline-block; 
+        }
+        .filtro-portaria-group { display: flex; align-items: center; }
+
+        .btn-copiar-quadrado {
+            width: 31px;  
+            height: 31px; 
+            padding: 0 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+
+        .btn-copiar-quadrado svg { 
+            width: 16px;
+            height: 16px;
+        }
+
+        .total-cadastros-info {
+            font-size: 0.82rem;
+            color: #fff;
+            background: linear-gradient(135deg, var(--brand), var(--brand-strong));
+            padding: 0.35rem 0.7rem;
+            border-radius: 20px;
+            margin-left: 6px;
+            margin-right: 6px; 
+            align-self: center; 
+            display: inline-flex; 
+            align-items: center;
+            font-weight: 600;
+            box-shadow: 0 2px 6px rgba(14,116,144,0.25);
+        }
+        .total-cadastros-info svg {
+            margin-right: 0.35rem;
+            vertical-align: -0.1em; 
+        }
+        
+        .total-cadastros-alerta {
+             background-color: #dc3545 !important; /* Vermelho de perigo do Bootstrap */
+              border-color: #b22222 !important;
+        }
+        .portaria-cadastro-group {
+            display: flex;
+            align-items: center;
+            background: linear-gradient(135deg, var(--brand), var(--brand-strong));
+            padding: 0.375rem 0.75rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 6px rgba(14,116,144,0.2);
+        }
+        .portaria-cadastro-group label {
+            margin-bottom: 0;
+            margin-right: 0.5rem;
+            font-weight: normal;
+            color: #fff; 
+        }
+        .portaria-cadastro-group input {
+            border: none !important;
+            background-color: transparent !important;
+            box-shadow: none !important;
+            padding-left: 0.2rem !important;
+            width: 40px !important; 
+            color: #fff !important; 
+            text-transform: uppercase; 
+        }
+        .portaria-cadastro-group input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+            opacity: 1; 
+        }
+        .portaria-cadastro-group input:-ms-input-placeholder { 
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .portaria-cadastro-group input::-ms-input-placeholder { 
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        @media print {
+            body { font-size: 10pt; }
+            .container { box-shadow: none; margin-top: 0; padding: 0; max-width: 100%; }
+            header, .alert, #formNovoCadastro, .filtro-portaria-container, #formListaCriancas .d-flex.justify-content-between, .modal, .btn, form[action*="logout"], .dropdown, .no-print {
+                display: none !important;
+            }
+            .tabela-scrollable { max-height: none; overflow-y: visible; border: none; }
+            .tabela-scrollable th { background-color: #f0f0f0 !important; color: #000 !important; font-size: 9pt; }
+            .tabela-scrollable td { font-size: 9pt; }
+            .tabela-scrollable th, .tabela-scrollable td { padding: 3px; border: 1px solid #ccc; }
+            #lista-criancas tr td:first-child, #lista-criancas tr th:first-child { display: none; }
+            #lista-criancas tr td:last-child, #lista-criancas tr th:last-child { display: none; }
+            .status-icon svg { display: none; } 
+            .status-icon .print-status { display: inline !important; } 
+        }
+        .status-icon .print-status { display: none; } 
+
+        .instancia-info-topo {
+            text-align: center;
+            font-size: 0.7rem;
+            letter-spacing: 0.05em;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 0.4rem;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        /* ===== Tour Guiado ===== */
+        #tourOverlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.55);
+            z-index: 2000;
+            display: none;
+            pointer-events: none;
+        }
+        .tour-alvo-destacado {
+            box-shadow: 0 0 0 4px #fff, 0 0 0 8px #007bff, 0 0 25px rgba(0,0,0,0.5);
+            border-radius: 6px;
+        }
+        #tourTooltip {
+            position: fixed;
+            z-index: 2002;
+            max-width: 320px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+            padding: 14px 16px;
+            display: none;
+        }
+        #tourTooltip .tour-titulo {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #007bff;
+            margin-bottom: 6px;
+        }
+        #tourTooltip .tour-texto {
+            font-size: 0.85rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        #tourTooltip .tour-rodape {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        #tourTooltip .tour-passo-contador {
+            font-size: 0.72rem;
+            color: #888;
+        }
+
+        /* ===== Responsivo (celular/tablet) ===== */
+        @media (max-width: 767.98px) {
+            .container { margin-top: 0; padding: 12px; border-radius: 0; }
+            header.d-flex {
+                flex-wrap: wrap;
+                row-gap: 10px;
+            }
+            header .dropdown { order: 1; }
+            header h1 {
+                order: 3;
+                flex: 1 0 100%;
+                font-size: 1.1rem;
+                margin: 4px 0;
+            }
+            header h1 img { width: 40px; height: 40px; }
+            header > div.d-flex.align-items-center:last-child {
+                order: 2;
+                flex-wrap: wrap;
+                justify-content: center !important;
+                min-width: 0 !important;
+                row-gap: 6px;
+            }
+            #formListaCriancas > div.d-flex.justify-content-between {
+                flex-wrap: wrap;
+                row-gap: 10px;
+            }
+            #formListaCriancas > div.d-flex.justify-content-between > div.d-flex.align-items-center {
+                flex-wrap: wrap;
+                row-gap: 6px;
+            }
+            #qzStatusBadge { margin: 0; }
+            #tourTooltip { max-width: calc(100vw - 24px); }
+        }
+    </style>
+</head>
+<body>
+    <div class="instancia-info-topo">
+        <?php
+        $cidadeTopo = defined('INSTANCE_CIDADE') ? trim((string)INSTANCE_CIDADE) : '';
+        $comumTopo  = defined('INSTANCE_COMUM') ? trim((string)INSTANCE_COMUM) : '';
+        $cabecalhoInstancia = trim($cidadeTopo . ' - ' . $comumTopo, ' -');
+            echo sanitize_for_html($cabecalhoInstancia !== '' ? $cabecalhoInstancia : 'Cidade - Comum');
+            ?>
+    </div>
+    <div class="container">
+        <header class="d-flex align-items-center justify-content-between mb-3">
+            <div class="dropdown" style="min-width: 220px;">
+                <button class="btn btn-light border" type="button" id="dropdownMenuAdmin" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Menu Administração" style="line-height:1; padding: 6px 10px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-list" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/>
+                    </svg>
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuAdmin">
+                    <!-- Estatísticas BI -->
+                    <h6 class="dropdown-header">Relatórios</h6>
+                    <a class="dropdown-item" href="?acao=stats" id="menuEstatisticas">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bar-chart-fill mr-1" viewBox="0 0 16 16"><path d="M1 11a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1zm5-4a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1zm5-5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1z"/></svg>
+                        Estatísticas (BI)
+                    </a>
+                    <!-- Lista com sub-itens -->
+                    <div class="dropdown-submenu">
+                        <a class="dropdown-item dropdown-toggle" href="#" id="menuLista">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-list-ul mr-1" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M5 11.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5m-3 1a1 1 0 1 0 0-2 1 1 0 0 0 0 2m0 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2m0 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2"/></svg>
+                            Lista
+                        </a>
+                        <div class="dropdown-menu">
+                            <button class="dropdown-item" type="button" id="btnBaixarPDF">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer mr-1" viewBox="0 0 16 16"><path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/><path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/></svg>
+                                Baixar PDF
+                            </button>
+                            <button class="dropdown-item" type="button" id="btnBaixarCSV">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-filetype-csv mr-1" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M14 4.5V14a2 2 0 0 1-2 2h-1v-1h1a1 1 0 0 0 1-1V4.5h-2A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v9H2V2a2 2 0 0 1 2-2h5.5z"/></svg>
+                                Baixar CSV
+                            </button>
+                            <button class="dropdown-item" type="button" id="btnBaixarXLS">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-earmark-spreadsheet mr-1" viewBox="0 0 16 16"><path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2M9.5 3A1.5 1.5 0 0 0 11 4.5h2V9H3V2a1 1 0 0 1 1-1h5.5zM3 12v-2h2v2zm0 1h2v2H4a1 1 0 0 1-1-1zm3 2v-2h3v2zm4 0v-2h3v1a1 1 0 0 1-1 1zm3-3h-3v-2h3zm-7 0v-2h3v2z"/></svg>
+                                Baixar XLS
+                            </button>
+                        </div>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <h6 class="dropdown-header">Impressora</h6>
+                    <a class="dropdown-item" href="calibrar.php" target="_blank" id="menuCalibrar">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sliders mr-1" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3h9.05zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8h2.05zm9.45 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm-2.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1h9.05z"/></svg>
+                        Calibrar
+                    </a>
+                    <button class="dropdown-item" type="button" onclick="abrirModalQZTray()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-usb-plug-fill mr-1" viewBox="0 0 16 16"><path d="M6.5 6a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z"/><path d="M3 10.5a.5.5 0 0 1 .5-.5H4V9H2V7H1.5a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 1 .5-.5H4V3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v1h2.5a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5H14v2h-1v1h.5a.5.5 0 0 1 0 1h-3l-1 1H7l-1-1H3.5a.5.5 0 0 1-.5-.5z"/></svg>
+                        Impressora QZ Tray
+                    </button>
+                    <div class="dropdown-submenu">
+                        <a class="dropdown-item dropdown-toggle" href="#" id="menuInstalar">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download mr-1" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/></svg>
+                            Instalar Impressora
+                        </a>
+                        <div class="dropdown-menu">
+                            <?php $qzDownload = defined('INSTANCE_DIR') ? '../template/download.php' : 'download.php'; ?>
+                            <button class="dropdown-item" type="button" onclick="abrirModalHowToQZ()" id="menuHowToQZ">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-question-circle mr-1" viewBox="0 0 16 16"><path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/></svg>
+                                Como Instalar (How To)
+                            </button>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="<?php echo $qzDownload; ?>?file=cert">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-shield-lock mr-1" viewBox="0 0 16 16"><path d="M5.338 1.59a61 61 0 0 0-2.837.856.48.48 0 0 0-.328.39c-.554 4.157.726 7.19 2.253 9.188a10.7 10.7 0 0 0 2.287 2.233c.346.244.652.42.893.533q.18.085.293.118a1 1 0 0 0 .101.025 1 1 0 0 0 .1-.025q.114-.034.294-.118c.24-.113.547-.29.893-.533a10.7 10.7 0 0 0 2.287-2.233c1.527-1.997 2.807-5.031 2.253-9.188a.48.48 0 0 0-.328-.39c-.651-.213-1.75-.56-2.837-.855C9.552 1.29 8.531 1.067 8 1.067c-.53 0-1.552.223-2.662.524zM5.072.56C6.157.265 7.31 0 8 0s1.843.265 2.928.56c1.11.3 2.229.655 2.887.87a1.54 1.54 0 0 1 1.044 1.262c.596 4.477-.787 7.795-2.465 9.99a11.8 11.8 0 0 1-2.517 2.453 7 7 0 0 1-1.048.625c-.28.132-.581.24-.829.24s-.548-.108-.829-.24a7 7 0 0 1-1.048-.625 11.8 11.8 0 0 1-2.517-2.453C1.928 10.487.545 7.169 1.141 2.692A1.54 1.54 0 0 1 2.185 1.43 63 63 0 0 1 5.072.56"/><path d="M9.5 6.5a1.5 1.5 0 0 1-1 1.415l.385 1.99a.5.5 0 0 1-.491.595h-.788a.5.5 0 0 1-.49-.595l.384-1.99a1.5 1.5 0 1 1 2-1.415"/></svg>
+                                Certificado (.zip)
+                            </a>
+                            <a class="dropdown-item" href="https://github.com/qzind/tray/releases/download/v2.2.5/qz-tray-2.2.5-x86_64.exe" target="_blank">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download mr-1" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/></svg>
+                                QZ Tray 2.2.5 x64 (.exe)
+                            </a>
+                        </div>
+                    </div>
+                    <div class="dropdown-submenu">
+                        <a class="dropdown-item dropdown-toggle" href="#" id="menuAvancado">
+                            <i class="fas fa-tools mr-1"></i>
+                            Avançado
+                        </a>
+                        <div class="dropdown-menu">
+                            <button class="dropdown-item" type="button" onclick="toggleModoDebugImpressao()" id="btnToggleDebug">
+                                <i class="fas fa-bug mr-1"></i>
+                                <span id="labelDebugMode">Modo Debug: OFF</span>
+                            </button>
+                            <button class="dropdown-item" type="button" onclick="toggleModoTesteImpressao()" id="btnToggleTeste">
+                                <i class="fas fa-tag mr-1"></i>
+                                <span id="labelTesteMode">Teste de Impressão: OFF</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="dropdown-divider"></div>
+                    <button class="dropdown-item" type="button" onclick="abrirModalConfigImpressora()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear mr-1" viewBox="0 0 16 16"><path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"/><path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115z"/></svg>
+                        Configurar Impressora e Instância
+                    </button>
+                    <button class="dropdown-item" type="button" onclick="toggleAutoImpressao()" id="btnToggleAutoImpressao">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-lightning mr-1" viewBox="0 0 16 16"><path d="M5.52.359A.5.5 0 0 1 6 0h4a.5.5 0 0 1 .474.658L8.694 6H12.5a.5.5 0 0 1 .395.807l-7 9a.5.5 0 0 1-.873-.454L6.823 9.5H3.5a.5.5 0 0 1-.48-.641z"/></svg>
+                        <span id="labelAutoImpressao">Auto-Imprimir: OFF</span>
+                    </button>
+                    <button class="dropdown-item disabled" type="button" id="btnToggleAutoCadastro" disabled aria-disabled="true" title="Funcao temporariamente desabilitada">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2-square mr-1" viewBox="0 0 16 16"><path d="M3 14.5A1.5 1.5 0 0 1 1.5 13V3A1.5 1.5 0 0 1 3 1.5h8a.5.5 0 0 1 0 1H3a.5.5 0 0 0-.5.5v10a.5.5 0 0 0 .5.5h10a.5.5 0 0 0 .5-.5V8a.5.5 0 0 1 1 0v5a1.5 1.5 0 0 1-1.5 1.5z"/><path d="m8.354 10.354 7-7a.5.5 0 0 0-.708-.708L8 9.293 5.354 6.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0"/></svg>
+                        <span id="labelAutoCadastro">Auto-Cadastrar: desabilitado</span>
+                    </button>
+                    <button class="dropdown-item" type="button" onclick="configTempoInatividade()" id="btnConfigTempo">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clock mr-1" viewBox="0 0 16 16"><path d="M8 3.5a.5.5 0 0 0-1 0V8a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 7.71z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0"/></svg>
+                        <span id="labelTempoInatividade">Foco: 10s</span>
+                    </button>
+                    <button class="dropdown-item" type="button" onclick="abrirModalAlterarSenha()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-key-fill mr-1" viewBox="0 0 16 16"><path d="M3 8a4 4 0 1 1 7.937.5H14a1 1 0 0 1 1 1v1h-1v1h-1v1h-2.062A4.001 4.001 0 0 1 3 8m4-3a3 3 0 1 0 2.83 4H11v1h1v1h1v-1h1V9h-3.17A3.001 3.001 0 0 0 7 5"/></svg>
+                        Alterar Senha
+                    </button>
+                    <div class="dropdown-divider"></div>
+                    <button class="dropdown-item" type="button" onclick="abrirModalZerarArquivo()">Zerar Arquivo</button>
+                    <button class="dropdown-item" type="submit" name="preparar_recuperacao" form="formListaCriancas">Recuperar Backup <small class="text-muted">(.bkp.1 é o mais recente)</small></button>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item" href="<?php echo sanitize_for_html($_SERVER['PHP_SELF']); ?>?acao=logout">Sair do Sistema</a>
+                </div>
+            </div>
+            <h1 class="text-center mb-0">
+                <img src="https://placehold.co/60x60/007bff/white?text=Kids" alt="Ícone de Criança" style="vertical-align: middle; border-radius: 50%; margin-right: 10px;">
+                Cadastro de Crianças
+                <span class="badge badge-warning badge-teste-v2">TESTE v2 — QR c/ Nascimento</span>
+            </h1>
+            <div class="d-flex align-items-center" style="min-width: 220px; justify-content: flex-end;">
+                <a href="./saida/index.php" class="btn btn-outline-secondary btn-sm mr-1" target="_blank" id="linkSaida">Saída</a>
+                <a href="./saida/painel.php" class="btn btn-outline-secondary btn-sm mr-1" target="_blank">Painel Saída</a>
+                <a href="<?php echo defined('INSTANCE_DIR') ? '../../../qrcode/qrcode.2.php' : '../../qrcode/qrcode.2.php'; ?>" class="btn btn-outline-secondary btn-sm mr-1" target="_blank">QrCode</a>
+                <a href="?acao=mobile" class="btn btn-outline-success btn-sm mr-1" target="_blank" title="Versão para Smartphone"><i class="fas fa-mobile-alt mr-1"></i>Mobile</a>
+                <button type="button" class="btn btn-outline-info btn-sm btn-ajuda" onclick="iniciarTourGuiado()" title="Tour guiado pelo sistema" id="btnTourGuiado">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-question-circle mr-1" viewBox="0 0 16 16"><path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/></svg>
+                    Tour Guiado
+                </button>
+            </div>
+        </header>
+
+        <?php if ($mensagemSucesso): ?>
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <?php echo $mensagemSucesso; ?>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+        <?php endif; ?>
+        <?php if ($mensagemErro): ?>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <?php echo $mensagemErro; ?>
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            </div>
+        <?php endif; ?>
+
+        <form method="post" action="<?php echo sanitize_for_html($_SERVER["PHP_SELF"]); ?>" class="mb-3 p-3 border rounded bg-light shadow-sm" id="formNovoCadastro">
+            <?php echo csrf_field(); ?>
+            <div class="form-row form-labels d-none d-md-flex">
+                <div class="col col-nome-crianca">Nome Criança</div>
+                <div class="col col-responsavel">Responsável</div>
+                <div class="col col-idade text-center">Idade</div>
+                <div class="col col-telefone">Telefone</div>
+                <div class="col col-comum">Comum</div>
+                <div class="col col-cidade" title="Cidade (opcional)">Cidade</div>
+                <div class="col col-estado text-center" title="Estado / UF (opcional)">UF</div>
+                <div class="col col-sexo text-center" title="M/F">M/F</div>
+                <div class="col col-nascimento text-center" title="Data de Nascimento">Data</div>
+                <div class="col col-acao text-center">Ação</div>
+            </div>
+
+            <?php for ($linha = 0; $linha < NUM_LINHAS_FORMULARIO_CADASTRO; $linha++): ?>
+            <div class="form-row align-items-center form-registro-linha">
+                <div class="form-group col-md col-nome-crianca">
+                    <label for="input_<?php echo $linha; ?>_0" class="d-md-none">Nome Criança <?php echo $linha + 1; ?>:</label>
+                    <input type="text" class="form-control form-control-sm cadastro-input" id="input_<?php echo $linha; ?>_0" name="nome_crianca[]" data-linha="<?php echo $linha; ?>" data-col="0" placeholder="Nome da Criança">
+                </div>
+                <div class="form-group col-md col-responsavel">
+                    <label for="input_<?php echo $linha; ?>_1" class="d-md-none">Responsável <?php echo $linha + 1; ?>:</label>
+                    <input type="text" class="form-control form-control-sm cadastro-input" id="input_<?php echo $linha; ?>_1" name="nome_responsavel[]" data-linha="<?php echo $linha; ?>" data-col="1" placeholder="Nome do Responsável">
+                </div>
+                <div class="form-group col-md col-idade">
+                    <label for="input_<?php echo $linha; ?>_2" class="d-md-none">Idade <?php echo $linha + 1; ?>:</label>
+                    <input type="number" class="form-control form-control-sm cadastro-input text-center" id="input_<?php echo $linha; ?>_2" name="idade[]" min="0" data-linha="<?php echo $linha; ?>" data-col="2" placeholder="Idade">
+                </div>
+                <div class="form-group col-md col-telefone">
+                    <label for="input_<?php echo $linha; ?>_3" class="d-md-none">Telefone <?php echo $linha + 1; ?>:</label>
+                    <input type="text" class="form-control form-control-sm telefone-mask cadastro-input" id="input_<?php echo $linha; ?>_3" name="telefone[]" data-linha="<?php echo $linha; ?>" data-col="3" placeholder="(00) 00000-0000">
+                </div>
+                <div class="form-group col-md col-comum">
+                    <label for="input_<?php echo $linha; ?>_4" class="d-md-none">Comum <?php echo $linha + 1; ?>:</label>
+                    <input type="text" class="form-control form-control-sm cadastro-input" id="input_<?php echo $linha; ?>_4" name="comum[]" data-linha="<?php echo $linha; ?>" data-col="4" placeholder="Comum">
+                </div>
+                <div class="form-group col-md col-cidade">
+                    <label for="input_<?php echo $linha; ?>_5" class="d-md-none">Cidade <?php echo $linha + 1; ?>:</label>
+                    <input type="text" class="form-control form-control-sm cadastro-input" id="input_<?php echo $linha; ?>_5" name="cidade[]" data-linha="<?php echo $linha; ?>" data-col="5" placeholder="Cidade (opcional)">
+                </div>
+                <div class="form-group col-md col-estado">
+                    <label for="input_<?php echo $linha; ?>_6" class="d-md-none" title="Estado (UF)">UF <?php echo $linha + 1; ?>:</label>
+                    <select class="form-control form-control-sm cadastro-input text-center" id="input_<?php echo $linha; ?>_6" name="estado[]" data-linha="<?php echo $linha; ?>" data-col="6" title="Estado (UF)" style="font-size:0.7rem;padding:0.2rem;">
+                        <option value=""></option>
+                        <option value="AC">AC</option>
+                        <option value="AL">AL</option>
+                        <option value="AP">AP</option>
+                        <option value="AM">AM</option>
+                        <option value="BA">BA</option>
+                        <option value="CE">CE</option>
+                        <option value="DF">DF</option>
+                        <option value="ES">ES</option>
+                        <option value="GO">GO</option>
+                        <option value="MA">MA</option>
+                        <option value="MT">MT</option>
+                        <option value="MS">MS</option>
+                        <option value="MG">MG</option>
+                        <option value="PA">PA</option>
+                        <option value="PB">PB</option>
+                        <option value="PR">PR</option>
+                        <option value="PE">PE</option>
+                        <option value="PI">PI</option>
+                        <option value="RJ">RJ</option>
+                        <option value="RN">RN</option>
+                        <option value="RS">RS</option>
+                        <option value="RO">RO</option>
+                        <option value="RR">RR</option>
+                        <option value="SC">SC</option>
+                        <option value="SP">SP</option>
+                        <option value="SE">SE</option>
+                        <option value="TO">TO</option>
+                    </select>
+                </div>
+                <div class="form-group col-md col-sexo">
+                    <label for="input_<?php echo $linha; ?>_7" class="d-md-none" title="M/F">M/F <?php echo $linha + 1; ?>:</label>
+                    <select class="form-control form-control-sm cadastro-input text-center" id="input_<?php echo $linha; ?>_7" name="sexo[]" data-linha="<?php echo $linha; ?>" data-col="7" title="M/F" style="font-size:0.7rem;padding:0.2rem;">
+                        <option value=""></option>
+                        <option value="M">M</option>
+                        <option value="F">F</option>
+                    </select>
+                </div>
+                <div class="form-group col-md col-nascimento">
+                    <label for="input_<?php echo $linha; ?>_8" class="d-md-none" title="Data de Nascimento">Data <?php echo $linha + 1; ?>:</label>
+                    <input type="text" inputmode="numeric" class="form-control form-control-sm data-nascimento-mask cadastro-input text-center" id="input_<?php echo $linha; ?>_8" name="data_nascimento[]" data-linha="<?php echo $linha; ?>" data-col="8" title="Data de Nascimento" placeholder="dd/mm" maxlength="10" style="font-size:0.7rem;padding:0.2rem;">
+                </div>
+                <div class="form-group col-md col-acao px-1 d-flex align-items-center justify-content-center">
+                    <?php if ($linha > 0): ?>
+                    <button type="button" class="btn btn-primary btn-sm btn-copiar-quadrado btn-copiar-dados" data-target-linha="<?php echo $linha; ?>" title="Copiar Responsável, Telefone, Comum, Cidade e UF da Linha 1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-files" viewBox="0 0 16 16">
+                            <path d="M13 0H6a2 2 0 0 0-2 2 2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2 2 2 0 0 0 2-2V2a2 2 0 0 0-2-2zm0 13V4a2 2 0 0 0-2-2H5a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1zM3 4a1 1 0 0 1 1-1h7a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4z"/>
+                        </svg>
+                    </button>
+                    <button type="button" class="btn btn-warning btn-sm btn-copiar-quadrado ml-1" title="Limpar esta linha" onclick="limparLinhaCadastro(<?php echo $linha; ?>)">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eraser" viewBox="0 0 16 16">
+                            <path d="M8.086 2.207a2 2 0 0 1 2.828 0l3.879 3.879a2 2 0 0 1 0 2.828l-5.5 5.5A2 2 0 0 1 7.879 15H5.12a2 2 0 0 1-1.414-.586l-2.5-2.5a2 2 0 0 1 0-2.828zm2.121.707a1 1 0 0 0-1.414 0L4.16 7.547l5.293 5.293 4.633-4.633a1 1 0 0 0 0-1.414zM8.708 13.293l.019-.019-3.44-3.441.013.012a2.5 2.5 0 0 1 3.408 3.416z"/>
+                        </svg>
+                    </button>
+                    <?php endif; ?>
+                </div>
+            </div>
+            <?php endfor; ?>
+
+            <div class="form-row mt-3 align-items-end">
+                <div class="col-auto mr-auto">
+                    <div class="portaria-cadastro-group">
+                        <label for="portaria_cadastro" class="form-label">Portaria:</label>
+                        <input type="text" class="form-control form-control-sm" id="portaria_cadastro" name="portaria_cadastro" value="A" placeholder="A" maxlength="1">
+                    </div>
+                </div>
+                <div class="col-auto">
+                    <button type="button" class="btn btn-warning btn-sm mr-2" id="btnLimparCadastro" title="Limpar campos do formulário de cadastro">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-eraser mr-1" viewBox="0 0 16 16"><path d="M8.086 2.207a2 2 0 0 1 2.828 0l3.879 3.879a2 2 0 0 1 0 2.828l-5.5 5.5A2 2 0 0 1 7.879 15H5.12a2 2 0 0 1-1.414-.586l-2.5-2.5a2 2 0 0 1 0-2.828zm2.121.707a1 1 0 0 0-1.414 0L4.16 7.547l5.293 5.293 4.633-4.633a1 1 0 0 0 0-1.414zM8.708 13.293l.019-.019-3.44-3.441.013.012a2.5 2.5 0 0 1 3.408 3.416z"/></svg>
+                        Limpar
+                    </button>
+                    <button type="submit" class="btn btn-primary btn-sm" name="cadastrar" id="btnCadastrar">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-plus-fill mr-1" viewBox="0 0 16 16"><path d="M1 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6"/><path fill-rule="evenodd" d="M13.5 5a.5.5 0 0 1 .5.5V7h1.5a.5.5 0 0 1 0 1H14v1.5a.5.5 0 0 1-1 0V8h-1.5a.5.5 0 0 1 0-1H13V5.5a.5.5 0 0 1 .5-.5"/></svg>
+                        Cadastrar
+                    </button>
+                </div>
+            </div>
+        </form>
+        <hr class="my-3">
+
+        <!-- Painel Testar Impressão -->
+        <div id="painelTesteImpressao" class="d-none p-3 mb-3 rounded border" style="background:#fff8e1; border-color:#ffe082 !important;">
+            <div class="d-flex align-items-center mb-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="#e65100" class="bi bi-tag-fill mr-2" viewBox="0 0 16 16"><path d="M2 1a1 1 0 0 0-1 1v4.586a1 1 0 0 0 .293.707l7 7a1 1 0 0 0 1.414 0l4.586-4.586a1 1 0 0 0 0-1.414l-7-7A1 1 0 0 0 6.586 1H2zm4 3.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/></svg>
+                <strong style="color:#e65100;">Modo Testar Impressão ATIVO</strong>
+                <small class="ml-2 text-muted">— imprime apenas o nome da criança (sem etiqueta do responsável)</small>
+            </div>
+            <div class="form-row align-items-end">
+                <div class="form-group col-auto mb-0">
+                    <label for="testeX" class="col-form-label col-form-label-sm">Posição X</label>
+                    <input type="number" class="form-control form-control-sm" id="testeX" value="140" min="0" max="500" style="width:90px;">
+                </div>
+                <div class="form-group col-auto mb-0">
+                    <label for="testeY" class="col-form-label col-form-label-sm">Posição Y</label>
+                    <input type="number" class="form-control form-control-sm" id="testeY" value="30" min="0" max="3000" style="width:90px;">
+                </div>
+                <div class="form-group col-auto mb-0">
+                    <label for="testeFontSize" class="col-form-label col-form-label-sm">Tamanho da Fonte</label>
+                    <input type="number" class="form-control form-control-sm" id="testeFontSize" value="20" min="5" max="200" style="width:90px;">
+                </div>
+                <div class="col-auto mb-0">
+                    <button type="button" class="btn btn-sm btn-warning" onclick="salvarConfigTeste()">Aplicar</button>
+                </div>
+                <div class="col-auto mb-0">
+                    <small id="testeConfigStatus" class="text-success d-none">✓ Configurações salvas</small>
+                </div>
+            </div>
+        </div>
+
+
+        <form method="post" action="<?php echo sanitize_for_html($_SERVER["PHP_SELF"]); ?>" id="formListaCriancas">
+            <?php echo csrf_field(); ?>
+            <div class="mt-3 d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <button type="submit" class="btn btn-success" name="imprimir" id="btnImprimir"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer-fill mr-2" viewBox="0 0 16 16"><path d="M5 1a2 2 0 0 0-2 2v1h10V3a2 2 0 0 0-2-2zm6 8H5a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1"/><path d="M0 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-1v-2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2H2a2 2 0 0 1-2-2zm3 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2"/></svg>Imprimir</button>
+                    <div class="total-cadastros-info <?php if ($totalDeCadastrosGeral > 90) echo 'total-cadastros-alerta'; ?>" title="Total de crianças cadastradas"> 
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-people-fill" viewBox="0 0 16 16">
+                            <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6m-5.784 6A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/>
+                        </svg>
+                        Total: <?php echo $totalDeCadastrosGeral; ?>
+                    </div>
+                    <div class="total-cadastros-info" title="Total de crianças com 3 anos">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-cake2" viewBox="0 0 16 16"><path d="M11.05 4.05a2.5 2.5 0 1 0-4.999.058A2.5 2.5 0 0 0 11.05 4.05zm-4.01-.034a1.5 1.5 0 1 1 2.998-.033A1.5 1.5 0 0 1 7.04 4.016z"/><path d="M6.536 6.072L5.85 7.305A.5.5 0 0 0 6.29 8h3.42a.5.5 0 0 0 .44-.695l-.686-1.233L13.617 5.25a.5.5 0 0 0-.39-.867H2.773a.5.5 0 0 0-.39.867l4.153.822z"/><path d="M12.572 6.092L12 6.224v4.248c.782.396 1.595.24 2.222-.457.628-.698.782-1.61.396-2.393-.386-.783-1.2-.937-1.932-.783zm-1.03 4.355V6.35H4.458v4.097c-.782-.396-1.595-.24-2.222.457-.628-.698-.782-1.61-.396-2.393.386.783 1.2.937 1.932.783A2.91 2.91 0 0 0 4.3 12.57a2.91 2.91 0 0 0 3.572 1.818c.782.396 1.595.24 2.222-.457.628-.698.782-1.61.396-2.393-.386-.783-1.2-.937-1.932-.783A2.91 2.91 0 0 0 11.542 10.447zM4.907 11.32c-.185.059-.354.15-.495.271-.14.12-.242.265-.304.423l-.066.165c-.073.188-.098.388-.066.58.03.18.113.348.235.485.122.137.28.238.458.29.178.053.368.057.546.013l.126-.03.11-.042.108-.054.092-.06a1.08 1.08 0 0 1 .23-.167c.05-.04.094-.085.132-.133.09-.114.155-.245.19-.383.036-.137.043-.28.023-.416a.97.97 0 0 0-.133-.437c-.08-.14-.19-.26-.32-.35-.13-.09-.27-.14-.41-.16l-.112-.01z"/></svg>
+                        3 Anos: <?php echo $totalCriancas3Anos; ?>
+                    </div>
+                    <div class="total-cadastros-info" title="Meninos / Meninas" style="background-color:#17a2b8;border-color:#117a8b;">
+                        👦 <?php echo $totalMeninos; ?> / 👧 <?php echo $totalMeninas; ?>
+                    </div>
+                    <?php if (!empty($palavrasChaveComumDestaque)): ?>
+                    <div class="total-cadastros-info" title="Total de cadastros da comum configurada (<?php echo sanitize_for_html($nomeComumDestaque); ?>)">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-house-heart-fill" viewBox="0 0 16 16">
+                            <path d="M8.707 1.5a1 1 0 0 0-1.414 0L.646 8.146a.5.5 0 0 0 .708.708L8 2.207l6.646 6.647a.5.5 0 0 0 .708-.708L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.707 1.5Z"/>
+                            <path d="m8 3.293 6 6V13.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5V9.293l6-6Zm0 5.189c1.664-1.673 5.825 1.254 0 5.018-5.825-3.764-1.664-6.691 0-5.018Z"/>
+                        </svg>
+                        Comum: <?php echo $totalComumDestaque; ?>
+                    </div>
+                    <?php endif; ?>
+                </div>
+                <!-- Badge status QZ Tray -->
+                <span id="qzStatusBadge" class="badge badge-secondary mr-2" style="font-size:0.75rem; cursor:pointer; padding: 6px 10px; vertical-align: middle;" onclick="abrirModalConfigImpressora()" title="Status do QZ Tray — clique para configurar">
+                    <span id="qzStatusDot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#dc3545;margin-right:4px;vertical-align:middle;"></span>
+                    <span id="qzStatusText">QZ: Desconectado</span>
+                </span>
+
+                <div class="d-flex align-items-center">
+                    <label for="filtroPortaria" class="mb-0 mr-1 small text-nowrap">Filtrar Portaria:</label>
+                    <select multiple class="form-control form-control-sm" id="filtroPortaria" name="filtro_portaria_selecionadas[]" style="min-width:80px; max-width:110px;"></select>
+                    <button type="button" class="btn btn-outline-secondary btn-sm ml-1" id="limparFiltroPortaria" title="Limpar filtro de portaria">✕</button>
+                </div>
+            </div>
+
+            <div class="tabela-scrollable shadow-sm mt-3">
+                <table class="table table-striped table-hover table-bordered">
+                    <thead>
+                        <tr>
+                            <th style="width: 4%;" class="no-print"><input type="checkbox" id="selecionarTodos" title="Selecionar todos" aria-label="Selecionar todos"></th>
+                            <th style="width: 6%;">Impresso</th>
+                            <th style="width: 6%;">Portaria</th>
+                            <th style="width: 6%;">Código</th>
+                            <th style="width: 6%;">Cod Resp</th>
+                            <th style="width: auto;">Nome da Criança</th>
+                            <th style="width: auto;">Nome do Responsável</th>
+                            <th style="width: 10%;">Telefone</th>
+                            <th style="width: 5%;">Idade</th>
+                            <th style="width: 4%;" title="M/F">M/F</th>
+                            <th style="width: 5%;" title="Data de Nascimento">Data</th>
+                            <th style="width: 10%;">Comum</th>
+                            <th style="width: 4%;" class="no-print" title="Excluir">🗑️</th>
+                        </tr>
+                    </thead>
+                    <tbody id="lista-criancas">
+                        <?php if (!empty($todosOsCadastros)): ?>
+                            <?php foreach (array_reverse($todosOsCadastros, true) as $id => $crianca): ?>
+                                <tr data-id="<?php echo sanitize_for_html($crianca['id']); ?>" data-portaria="<?php echo sanitize_for_html($crianca['portaria'] ?? ''); ?>">
+                                    <td style="text-align: center;" class="no-print"><input type="checkbox" name="selecionados[]" value="<?php echo sanitize_for_html($crianca['id']); ?>" class="checkbox-crianca"></td>
+                                    <td class="status-cell text-center">
+                                        <span class="status-icon">
+                                            <?php if (isset($crianca['statusImpresso']) && $crianca['statusImpresso'] === 'S'): ?>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="green" class="bi bi-check-circle-fill" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/></svg>
+                                                <span class="print-status">Sim</span>
+                                            <?php else: ?>
+                                                <span class="print-status">Não</span>
+                                            <?php endif; ?>
+                                        </span>
+                                    </td>
+                                    <td data-campo="portaria" style="text-align: center;"><?php echo sanitize_for_html($crianca['portaria'] ?? ''); ?></td>
+                                    <td style="text-align: center;"><?php echo sanitize_for_html($crianca['id']); ?></td>
+                                    <td style="text-align: center;"><?php echo sanitize_for_html($crianca['cod_resp'] ?? ''); ?></td>
+                                    <td data-nome="<?php echo sanitize_for_html($crianca['nomeCrianca']); ?>"><?php
+                                        echo sanitize_for_html($crianca['nomeCrianca']);
+                                        if (function_exists('verificarAniversario')) {
+                                            $tagAniv = verificarAniversario($crianca['dataNascimento'] ?? '');
+                                            if ($tagAniv === 'hoje') {
+                                                echo ' <span class="no-print" title="Aniversário HOJE!">🎂</span>';
+                                            } elseif ($tagAniv === 'semana') {
+                                                echo ' <span class="no-print" title="Aniversário esta semana">🎈</span>';
+                                            }
+                                        }
+                                    ?></td>
+                                    <td><?php echo sanitize_for_html($crianca['nomeResponsavel']); ?></td>
+                                    <td style="text-align: center;"><?php echo sanitize_for_html($crianca['telefone']); ?></td>
+                                    <td style="text-align: center;"><?php echo sanitize_for_html($crianca['idade']); ?></td>
+                                    <td style="text-align: center;"><?php echo sanitize_for_html($crianca['sexo'] ?? ''); ?></td>
+                                    <td style="text-align: center; font-size:0.75rem;" title="<?php echo sanitize_for_html($crianca['dataNascimento'] ?? ''); ?>"><?php
+                                        $dn = $crianca['dataNascimento'] ?? '';
+                                        echo $dn ? sanitize_for_html(substr($dn, 0, 5)) : '';
+                                    ?></td>
+                                    <td><?php echo sanitize_for_html($crianca['comum']); ?></td>
+                                    <td style="text-align: center;" class="no-print">
+                                        <button type="button" class="btn btn-sm btn-danger-linha" onclick="confirmarApagarLinha(<?php echo sanitize_for_html($crianca['id']); ?>, '<?php echo addslashes(sanitize_for_html($crianca['nomeCrianca'])); ?>')"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16"><path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5M8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5m3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0"/></svg></button>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <tr><td colspan="13" class="text-center py-4">Nenhuma criança cadastrada ainda.</td></tr>
+                        <?php endif; ?>
+                    </tbody>
+                </table>
+            </div>
+        </form>
+
+        <form method="post" action="<?php echo sanitize_for_html($_SERVER["PHP_SELF"]); ?>" id="formApagarLinha" style="display: none;">
+            <?php echo csrf_field(); ?>
+            <input type="hidden" name="acao" value="apagar_linha">
+            <input type="hidden" name="id_para_apagar" id="id_para_apagar_input">
+        </form>
+
+        <div class="modal fade" id="modalZerarArquivo" tabindex="-1" role="dialog" aria-labelledby="modalZerarArquivoLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <form method="post" action="<?php echo sanitize_for_html($_SERVER["PHP_SELF"]); ?>" id="formZerarArquivoInterno">
+                        <?php echo csrf_field(); ?>
+                        <div class="modal-header"><h5 class="modal-title" id="modalZerarArquivoLabel">Confirmar Zerar Arquivo</h5><button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button></div>
+                        <div class="modal-body">
+                            <p><strong>ATENÇÃO:</strong> Esta ação é destrutiva e apagará todos os cadastros. O arquivo atual será salvo como backup (.bkp.1). Backups mais antigos (.bkp.2+) serão removidos. Se .bkp.1 for o único backup após esta operação, ele também será removido.</p>
+                            <div class="form-group"><label for="admin_senha_zerar_modal">Senha Administrativa:</label><input type="password" class="form-control" id="admin_senha_zerar_modal" name="admin_senha" required></div>
+                        </div>
+                        <div class="modal-footer"><input type="hidden" name="zerar_arquivo_confirmado" value="1"><button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button><button type="submit" class="btn btn-danger">Confirmar Zerar</button></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <?php if ($exibirModalRecuperacao): ?>
+            <div class="modal-backdrop fade show" id="modalRecuperarBackdrop"></div>
+            <div class="modal fade show" id="modalRecuperarBackup" tabindex="-1" role="dialog" style="display: block;" aria-labelledby="modalRecuperarBackupLabel" aria-modal="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <form method="post" action="<?php echo sanitize_for_html($_SERVER["PHP_SELF"]); ?>">
+                            <?php echo csrf_field(); ?>
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="modalRecuperarBackupLabel">Recuperar Backup</h5>
+                                <button type="button" class="close" onclick="fecharModalRecuperacao()" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                            </div>
+                            <div class="modal-body">
+                                <p>Selecione o arquivo de backup para restaurar. O arquivo atual será salvo como um novo backup (.bkp.1) antes da restauração.</p>
+                                <?php if (!empty($backupsDisponiveis)): ?>
+                                    <div class="form-group">
+                                        <label for="arquivo_backup_selecionado">Arquivo de Backup:</label>
+                                        <select class="form-control" id="arquivo_backup_selecionado" name="arquivo_backup_selecionado" required>
+                                            <?php foreach ($backupsDisponiveis as $bkpFile): ?>
+                                                <option value="<?php echo sanitize_for_html($bkpFile); ?>"><?php echo sanitize_for_html($bkpFile); ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                    <div id="backupPreviewContent" style="display: none;"></div>
+                                    <div class="form-group mt-3">
+                                        <label for="admin_senha_recuperar">Senha Administrativa:</label>
+                                        <input type="password" class="form-control" id="admin_senha_recuperar" name="admin_senha" required>
+                                    </div>
+                                <?php else: ?>
+                                    <p class="text-muted">Nenhum arquivo de backup encontrado para restauração.</p>
+                                <?php endif; ?>
+                            </div>
+                            <div class="modal-footer">
+                                <input type="hidden" name="confirmar_recuperacao" value="1">
+                                <button type="button" class="btn btn-secondary" onclick="fecharModalRecuperacao()">Cancelar</button>
+                                <?php if (!empty($backupsDisponiveis)): ?>
+                                <button type="submit" class="btn btn-primary">Restaurar Backup</button>
+                                <?php endif; ?>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        <?php endif; ?>
+
+        <!-- Modal QZ Tray - Seleção de Impressora -->
+        <div class="modal fade" id="modalQZTray" tabindex="-1" role="dialog" aria-labelledby="modalQZTrayLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header bg-dark text-white">
+                        <h5 class="modal-title" id="modalQZTrayLabel">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-usb-plug-fill mr-2" viewBox="0 0 16 16"><path d="M6.5 6a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z"/><path d="M3 10.5a.5.5 0 0 1 .5-.5H4V9H2V7H1.5a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 1 .5-.5H4V3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v1h2.5a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5H14v2h-1v1h.5a.5.5 0 0 1 0 1h-3l-1 1H7l-1-1H3.5a.5.5 0 0 1-.5-.5z"/></svg>
+                            Impressora QZ Tray
+                        </h5>
+                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-info py-2">
+                            <small>Certifique-se de que o <strong>QZ Tray</strong> está instalado e em execução neste computador.</small>
+                        </div>
+
+                        <div id="qzModalStatus" class="alert alert-secondary py-2 mb-3">
+                            <span id="qzModalStatusDot" style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#dc3545;margin-right:6px;vertical-align:middle;"></span>
+                            <span id="qzModalStatusText">Desconectado</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="qzPrinterSelect"><strong>Impressora:</strong></label>
+                            <div class="input-group">
+                                <select class="form-control" id="qzPrinterSelect" disabled>
+                                    <option value="">— Conecte ao QZ Tray primeiro —</option>
+                                </select>
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary btn-sm" type="button" id="btnRefreshQZPrinters" onclick="qzRefreshPrinters()" disabled title="Atualizar lista de impressoras">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-arrow-clockwise" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/><path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <small class="form-text text-muted" id="qzPrinterSavedInfo"></small>
+                        </div>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-between">
+                        <div>
+                            <button type="button" class="btn btn-success btn-sm" id="btnQZConectar" onclick="qzConectar()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-plug-fill mr-1" viewBox="0 0 16 16"><path d="M6 0a.5.5 0 0 1 .5.5V3h3V.5a.5.5 0 0 1 1 0V3h1a.5.5 0 0 1 .5.5v3A3.5 3.5 0 0 1 8.5 10c-.002.434-.01.845-.04 1.22-.041.514-.126 1.003-.317 1.424a2.083 2.083 0 0 1-.97 1.028C6.725 13.9 6.169 14 5.5 14c-.998 0-1.61.33-1.974.718A1.922 1.922 0 0 0 3 16H2c0-.616.232-1.367.797-1.968C3.374 13.42 4.261 13 5.5 13c.494 0 .989-.27 1.223-.658.17-.28.277-.67.293-1.342H6a3.5 3.5 0 0 1-3.5-3.5v-3A.5.5 0 0 1 3 4h1V.5A.5.5 0 0 1 4.5 0h1A.5.5 0 0 1 6 .5V3h-.5V.5A.5.5 0 0 1 6 0z"/></svg>
+                                Conectar
+                            </button>
+                            <button type="button" class="btn btn-danger btn-sm d-none" id="btnQZDesconectar" onclick="qzDesconectar()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-plug mr-1" viewBox="0 0 16 16"><path d="M6 0a.5.5 0 0 1 .5.5V3h3V.5a.5.5 0 0 1 1 0V3h1a.5.5 0 0 1 .5.5v3A3.5 3.5 0 0 1 8.5 10c-.002.434-.01.845-.04 1.22-.041.514-.126 1.003-.317 1.424a2.083 2.083 0 0 1-.97 1.028C6.725 13.9 6.169 14 5.5 14c-.998 0-1.61.33-1.974.718A1.922 1.922 0 0 0 3 16H2c0-.616.232-1.367.797-1.968C3.374 13.42 4.261 13 5.5 13c.494 0 .989-.27 1.223-.658.17-.28.277-.67.293-1.342H6a3.5 3.5 0 0 1-3.5-3.5v-3A.5.5 0 0 1 3 4h1V.5A.5.5 0 0 1 4.5 0h1A.5.5 0 0 1 6 .5V3h-.5V.5A.5.5 0 0 1 6 0z"/></svg>
+                                Desconectar
+                            </button>
+                        </div>
+                        <div>
+                            <button type="button" class="btn btn-outline-danger btn-sm" id="btnQZEsquecer" onclick="qzEsquecerImpressora()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-trash mr-1" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
+                                Esquecer Impressora
+                            </button>
+                            <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Fechar</button>
+                            <button type="button" class="btn btn-primary btn-sm" id="btnQZSalvarImpressora" onclick="qzSalvarImpressora()" disabled>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-check2 mr-1" viewBox="0 0 16 16"><path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/></svg>
+                                Usar esta Impressora
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal How To — QZ Tray -->
+        <div class="modal fade" id="modalHowToQZ" tabindex="-1" role="dialog" aria-labelledby="modalHowToQZLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header bg-dark text-white">
+                        <h5 class="modal-title" id="modalHowToQZLabel">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-printer mr-2" viewBox="0 0 16 16"><path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/><path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/></svg>
+                            How To — QZ Tray (Impressão)
+                        </h5>
+                        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close"><span>&times;</span></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-muted small mb-3">Passo a passo para configurar a impressão silenciosa via QZ Tray em todos os desktops.</p>
+                        <div class="row">
+                            <div class="col-md-7">
+                                <ol class="small">
+                                    <li class="mb-2"><strong>Instale o QZ Tray</strong> em cada desktop → <a href="https://github.com/qzind/tray/releases/download/v2.2.5/qz-tray-2.2.5-x86_64.exe" target="_blank">QZ Tray 2.2.5 x64 (.exe)</a></li>
+                                    <li class="mb-2"><strong>Baixe o certificado</strong> → <a href="<?php echo $qzDownload; ?>?file=cert">Baixar certificado (.zip)</a>
+                                        <br>Após baixar, descompacte o arquivo no desktop. Você precisará do certificado na próxima etapa.
+                                    </li>
+                                    <li class="mb-2"><strong>Instale o certificado baixado</strong>:
+                                        <br>Clique no ícone do QZ Tray ao lado do relógio, no canto inferior direito.
+                                        <br><code>Advanced → Site Manager → "+" → Browse</code>
+                                        <br>Localize o arquivo descompactado e selecione <code>digital-certificate.txt</code>.
+                                    </li>
+                                    <li class="mb-2"><strong>Reinicie o QZ Tray</strong> em cada máquina: clique no ícone do QZ Tray e escolha <strong>Reload</strong>.</li>
+                                </ol>
+                            </div>
+                            <div class="col-md-5">
+                                <div class="card bg-light p-3">
+                                    <h6 class="mb-2"><i class="fas fa-link mr-1"></i> Links úteis</h6>
+                                    <a href="https://qz.io/download/" target="_blank" class="d-block mb-2 small">
+                                        <i class="fas fa-download mr-1"></i> Download QZ Tray
+                                    </a>
+                                    <a href="<?php echo $qzDownload; ?>?file=cert" class="d-block mb-2 small">
+                                        <i class="fas fa-shield-alt mr-1"></i> Baixar certificado (.zip)
+                                    </a>
+                                    <a href="https://github.com/qzind/tray/releases/download/v2.2.5/qz-tray-2.2.5-x86_64.exe" target="_blank" class="d-block mb-2 small">
+                                        <i class="fas fa-windows mr-1"></i> QZ Tray 2.2.5 x64 (.exe)
+                                    </a>
+                                    <hr class="my-2">
+                                    <h6 class="mb-2"><i class="fas fa-shield-alt mr-1"></i> Verificação</h6>
+                                    <p class="small text-muted mb-2">Use este teste somente se a impressão não funcionar. Uma sequência codificada confirma que o servidor está pronto para assinar impressões.</p>
+                                    <a href="assets/signing/sign-message.php?request=teste" target="_blank" class="d-block small">
+                                        <i class="fas fa-check-circle mr-1"></i> Testar assinatura
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Fechar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Configuração da Impressora -->
+        <div class="modal fade" id="modalConfigImpressora" tabindex="-1" role="dialog" aria-labelledby="modalConfigImpressoraLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <form method="post" action="<?php echo sanitize_for_html($_SERVER["PHP_SELF"]); ?>" id="formConfigImpressora">
+                        <?php echo csrf_field(); ?>
+                        <div class="modal-header bg-info text-white">
+                            <h5 class="modal-title" id="modalConfigImpressoraLabel">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-printer mr-2" viewBox="0 0 16 16"><path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1"/><path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/></svg>
+                                Configuração da Impressora e Instância
+                            </h5>
+                            <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="border rounded p-3 mb-4">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <strong>Impressora QZ Tray</strong>
+                                        <small class="d-block text-muted" id="qzConfigPrinterInfo">Verificando conexão...</small>
+                                    </div>
+                                    <div class="d-flex">
+                                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="abrirModalQZTray()">Gerenciar Impressora</button>
+                                        <a href="calibrar.php" target="_blank" class="btn btn-outline-secondary btn-sm ml-2" title="Calibrar impressora">
+                                            <i class="fas fa-sliders-h mr-1"></i>Calibrar Impressora
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="config_tampulseira">Tamanho da Pulseira (mm)</label>
+                                        <input type="number" class="form-control" id="config_tampulseira" name="config_tampulseira" value="<?php echo TAMPULSEIRA; ?>" required>
+                                        <small class="form-text text-muted">Tamanho total da pulseira em milímetros</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="config_dots">Dots por Milímetro</label>
+                                        <input type="number" class="form-control" id="config_dots" name="config_dots" value="<?php echo DOTS; ?>" required>
+                                        <small class="form-text text-muted">Resolução da impressora (normalmente 8)</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="config_fecho">Tamanho do Fecho (mm)</label>
+                                        <input type="number" class="form-control" id="config_fecho" name="config_fecho" value="<?php echo FECHO; ?>" required>
+                                        <small class="form-text text-muted">Tamanho do fecho da pulseira</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="config_fechoini">Posição Inicial do Fecho</label>
+                                        <input type="number" class="form-control" id="config_fechoini" name="config_fechoini" value="<?php echo FECHOINI; ?>" required>
+                                        <small class="form-text text-muted">Posição inicial (normalmente 1)</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="config_cidade_instancia">Cidade da Instância</label>
+                                <input type="text" class="form-control" id="config_cidade_instancia" name="config_cidade_instancia" value="<?php echo sanitize_for_html(defined('INSTANCE_CIDADE') ? INSTANCE_CIDADE : ''); ?>" required>
+                                <small class="form-text text-muted">Usada no cabeçalho da EBI e nas estatísticas administrativas.</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="config_comum_instancia">Comum da Instância</label>
+                                <input type="text" class="form-control" id="config_comum_instancia" name="config_comum_instancia" value="<?php echo sanitize_for_html(defined('INSTANCE_COMUM') ? INSTANCE_COMUM : ''); ?>" required>
+                                <small class="form-text text-muted">Usada no contador "Comum" e nas estatísticas administrativas.</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="config_lista_palavras_contador_comum">Palavras Adicionais para Contador "Comum"</label>
+                                <textarea class="form-control" id="config_lista_palavras_contador_comum" name="config_lista_palavras_contador_comum" rows="3"><?php echo LISTA_PALAVRAS_CONTADOR_COMUM; ?></textarea>
+                                <small class="form-text text-muted">Lista de palavras adicionais separadas por vírgula (ex: "parque, parqui, par que, jardim, capela"). Estas palavras serão verificadas EXATAMENTE como digitadas, sem gerar variações automáticas.</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="config_largura_pulseira">Largura da Pulseira (dots)</label>
+                                <input type="number" class="form-control" id="config_largura_pulseira" name="config_largura_pulseira" value="<?php echo LARGURA_PULSEIRA; ?>" min="1" required>
+                                <small class="form-text text-muted">Largura usada diretamente no comando ZPL enviado pelo QZ Tray.</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="admin_senha_config">Senha Administrativa</label>
+                                <input type="password" class="form-control" id="admin_senha_config" name="admin_senha" required>
+                                <small class="form-text text-muted">Digite a senha administrativa para confirmar as alterações</small>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-outline-danger" name="restaurar_config_impressora" onclick="return confirm('Restaurar as medidas padrão da pulseira? Cidade, comum, contador e impressora QZ serão preservados.');">
+                                Restaurar Medidas Padrão
+                            </button>
+                            <button type="submit" class="btn btn-primary" name="salvar_config_impressora">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-save mr-1" viewBox="0 0 16 16"><path d="M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z"/></svg>
+                                Salvar Configurações
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Alterar Senha -->
+        <div class="modal fade" id="modalAlterarSenha" tabindex="-1" role="dialog" aria-labelledby="modalAlterarSenhaLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <form method="post" action="<?php echo sanitize_for_html($_SERVER["PHP_SELF"]); ?>">
+                        <?php echo csrf_field(); ?>
+                        <div class="modal-header bg-primary text-white">
+                            <h5 class="modal-title" id="modalAlterarSenhaLabel">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-key-fill mr-1" viewBox="0 0 16 16"><path d="M3 8a4 4 0 1 1 7.937.5H14a1 1 0 0 1 1 1v1h-1v1h-1v1h-2.062A4.001 4.001 0 0 1 3 8m4-3a3 3 0 1 0 2.83 4H11v1h1v1h1v-1h1V9h-3.17A3.001 3.001 0 0 0 7 5"/></svg>
+                                Alterar Senha da Instância
+                            </h5>
+                            <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                                <label for="senha_atual_instancia">Senha Atual</label>
+                                <input type="password" class="form-control" id="senha_atual_instancia" name="senha_atual" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="nova_senha_instancia">Nova Senha</label>
+                                <input type="password" class="form-control" id="nova_senha_instancia" name="nova_senha" minlength="8" required>
+                                <small class="form-text text-muted">Mínimo de 8 caracteres.</small>
+                            </div>
+                            <div class="form-group mb-0">
+                                <label for="confirmar_nova_senha_instancia">Confirmar Nova Senha</label>
+                                <input type="password" class="form-control" id="confirmar_nova_senha_instancia" name="confirmar_nova_senha" minlength="8" required>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                            <button type="submit" class="btn btn-primary" name="alterar_senha_instancia">Salvar Nova Senha</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Debug ZPL -->
+        <div class="modal fade" id="modalDebugZPL" tabindex="-1" role="dialog" aria-labelledby="modalDebugZPLLabel" aria-hidden="true">
+            <div class="modal-dialog modal-xl" role="document">
+                <div class="modal-content">
+                    <div class="modal-header bg-warning">
+                        <h5 class="modal-title" id="modalDebugZPLLabel">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-bug-fill mr-2" viewBox="0 0 16 16"><path d="M4.978.855a.5.5 0 1 0-.956.29L4.3 2.003a4.98 4.98 0 0 0-2.106 1.098L.75 1.655a.5.5 0 0 0-.707.707l1.446 1.446a4.98 4.98 0 0 0-.967 2.197l-1.02.156a.5.5 0 0 0 .153.988l1.028-.157a5.01 5.01 0 0 0 .848 1.653L.085 9.992a.5.5 0 0 0 .707.707l1.446-1.446a4.98 4.98 0 0 0 2.106 1.098l-.278 1.858a.5.5 0 1 0 .956.29l.278-1.858a5.017 5.017 0 0 0 2.4 0l.278 1.858a.5.5 0 1 0 .956-.29l-.278-1.858a4.98 4.98 0 0 0 2.106-1.098l1.446 1.446a.5.5 0 0 0 .707-.707l-1.446-1.446a4.98 4.98 0 0 0 .848-1.653l1.028.157a.5.5 0 1 0 .153-.988l-1.02-.156a4.98 4.98 0 0 0-.967-2.197l1.446-1.446a.5.5 0 0 0-.707-.707l-1.446 1.446a4.98 4.98 0 0 0-2.106-1.098l.278-1.858a.5.5 0 1 0-.956-.29l-.278 1.858a5.017 5.017 0 0 0-2.4 0l-.278-1.858z"/><path d="M7.8 5.5a.8.8 0 1 1-1.6 0 .8.8 0 0 1 1.6 0z"/><path d="M9.8 5.5a.8.8 0 1 1-1.6 0 .8.8 0 0 1 1.6 0z"/></svg>
+                            Modo Debug - Comando ZPL
+                        </h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-warning">
+                            <strong>Modo Debug Ativo!</strong> Você pode editar o código ZPL antes de enviar para a impressora.
+                        </div>
+
+                        <div class="form-group">
+                            <label for="debug_info">Informações:</label>
+                            <div id="debug_info" class="p-2 bg-light border rounded">
+                                <strong>Criança:</strong> <span id="debug_nome_crianca"></span><br>
+                                <strong>Código:</strong> <span id="debug_codigo"></span><br>
+                                <strong>Tipo:</strong> <span id="debug_tipo_pulseira"></span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="debug_zpl_code">Código ZPL:</label>
+                            <textarea class="form-control" id="debug_zpl_code" rows="15" style="font-family: 'Courier New', monospace; font-size: 12px;"></textarea>
+                            <small class="form-text text-muted">Você pode editar o código ZPL diretamente aqui antes de enviar</small>
+                        </div>
+
+                        <div class="alert py-2 mb-2" id="debug_rota_alert" style="font-size:0.85rem;">
+                            <strong>Rota de impressão:</strong> <span id="debug_rota_text">verificando...</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Comando QZ Tray equivalente:</label>
+                            <textarea class="form-control" id="debug_curl_command" rows="5" readonly style="font-family: 'Courier New', monospace; font-size: 11px; background-color: #f8f9fa;"></textarea>
+                            <button type="button" class="btn btn-sm btn-outline-secondary mt-2" onclick="copiarComandoQZ()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-clipboard" viewBox="0 0 16 16"><path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z"/><path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z"/></svg>
+                                Copiar Código
+                            </button>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-success" id="btnEnviarDebug" onclick="enviarZPLDebug()">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send-fill mr-1" viewBox="0 0 16 16"><path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z"/></svg>
+                            <span id="debug_btn_label">Enviar para Impressora</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rodapé com versão do sistema -->
+        <div class="text-center mt-4 mb-2" style="font-size: 9px; color: #b0b0b0; opacity: 0.6;">
+            v<?php echo VERSAO_SISTEMA; ?>
+        </div>
+    </div>
+
+    <!-- Tour Guiado -->
+    <div id="tourOverlay"></div>
+    <div id="tourTooltip">
+        <div class="tour-titulo"></div>
+        <div class="tour-texto"></div>
+        <div class="tour-rodape">
+            <span class="tour-passo-contador"></span>
+            <div>
+                <button type="button" class="btn btn-link btn-sm text-muted" id="tourBtnPular">Pular</button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="tourBtnAnterior">Anterior</button>
+                <button type="button" class="btn btn-primary btn-sm" id="tourBtnProximo">Próximo</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qz-tray@2/qz-tray.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+    <script>
+        var csrfToken = <?php echo json_encode(csrf_token()); ?>;
+        const NUM_LINHAS_FORM_CADASTRO = <?php echo NUM_LINHAS_FORMULARIO_CADASTRO; ?>;
+        // TESTE v2: agora suporta 9 colunas por linha (a 6ª é a cidade e a 7ª o
+        // estado/UF, presentes apenas no novo formato de QR Code gerado por
+        // qrcode/qrcode.2.php).
+        const NUM_CAMPOS_POR_LINHA_CADASTRO = 9;
+
+        function focarPrimeiroCampoCadastro() {
+            $('#input_0_0').focus();
+        }
+
+        function limparLinhaCadastro(linha) {
+            $('#input_' + linha + '_0').val('');
+            $('#input_' + linha + '_1').val('');
+            $('#input_' + linha + '_2').val('');
+            $('#input_' + linha + '_3').val('').trigger('input');
+            $('#input_' + linha + '_4').val('');
+            $('#input_' + linha + '_5').val('');
+            $('#input_' + linha + '_6').val('');
+            $('#input_' + linha + '_7').val('').trigger('input');
+        }
+
+        $(document).ready(function(){
+            $('.telefone-mask').mask('(00) 00000-0000');
+            $('.data-nascimento-mask').mask('00/00/0000');
+
+            const portariaInputCadastro = $('#portaria_cadastro');
+            const storedPortaria = localStorage.getItem('ultimaPortariaCadastro');
+            if (storedPortaria) {
+                portariaInputCadastro.val(storedPortaria);
+            }
+
+            portariaInputCadastro.on('input', function() {
+                let value = $(this).val().toUpperCase();
+                if (value.length > 1) {
+                    value = value.substring(0, 1);
+                }
+                $(this).val(value);
+                if (value.match(/^[A-Z]$/)) {
+                    localStorage.setItem('ultimaPortariaCadastro', value);
+                } else if (value === '') {
+                    localStorage.removeItem('ultimaPortariaCadastro');
+                }
+            });
+
+            <?php if ($focarPrimeiroCampoAposCadastro): ?>
+                focarPrimeiroCampoCadastro();
+                $('#formNovoCadastro .cadastro-input').val('');
+                // Auto-imprimir: apenas os cadastros recém-feitos (últimos N)
+                if (localStorage.getItem('autoImpressao') === 'true') {
+                    var cadastrosRecentes = <?php echo (int)$cadastrosRecentesCount; ?>;
+                    function tentarAutoImprimir() {
+                        if (cadastrosRecentes <= 0) return;
+                        // Selecionar apenas os primeiros N não-impressos no topo da tabela
+                        var count = 0;
+                        $('#lista-criancas tr').each(function() {
+                            if (count >= cadastrosRecentes) return false;
+                            var impresso = $(this).find('.status-icon svg[fill="green"]').length > 0;
+                            if (!impresso) {
+                                $(this).find('.checkbox-crianca').prop('checked', true);
+                                count++;
+                            }
+                        });
+                        if (count > 0) {
+                            $('#formListaCriancas').find('input[name="imprimir"]').remove();
+                            $('#formListaCriancas').append('<input type="hidden" name="imprimir" value="1">');
+                            $('#formListaCriancas').submit();
+                        }
+                    }
+                    if (typeof qzReadyPromise !== 'undefined' && qzReadyPromise) {
+                        qzReadyPromise.then(function() {
+                            if (qzConnected) tentarAutoImprimir();
+                        });
+                    } else {
+                        setTimeout(function() {
+                            tentarAutoImprimir();
+                        }, 2000);
+                    }
+                }
+            <?php elseif ($focarAposAcao): ?>
+                focarPrimeiroCampoCadastro();
+            <?php elseif (!empty($mensagemErro)): ?>
+            <?php endif; ?>
+
+
+            // Leitores QR enviam uma sequência de teclas muito mais rápida que a digitação manual.
+            // Só essa sequência pode acionar o Auto-Cadastrar; Tab e Enter manuais apenas navegam.
+            var autoSubmitTimer = null;
+            var leituraPistola = {
+                ultimoEventoEm: 0,
+                caracteresRapidos: 0,
+                separadoresRapidos: 0,
+                confirmada: false,
+                sequencia: 0
+            };
+            var LIMITE_INTERVALO_PISTOLA_MS = 65;
+            var MINIMO_CARACTERES_PISTOLA = 6;
+            var MINIMO_SEPARADORES_PISTOLA = 4;
+
+            function resetarLeituraPistola() {
+                leituraPistola.ultimoEventoEm = 0;
+                leituraPistola.caracteresRapidos = 0;
+                leituraPistola.separadoresRapidos = 0;
+                leituraPistola.confirmada = false;
+                leituraPistola.sequencia++;
+                if (autoSubmitTimer) {
+                    clearTimeout(autoSubmitTimer);
+                    autoSubmitTimer = null;
+                }
+            }
+
+            function registrarTeclaDaPistola(evento) {
+                if (evento.ctrlKey || evento.metaKey || evento.altKey) {
+                    resetarLeituraPistola();
+                    return false;
+                }
+
+                var agora = Date.now();
+                var ehCaractere = evento.key.length === 1;
+                var ehSeparador = evento.key === 'Tab' || evento.key === 'Enter';
+
+                if (!ehCaractere && !ehSeparador) {
+                    resetarLeituraPistola();
+                    return false;
+                }
+
+                if (leituraPistola.ultimoEventoEm === 0 || agora - leituraPistola.ultimoEventoEm > LIMITE_INTERVALO_PISTOLA_MS) {
+                    leituraPistola.caracteresRapidos = 0;
+                    leituraPistola.separadoresRapidos = 0;
+                    leituraPistola.confirmada = false;
+                    leituraPistola.sequencia++;
+                }
+
+                if (ehCaractere) {
+                    leituraPistola.caracteresRapidos++;
+                } else if (ehSeparador) {
+                    leituraPistola.separadoresRapidos++;
+                }
+
+                if (leituraPistola.caracteresRapidos >= MINIMO_CARACTERES_PISTOLA
+                    && leituraPistola.separadoresRapidos >= MINIMO_SEPARADORES_PISTOLA) {
+                    leituraPistola.confirmada = true;
+                }
+
+                leituraPistola.ultimoEventoEm = agora;
+                return leituraPistola.confirmada;
+            }
+
+            function agendarAutoCadastroPorPistola(atraso) {
+                if (localStorage.getItem('autoCadastro') !== 'true' || !leituraPistola.confirmada) {
+                    return;
+                }
+
+                var sequenciaAtual = leituraPistola.sequencia;
+                autoSubmitTimer = setTimeout(function() {
+                    if (leituraPistola.sequencia !== sequenciaAtual) {
+                        return;
+                    }
+                    var portariaVal = $('#portaria_cadastro').val().trim();
+                    if (portariaVal.length === 1 && $('#input_0_0').val().trim() !== '') {
+                        $('#btnCadastrar').click();
+                    }
+                    autoSubmitTimer = null;
+                }, atraso);
+            }
+
+            $('.cadastro-input').on('keydown', function(e) {
+                const key = e.key;
+                registrarTeclaDaPistola(e);
+                if (key !== 'Enter' && key !== 'Tab') {
+                    return;
+                }
+                e.preventDefault();
+                if (autoSubmitTimer) { clearTimeout(autoSubmitTimer); autoSubmitTimer = null; }
+
+                const target = e.target;
+                const currentLinha = parseInt($(target).data('linha'));
+                const currentCol = parseInt($(target).data('col'));
+
+                if (key === 'Tab') {
+                    if (currentCol < NUM_CAMPOS_POR_LINHA_CADASTRO - 1) {
+                        $('#input_' + currentLinha + '_' + (currentCol + 1)).focus();
+                    } else if (currentLinha < NUM_LINHAS_FORM_CADASTRO - 1) {
+                        $('#input_' + (currentLinha + 1) + '_0').focus();
+                    } else {
+                        $('#portaria_cadastro').focus();
+                    }
+                    agendarAutoCadastroPorPistola(500);
+                    return;
+                }
+
+                // Enter: mover para próxima linha (suporte QR antigo com \r)
+                if (currentLinha < NUM_LINHAS_FORM_CADASTRO - 1) {
+                    $('#input_' + (currentLinha + 1) + '_0').focus();
+                } else {
+                    $('#portaria_cadastro').focus();
+                }
+
+                agendarAutoCadastroPorPistola(300);
+            });
+
+            $('#portaria_cadastro').on('keydown', function(e) {
+                registrarTeclaDaPistola(e);
+                if (e.key === 'Enter' || (e.key === 'Tab' && !e.shiftKey)) {
+                    e.preventDefault();
+                    var portariaVal = $(this).val().trim();
+                    if (localStorage.getItem('autoCadastro') === 'true' && leituraPistola.confirmada && portariaVal.length === 1) {
+                        var temDados = $('#input_0_0').val().trim() !== '';
+                        if (temDados) {
+                            $('#btnCadastrar').click();
+                            return;
+                        }
+                    }
+                    if ($('#btnLimparCadastro').is(':visible') && !$('#btnLimparCadastro').is(':disabled')) { 
+                        $('#btnLimparCadastro').focus();
+                    } else {
+                        $('#btnCadastrar').focus();
+                    }
+                }
+            });
+
+            $('#formNovoCadastro').on('mousedown touchstart paste', 'input, textarea, select', resetarLeituraPistola);
+
+
+            $('#selecionarTodos').change(function() {
+                $('.checkbox-crianca:visible').prop('checked', $(this).prop('checked'));
+            });
+
+            $(document).on('change', '.checkbox-crianca', function() {
+                if (!$(this).prop('checked')) {
+                    $('#selecionarTodos').prop('checked', false);
+                } else {
+                    var todosMarcadosVisiveis = true;
+                    $('.checkbox-crianca:visible').each(function(){
+                        if(!$(this).prop('checked')){
+                            todosMarcadosVisiveis = false; return false; 
+                        }
+                    });
+                    $('#selecionarTodos').prop('checked', todosMarcadosVisiveis);
+                }
+            });
+
+            window.setTimeout(function() { $(".alert-success, .alert-danger").not('.alert-login').fadeTo(500, 0).slideUp(500, function(){ $(this).remove(); }); }, 7000);
+
+            $('#arquivo_backup_selecionado').change(function() {
+                var selectedFile = $(this).val();
+                var previewDiv = $('#backupPreviewContent');
+                if (selectedFile) {
+                    previewDiv.html('Carregando preview...').show();
+                    var previewUrl = window.location.pathname + '?acao=preview_backup&arquivo=' + encodeURIComponent(selectedFile);
+                    fetch(previewUrl)
+                        .then(response => {
+                            if (!response.ok) {
+                                return response.text().then(text => { throw new Error('Erro: ' + response.status + ' ' + text); });
+                            }
+                            return response.text();
+                        })
+                        .then(data => {
+                            previewDiv.text(data ? data : 'Preview não disponível ou arquivo vazio.');
+                        })
+                        .catch(error => {
+                            console.error('Erro ao buscar preview:', error);
+                            previewDiv.text('Erro ao carregar preview: ' + error.message).show();
+                        });
+                } else {
+                    previewDiv.hide().empty();
+                }
+            });
+            <?php if ($exibirModalRecuperacao && !empty($backupsDisponiveis)): ?>
+                if ($('#arquivo_backup_selecionado').val()) { 
+                    $('#arquivo_backup_selecionado').trigger('change'); 
+                }
+            <?php endif; ?>
+
+            const filtroPortariaSelect = $('#filtroPortaria');
+            const todasAsLinhasDaTabela = $('#lista-criancas tr');
+            const localStorageKeyFiltroPortaria = 'filtroPortariaSelecionado';
+            let portariasUnicas = new Set();
+
+            todasAsLinhasDaTabela.each(function() {
+                const portariaDaLinha = $(this).data('portaria')?.toString().trim().toUpperCase();
+                if (portariaDaLinha) {
+                    portariasUnicas.add(portariaDaLinha);
+                }
+            });
+
+            Array.from(portariasUnicas).sort().forEach(p => {
+                filtroPortariaSelect.append(new Option(p, p));
+            });
+
+            function aplicarFiltroPortaria() {
+                const portariasSelecionadas = filtroPortariaSelect.val();
+                localStorage.setItem(localStorageKeyFiltroPortaria, JSON.stringify(portariasSelecionadas));
+
+                if (!portariasSelecionadas || portariasSelecionadas.length === 0) {
+                    todasAsLinhasDaTabela.show();
+                    $('#selecionarTodos').prop('disabled', todasAsLinhasDaTabela.length === 0);
+                } else {
+                    let algumaLinhaVisivel = false;
+                    todasAsLinhasDaTabela.each(function() {
+                        const portariaDaLinha = $(this).data('portaria')?.toString().trim().toUpperCase();
+                        if (portariasSelecionadas.includes(portariaDaLinha)) {
+                            $(this).show();
+                            algumaLinhaVisivel = true;
+                        } else {
+                            $(this).hide();
+                            $(this).find('.checkbox-crianca').prop('checked', false); 
+                        }
+                    });
+                    $('#selecionarTodos').prop('disabled', !algumaLinhaVisivel);
+                }
+                var todosMarcadosVisiveis = true;
+                var algumVisivel = false;
+                $('.checkbox-crianca:visible').each(function(){
+                    algumVisivel = true;
+                    if(!$(this).prop('checked')){
+                        todosMarcadosVisiveis = false; return false;
+                    }
+                });
+                if (!algumVisivel) todosMarcadosVisiveis = false; 
+                $('#selecionarTodos').prop('checked', todosMarcadosVisiveis);
+            }
+
+            const filtroSalvo = localStorage.getItem(localStorageKeyFiltroPortaria);
+            if (filtroSalvo) {
+                try {
+                    const portariasSalvas = JSON.parse(filtroSalvo);
+                    if (Array.isArray(portariasSalvas)) {
+                        filtroPortariaSelect.val(portariasSalvas);
+                    }
+                } catch (e) {
+                    console.error("Erro ao carregar filtro de portaria do localStorage:", e);
+                    localStorage.removeItem(localStorageKeyFiltroPortaria); 
+                }
+            }
+            aplicarFiltroPortaria(); 
+
+            filtroPortariaSelect.on('change', aplicarFiltroPortaria);
+
+            $('#limparFiltroPortaria').on('click', function() {
+                filtroPortariaSelect.val(null).trigger('change'); 
+            });
+
+            $('.btn-copiar-dados').on('click', function() {
+                const targetLinha = parseInt($(this).data('target-linha'));
+                const responsavelLinha0 = $('#input_0_1').val();
+                const telefoneLinha0 = $('#input_0_3').val();
+                const comumLinha0 = $('#input_0_4').val();
+                const cidadeLinha0 = $('#input_0_5').val();
+                const estadoLinha0 = $('#input_0_6').val();
+
+                $('#input_' + targetLinha + '_1').val(responsavelLinha0);
+                $('#input_' + targetLinha + '_3').val(telefoneLinha0).trigger('input');
+                $('#input_' + targetLinha + '_4').val(comumLinha0);
+                $('#input_' + targetLinha + '_5').val(cidadeLinha0);
+                $('#input_' + targetLinha + '_6').val(estadoLinha0);
+            });
+
+            $('#btnLimparCadastro').on('click', function() {
+                $('#formNovoCadastro .cadastro-input').val('');
+                focarPrimeiroCampoCadastro();
+            });
+
+            $('#btnBaixarPDF').on('click', function() {
+                var dados = extrairDadosTabelaVisivel();
+                if (!dados.rows.length) {
+                    alert('Nenhum registro visível para exportar em PDF.');
+                    return;
+                }
+
+                if (!window.jspdf || !window.jspdf.jsPDF) {
+                    alert('Biblioteca de PDF não carregada. Atualize a página e tente novamente.');
+                    return;
+                }
+
+                var jsPDF = window.jspdf.jsPDF;
+                var doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+                var titulo = 'Lista de Crianças Cadastradas';
+                var agora = new Date();
+                var ts = agora.getFullYear()
+                    + String(agora.getMonth() + 1).padStart(2, '0')
+                    + String(agora.getDate()).padStart(2, '0')
+                    + '_'
+                    + String(agora.getHours()).padStart(2, '0')
+                    + String(agora.getMinutes()).padStart(2, '0');
+
+                doc.setFontSize(13);
+                doc.text(titulo, 40, 34);
+                doc.setFontSize(9);
+                doc.text('Gerado em: ' + agora.toLocaleString('pt-BR'), 40, 50);
+
+                doc.autoTable({
+                    startY: 62,
+                    head: [dados.headers],
+                    body: dados.rows,
+                    styles: { fontSize: 8, cellPadding: 3 },
+                    headStyles: { fillColor: [0, 123, 255] },
+                    theme: 'striped',
+                    margin: { left: 20, right: 20 }
+                });
+
+                doc.save('lista_criancas_' + ts + '.pdf');
+            });
+
+            // Função auxiliar para extrair dados visíveis da tabela
+            function extrairDadosTabelaVisivel() {
+                var headers = ['Impresso', 'Portaria', 'Codigo', 'Cod Resp', 'Nome da Crianca', 'Nome do Responsavel', 'Telefone', 'Idade', 'M/F', 'Data', 'Comum'];
+                var rows = [];
+                $('#lista-criancas tr').each(function() {
+                    if ($(this).is(':visible')) {
+                        var $cells = $(this).find('td');
+                        if ($cells.length === 0) return;
+                        var impresso = $cells.eq(1).find('svg').length > 0 ? 'Sim' : 'Nao';
+                        // Usar data-nome para evitar emojis de aniversário
+                        var nomeCrianca = $cells.eq(5).attr('data-nome') || $cells.eq(5).text().trim();
+                        var row = [
+                            impresso,
+                            $cells.eq(2).text().trim(),
+                            $cells.eq(3).text().trim(),
+                            $cells.eq(4).text().trim(),
+                            nomeCrianca,
+                            $cells.eq(6).text().trim(),
+                            $cells.eq(7).text().trim(),
+                            $cells.eq(8).text().trim(),
+                            $cells.eq(9).text().trim(),
+                            $cells.eq(10).text().trim(),
+                            $cells.eq(11).text().trim()
+                        ];
+                        rows.push(row);
+                    }
+                });
+                return { headers: headers, rows: rows };
+            }
+
+            // Baixar CSV
+            $('#btnBaixarCSV').on('click', function() {
+                var dados = extrairDadosTabelaVisivel();
+                var csvContent = '\uFEFF'; // BOM UTF-8 para Excel
+                csvContent += dados.headers.join(';') + '\n';
+                dados.rows.forEach(function(row) {
+                    var linha = row.map(function(cell) {
+                        var escaped = cell.replace(/"/g, '""');
+                        return '"' + escaped + '"';
+                    });
+                    csvContent += linha.join(';') + '\n';
+                });
+
+                var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                var link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                var dataAtual = new Date().toISOString().slice(0, 10);
+                link.download = 'lista_criancas_' + dataAtual + '.csv';
+                link.style.display = 'none';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+            });
+
+            // Baixar XLS
+            $('#btnBaixarXLS').on('click', function() {
+                var dados = extrairDadosTabelaVisivel();
+                var html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">';
+                html += '<head><meta charset="UTF-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>';
+                html += '<x:Name>Lista</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>';
+                html += '</x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body>';
+                html += '<table border="1">';
+                html += '<thead><tr>';
+                dados.headers.forEach(function(h) {
+                    html += '<th style="background-color:#007bff;color:#fff;font-weight:bold;padding:5px;">' + h + '</th>';
+                });
+                html += '</tr></thead><tbody>';
+                dados.rows.forEach(function(row) {
+                    html += '<tr>';
+                    row.forEach(function(cell) {
+                        html += '<td style="padding:3px;">' + $('<span>').text(cell).html() + '</td>';
+                    });
+                    html += '</tr>';
+                });
+                html += '</tbody></table></body></html>';
+
+                var blob = new Blob([html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+                var link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                var dataAtual = new Date().toISOString().slice(0, 10);
+                link.download = 'lista_criancas_' + dataAtual + '.xls';
+                link.style.display = 'none';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(link.href);
+            });
+
+
+            // Inicializar modos
+            atualizarEstadoModoDebug();
+            atualizarEstadoModoTeste();
+
+        });
+
+        // ============ TOUR GUIADO ============
+
+        var tourPassos = [
+            {
+                seletor: '#portaria_cadastro',
+                titulo: 'Portaria de Entrada',
+                texto: 'Define a portaria (padrão "A"), identifica por onde a criança entrou.',
+                posicao: 'top'
+            },
+            {
+                seletor: '#btnCadastrar',
+                titulo: 'Cadastrar Criança',
+                texto: 'Preencha os dados da criança e do responsável e clique aqui para cadastrar. A pulseira fica pronta para impressão.',
+                posicao: 'top'
+            },
+            {
+                seletor: '.btn-copiar-dados',
+                titulo: 'Copiar Responsável',
+                texto: 'Copia os dados do responsável, telefone e comum da primeira linha para a linha atual — ajuda e acelera o cadastro manual de mais crianças da mesma família.',
+                posicao: 'top'
+            },
+            {
+                seletor: '#btnImprimir',
+                titulo: 'Imprimir Pulseiras',
+                texto: 'Marque as crianças na lista e clique aqui para imprimir as pulseiras.',
+                posicao: 'bottom'
+            },
+            {
+                seletor: '#qzStatusBadge',
+                titulo: 'Status da Impressora',
+                texto: 'Mostra se a impressora está online (verde) ou desconectada (vermelho/amarelo). Clique aqui para configurar a conexão.',
+                posicao: 'bottom'
+            },
+            {
+                seletor: '#filtroPortaria',
+                titulo: 'Filtrar por Portaria',
+                texto: 'Define qual portaria será mostrado na tabela abaixo pra facilitar encontrar as crianças que entraram por essa portaria.',
+                posicao: 'bottom'
+            },
+            {
+                seletor: '#menuCalibrar',
+                titulo: 'Calibrar Impressora',
+                texto: 'Ao clicar aqui, a impressora passa por uma calibração completa — útil quando a pulseira sai torta ou fora de posição.',
+                posicao: 'right',
+                antes: function() { $('#dropdownMenuAdmin').dropdown('show'); },
+                depois: function() { $('#dropdownMenuAdmin').dropdown('hide'); }
+            },
+            {
+                seletor: '#menuLista',
+                titulo: 'Lista',
+                texto: 'Aqui é possível imprimir ou baixar a lista das crianças presentes, em PDF, CSV ou planilha (XLS).',
+                posicao: 'right',
+                antes: function() { $('#dropdownMenuAdmin').dropdown('show'); },
+                depois: function() { $('#dropdownMenuAdmin').dropdown('hide'); }
+            },
+            {
+                seletor: '#menuEstatisticas',
+                titulo: 'Estatísticas (BI)',
+                texto: 'Veja todas as estatísticas do sistema: total de cadastros, faixas etárias, meninos/meninas, por portaria e por comum — com gráficos e histórico por período.',
+                posicao: 'right',
+                antes: function() { $('#dropdownMenuAdmin').dropdown('show'); },
+                depois: function() { $('#dropdownMenuAdmin').dropdown('hide'); }
+            },
+            {
+                seletor: '#linkSaida',
+                titulo: 'Saída',
+                texto: 'Abre o sistema de saída: as auxiliadoras digitam o código do responsável (impresso na pulseira) e, no Painel de Saída, aparece qual criança está sendo aguardada por esse responsável.',
+                posicao: 'bottom'
+            }
+        ];
+
+        var tourIndiceAtual = -1;
+
+        function tourRecortarOverlay($el) {
+            var overlay = document.getElementById('tourOverlay');
+            if (!$el || $el.length === 0) { overlay.style.clipPath = ''; return; }
+            var rect = $el[0].getBoundingClientRect();
+            var pad = 6;
+            var x1 = Math.max(0, rect.left - pad);
+            var y1 = Math.max(0, rect.top - pad);
+            var x2 = Math.min(window.innerWidth, rect.right + pad);
+            var y2 = Math.min(window.innerHeight, rect.bottom + pad);
+            var w = window.innerWidth, h = window.innerHeight;
+            overlay.style.clipPath = 'polygon(evenodd, 0px 0px, 0px ' + h + 'px, ' + w + 'px ' + h + 'px, ' + w + 'px 0px, 0px 0px, ' +
+                x1 + 'px ' + y1 + 'px, ' + x1 + 'px ' + y2 + 'px, ' + x2 + 'px ' + y2 + 'px, ' + x2 + 'px ' + y1 + 'px, ' + x1 + 'px ' + y1 + 'px)';
+        }
+
+        function tourPosicionarTooltip($el, passo) {
+            var rect = $el[0].getBoundingClientRect();
+            var $tip = $('#tourTooltip');
+            $tip.find('.tour-titulo').text(passo.titulo);
+            $tip.find('.tour-texto').text(passo.texto);
+            $tip.find('.tour-passo-contador').text((tourIndiceAtual + 1) + ' de ' + tourPassos.length);
+            $tip.css('display', 'block');
+
+            var margem = 12;
+            var tipWidth = $tip.outerWidth();
+            var tipHeight = $tip.outerHeight();
+            var posicao = passo.posicao || 'bottom';
+            var top, left;
+
+            if (posicao === 'top') {
+                top = rect.top - tipHeight - margem;
+                left = rect.left;
+            } else if (posicao === 'left') {
+                top = rect.top;
+                left = rect.left - tipWidth - margem;
+            } else if (posicao === 'right') {
+                top = rect.top;
+                left = rect.right + margem;
+            } else {
+                top = rect.bottom + margem;
+                left = rect.left;
+            }
+
+            if (left + tipWidth > window.innerWidth - margem) left = window.innerWidth - tipWidth - margem;
+            if (left < margem) left = margem;
+            if (top + tipHeight > window.innerHeight - margem) top = window.innerHeight - tipHeight - margem;
+            if (top < margem) top = margem;
+
+            $tip.css({ top: top + 'px', left: left + 'px' });
+            $('#tourBtnAnterior').prop('disabled', tourIndiceAtual === 0);
+            $('#tourBtnProximo').text(tourIndiceAtual === tourPassos.length - 1 ? 'Concluir' : 'Próximo');
+        }
+
+        function tourEsconderPassoAtual() {
+            var passo = tourPassos[tourIndiceAtual];
+            if (!passo) return;
+            $(passo.seletor).removeClass('tour-alvo-destacado');
+            if (typeof passo.depois === 'function') passo.depois();
+        }
+
+        function tourMostrarPasso(indice) {
+            var passo = tourPassos[indice];
+            if (!passo) return;
+
+            // Adiado: se "antes" abre um dropdown, precisa rodar depois que o
+            // clique atual terminar de propagar (senão o listener global do
+            // Bootstrap que fecha dropdowns ao clicar fora fecha de novo).
+            setTimeout(function() {
+                if (typeof passo.antes === 'function') passo.antes();
+
+                setTimeout(function() {
+                    var $el = $(passo.seletor);
+                    if ($el.length === 0 || !$el.is(':visible')) {
+                        tourProximoPasso();
+                        return;
+                    }
+                    $el[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    setTimeout(function() {
+                        $el.addClass('tour-alvo-destacado');
+                        tourRecortarOverlay($el);
+                        tourPosicionarTooltip($el, passo);
+                    }, 250);
+                }, 120);
+            }, 0);
+        }
+
+        function tourProximoPasso() {
+            tourEsconderPassoAtual();
+            tourIndiceAtual++;
+            if (tourIndiceAtual >= tourPassos.length) {
+                tourEncerrar();
+                return;
+            }
+            tourMostrarPasso(tourIndiceAtual);
+        }
+
+        function tourPassoAnterior() {
+            if (tourIndiceAtual <= 0) return;
+            tourEsconderPassoAtual();
+            tourIndiceAtual--;
+            tourMostrarPasso(tourIndiceAtual);
+        }
+
+        function tourEncerrar() {
+            tourEsconderPassoAtual();
+            $('#tourOverlay').css('display', 'none');
+            $('#tourTooltip').css('display', 'none');
+            tourIndiceAtual = -1;
+            localStorage.setItem('ebi_tour_guiado_visto', '1');
+        }
+
+        function iniciarTourGuiado() {
+            tourIndiceAtual = -1;
+            $('#tourOverlay').css('display', 'block');
+            tourProximoPasso();
+        }
+
+        $('#tourBtnProximo').on('click', tourProximoPasso);
+        $('#tourBtnAnterior').on('click', tourPassoAnterior);
+        $('#tourBtnPular').on('click', tourEncerrar);
+        $(window).on('resize', function() {
+            var passo = tourPassos[tourIndiceAtual];
+            if (passo && $('#tourTooltip').is(':visible')) {
+                var $el = $(passo.seletor);
+                tourRecortarOverlay($el);
+                tourPosicionarTooltip($el, passo);
+            }
+        });
+
+        // Mostrar automaticamente no primeiro acesso
+        (function() {
+            if (!localStorage.getItem('ebi_tour_guiado_visto')) {
+                setTimeout(iniciarTourGuiado, 600);
+            }
+        })();
+
+        // ============ FUNÇÕES DE CONFIGURAÇÃO E DEBUG ============
+
+        function abrirModalConfigImpressora() {
+            qzAtualizarBadge();
+            $('#modalConfigImpressora').modal('show');
+        }
+
+        function abrirModalAlterarSenha() {
+            $('#modalAlterarSenha').modal('show');
+        }
+
+        function toggleModoDebugImpressao() {
+            const modoDebugAtual = localStorage.getItem('modoDebugImpressao') === 'true';
+            const novoEstado = !modoDebugAtual;
+            localStorage.setItem('modoDebugImpressao', novoEstado);
+            atualizarEstadoModoDebug();
+
+            if (novoEstado) {
+                alert('Modo Debug de Impressão ATIVADO!\n\nAgora, ao clicar em "Imprimir", uma janela será aberta mostrando o código ZPL antes de enviar para a impressora.');
+            } else {
+                alert('Modo Debug de Impressão DESATIVADO.\n\nAs impressões serão enviadas diretamente para a impressora.');
+            }
+        }
+
+        function atualizarEstadoModoDebug() {
+            const modoDebugAtivo = localStorage.getItem('modoDebugImpressao') === 'true';
+            const label = $('#labelDebugMode');
+            const btn = $('#btnToggleDebug');
+
+            if (modoDebugAtivo) {
+                label.text('Modo Debug: ON').css('font-weight', 'bold').css('color', '#ffc107');
+                btn.css('background-color', '#fff3cd');
+            } else {
+                label.text('Modo Debug: OFF').css('font-weight', 'normal').css('color', '');
+                btn.css('background-color', '');
+            }
+        }
+
+        // ============ MODO TESTAR IMPRESSÃO ============
+
+        function toggleModoTesteImpressao() {
+            const modoAtual = localStorage.getItem('modoTesteImpressao') === 'true';
+            const novoEstado = !modoAtual;
+            localStorage.setItem('modoTesteImpressao', novoEstado);
+            atualizarEstadoModoTeste();
+
+            if (novoEstado) {
+                alert('Modo Testar Impressão ATIVADO!\n\nAo imprimir, será enviado apenas o nome da criança com o ZPL simplificado.\nEtiqueta do responsável NÃO será impressa.');
+            } else {
+                alert('Modo Testar Impressão DESATIVADO.\nO sistema voltará a imprimir normalmente.');
+            }
+        }
+
+        function atualizarEstadoModoTeste() {
+            const ativo = localStorage.getItem('modoTesteImpressao') === 'true';
+            const label = $('#labelTesteMode');
+            const btn   = $('#btnToggleTeste');
+            const painel = $('#painelTesteImpressao');
+
+            if (ativo) {
+                label.text('Testar Impressão: ON').css('font-weight', 'bold').css('color', '#e65100');
+                btn.css('background-color', '#ffe0b2');
+                painel.removeClass('d-none');
+                // Restaurar valores salvos nos campos
+                $('#testeX').val(localStorage.getItem('testeX') || '140');
+                $('#testeY').val(localStorage.getItem('testeY') || '30');
+                $('#testeFontSize').val(localStorage.getItem('testeFontSize') || '20');
+            } else {
+                label.text('Testar Impressão: OFF').css('font-weight', 'normal').css('color', '');
+                btn.css('background-color', '');
+                painel.addClass('d-none');
+            }
+        }
+
+        // ============ AUTO-IMPRIMIR APÓS CADASTRO ============
+
+        var autoImpressaoAtiva = localStorage.getItem('autoImpressao') === 'true';
+
+        function toggleAutoImpressao() {
+            autoImpressaoAtiva = !autoImpressaoAtiva;
+            localStorage.setItem('autoImpressao', autoImpressaoAtiva);
+            atualizarEstadoAutoImpressao();
+            if (autoImpressaoAtiva) {
+                alert('Auto-Imprimir ATIVADO!\n\nApós clicar Cadastrar, imprime automaticamente as pulseiras.');
+            } else {
+                alert('Auto-Imprimir DESATIVADO.\nApós cadastrar, será necessário imprimir manualmente.');
+            }
+        }
+
+        function atualizarEstadoAutoImpressao() {
+            var label = document.getElementById('labelAutoImpressao');
+            var btn = document.getElementById('btnToggleAutoImpressao');
+            if (autoImpressaoAtiva) {
+                label.textContent = 'Auto-Imprimir: ON';
+                label.style.fontWeight = 'bold';
+                label.style.color = '#1b5e20';
+                btn.style.backgroundColor = '#c8e6c9';
+            } else {
+                label.textContent = 'Auto-Imprimir: OFF';
+                label.style.fontWeight = 'normal';
+                label.style.color = '';
+                btn.style.backgroundColor = '';
+            }
+        }
+
+        // Inicializar estado visual
+        atualizarEstadoAutoImpressao();
+
+        // ============ AUTO-CADASTRAR (sem imprimir) ============
+
+        var autoCadastroAtivo = false;
+        localStorage.removeItem('autoCadastro');
+
+        function toggleAutoCadastro() {
+            return;
+        }
+
+        function atualizarEstadoAutoCadastro() {
+            var label = document.getElementById('labelAutoCadastro');
+            var btn = document.getElementById('btnToggleAutoCadastro');
+            label.textContent = 'Auto-Cadastrar: desabilitado';
+            label.style.fontWeight = 'normal';
+            label.style.color = '#6c757d';
+            btn.disabled = true;
+            btn.setAttribute('aria-disabled', 'true');
+        }
+        atualizarEstadoAutoCadastro();
+
+        // ============ FOCO AUTOMÁTICO (inatividade configurável) ============
+
+        var tempoInatividade = parseInt(localStorage.getItem('tempoInatividade')) || 10;
+        var inactivityTimer = null;
+        var edicaoManualAtiva = false;
+
+        function focoEstaEmControle() {
+            var elementoAtivo = document.activeElement;
+            return elementoAtivo && elementoAtivo !== document.body && elementoAtivo !== document.documentElement;
+        }
+
+        function campoCadastroEstaAtivo() {
+            var elementoAtivo = document.activeElement;
+            return elementoAtivo && elementoAtivo.matches('#formNovoCadastro input:not([type="hidden"]), #formNovoCadastro textarea, #formNovoCadastro select');
+        }
+
+        function resetInactivityTimer() {
+            if (inactivityTimer) clearTimeout(inactivityTimer);
+            if (tempoInatividade > 0) {
+                inactivityTimer = setTimeout(function() {
+                    if (edicaoManualAtiva || focoEstaEmControle()) {
+                        resetInactivityTimer();
+                        return;
+                    }
+                    focarPrimeiroCampoCadastro();
+                }, tempoInatividade * 1000);
+            }
+        }
+
+        function configTempoInatividade() {
+            var atual = localStorage.getItem('tempoInatividade') || '10';
+            var novo = prompt('Tempo de inatividade para voltar o cursor (em segundos).\nDigite 0 para desativar.', atual);
+            if (novo === null) return;
+            novo = parseInt(novo);
+            if (isNaN(novo) || novo < 0) novo = 10;
+            tempoInatividade = novo;
+            localStorage.setItem('tempoInatividade', novo);
+            atualizarLabelTempo();
+            resetInactivityTimer();
+        }
+
+        function atualizarLabelTempo() {
+            var label = document.getElementById('labelTempoInatividade');
+            if (tempoInatividade > 0) {
+                label.textContent = 'Foco: ' + tempoInatividade + 's';
+            } else {
+                label.textContent = 'Foco: OFF';
+            }
+        }
+        atualizarLabelTempo();
+
+        $('#formNovoCadastro').on('focusin input', 'input, textarea, select', function() {
+            edicaoManualAtiva = true;
+            resetInactivityTimer();
+        });
+
+        $('#formNovoCadastro').on('focusout', 'input, textarea, select', function() {
+            setTimeout(function() {
+                edicaoManualAtiva = campoCadastroEstaAtivo();
+            }, 0);
+        });
+
+        // Iniciar timer e resetar em qualquer interação
+        $(document).on('keydown keyup click mousemove scroll input', function() { resetInactivityTimer(); });
+        resetInactivityTimer();
+
+        function salvarConfigTeste() {
+            localStorage.setItem('testeX',        $('#testeX').val()        || '140');
+            localStorage.setItem('testeY',        $('#testeY').val()        || '30');
+            localStorage.setItem('testeFontSize', $('#testeFontSize').val() || '20');
+            const status = $('#testeConfigStatus');
+            status.removeClass('d-none');
+            setTimeout(function() { status.addClass('d-none'); }, 2000);
+        }
+
+        // Variável global para armazenar os dados de debug
+        window.debugPrintQueue = [];
+
+        function abrirModalDebugZPL(zplCode, info) {
+            $('#debug_zpl_code').val(zplCode);
+            $('#debug_nome_crianca').text(info.nomeCrianca || 'N/A');
+            $('#debug_codigo').text(info.codigo || 'N/A');
+            $('#debug_tipo_pulseira').text(info.tipo || 'Criança');
+
+            atualizarComandoQZ();
+            $('#modalDebugZPL').modal('show');
+        }
+
+        function atualizarComandoQZ() {
+            const zpl = $('#debug_zpl_code').val();
+            const printerName = localStorage.getItem('qzPrinterSelecionada') || '';
+            const viaQZ = printerName && qzConnected && qz.websocket.isActive();
+
+            let commandText;
+            if (viaQZ) {
+                commandText  = '// Impressão via QZ Tray (impressora: "' + printerName + '")\n';
+                commandText += '// ZPL convertido para hex UTF-8 e enviado direto ao driver.\n';
+                commandText += '// Equivalente JS:\n';
+                commandText += 'var utf8 = new TextEncoder().encode(zpl);\n';
+                commandText += 'var hex = [...utf8].map(b => b.toString(16).padStart(2,"0")).join("");\n';
+                commandText += 'qz.print(\n';
+                commandText += '  qz.configs.create("' + printerName + '"),\n';
+                commandText += '  [{ type: "raw", format: "hex", data: hex }]\n';
+                commandText += ');';
+
+                $('#debug_rota_alert').removeClass('alert-secondary alert-danger').addClass('alert-success');
+                $('#debug_rota_text').html('<strong>QZ Tray</strong> — impressora: <em>' + printerName + '</em>');
+                $('#debug_btn_label').text('Enviar via QZ Tray');
+            } else {
+                commandText = '// QZ Tray indisponível.\n// Conecte o QZ Tray e selecione uma impressora antes de enviar.';
+                $('#debug_rota_alert').removeClass('alert-success alert-secondary').addClass('alert-danger');
+                $('#debug_rota_text').html('<strong>QZ Tray indisponível</strong> — conecte e selecione uma impressora.');
+                $('#debug_btn_label').text('Enviar via QZ Tray');
+            }
+
+            $('#debug_curl_command').val(commandText);
+        }
+
+        $('#debug_zpl_code').on('input', function() {
+            atualizarComandoQZ();
+        });
+
+        function copiarComandoQZ() {
+            const curlText = $('#debug_curl_command').val();
+            navigator.clipboard.writeText(curlText).then(function() {
+                alert('Código QZ Tray copiado para a área de transferência!');
+            }, function() {
+                // Fallback para navegadores mais antigos
+                const textarea = document.createElement('textarea');
+                textarea.value = curlText;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                alert('Código QZ Tray copiado para a área de transferência!');
+            });
+        }
+
+        async function enviarZPLDebug() {
+            const zpl = $('#debug_zpl_code').val();
+
+            if (!zpl.trim()) {
+                alert('O código ZPL está vazio!');
+                return;
+            }
+
+            const payload = { data: zpl };
+
+            $('#modalDebugZPL').modal('hide');
+
+            try {
+                const response = await _ebiPrint(payload);
+                if (!response.ok) {
+                    const text = await response.text();
+                    throw new Error('Falha na impressão: ' + (response.status || '') + ' ' + text);
+                }
+                const result = await response.text();
+                console.log('Impressão debug enviada com sucesso:', result);
+                alert('✓ ZPL enviado com sucesso!\n\nResposta: ' + result);
+            } catch (error) {
+                console.error('Erro ao enviar impressão debug:', error);
+                alert('✗ Erro ao enviar:\n\n' + error.message);
+            }
+        }
+
+        function abrirModalZerarArquivo() {
+            $('#modalZerarArquivo').modal('show');
+        }
+
+        function fecharModalRecuperacao() {
+            $('#modalRecuperarBackup').removeClass('show').hide();
+            $('#modalRecuperarBackdrop').removeClass('show').hide();
+            $('body').removeClass('modal-open'); 
+            $('.modal-backdrop').remove(); 
+
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '<?php echo sanitize_for_html($_SERVER["PHP_SELF"]); ?>';
+            var hiddenField = document.createElement('input');
+            hiddenField.type = 'hidden';
+            hiddenField.name = 'limpar_flag_modal_recuperacao';
+            hiddenField.value = '1';
+            form.appendChild(hiddenField);
+            var csrfField = document.createElement('input');
+            csrfField.type = 'hidden';
+            csrfField.name = 'csrf_token';
+            csrfField.value = csrfToken;
+            form.appendChild(csrfField);
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        function confirmarApagarLinha(id, nomeCrianca) {
+            if (confirm("Tem certeza que deseja apagar o cadastro de '" + nomeCrianca + "' (ID: " + id + ")?\nEsta ação não pode ser desfeita. Um backup do arquivo atual será criado.")) {
+                document.getElementById('id_para_apagar_input').value = id;
+                document.getElementById('formApagarLinha').submit();
+            } else {
+                focarPrimeiroCampoCadastro();
+            }
+        }
+
+        // ============ QZ TRAY ============
+
+        var qzConnected = false;
+        var qzReadyPromise = null; // Promise que resolve quando auto-connect termina (sucesso ou falha)
+
+        // Segurança: certificado e assinatura (relativos ao diretório do PHP)
+        qz.security.setCertificatePromise(function(resolve, reject) {
+            fetch('assets/signing/digital-certificate.txt', {
+                cache: 'no-store',
+                headers: { 'Content-Type': 'text/plain' }
+            }).then(function(data) {
+                data.ok ? resolve(data.text()) : reject(data.text());
+            }).catch(reject);
+        });
+
+        qz.security.setSignatureAlgorithm('SHA512');
+
+        qz.security.setSignaturePromise(function(toSign) {
+            return function(resolve, reject) {
+                fetch('assets/signing/sign-message.php?request=' + toSign, {
+                    cache: 'no-store',
+                    headers: { 'Content-Type': 'text/plain' }
+                }).then(function(data) {
+                    data.ok ? resolve(data.text()) : reject(data.text());
+                }).catch(reject);
+            };
+        });
+
+        function qzAtualizarBadge() {
+            var dot = document.getElementById('qzStatusDot');
+            var txt = document.getElementById('qzStatusText');
+            var modalDot = document.getElementById('qzModalStatusDot');
+            var modalTxt = document.getElementById('qzModalStatusText');
+            var badge = document.getElementById('qzStatusBadge');
+            var btnConectar = document.getElementById('btnQZConectar');
+            var btnDesconectar = document.getElementById('btnQZDesconectar');
+            var btnRefresh = document.getElementById('btnRefreshQZPrinters');
+            var printerSel = document.getElementById('qzPrinterSelect');
+            var btnSalvar = document.getElementById('btnQZSalvarImpressora');
+            var configPrinterInfo = document.getElementById('qzConfigPrinterInfo');
+            var configPrinter = localStorage.getItem('qzPrinterSelecionada') || '';
+
+            if (configPrinterInfo) {
+                configPrinterInfo.textContent = configPrinter
+                    ? 'Impressora selecionada: ' + configPrinter
+                    : 'Nenhuma impressora selecionada neste computador.';
+            }
+
+            if (qzConnected) {
+                dot.style.background = '#28a745';
+                txt.textContent = 'QZ: Conectado';
+                badge.className = 'badge badge-success mr-2';
+                if (modalDot) modalDot.style.background = '#28a745';
+                if (modalTxt) modalTxt.textContent = 'Conectado ao QZ Tray';
+                if (document.getElementById('qzModalStatus')) document.getElementById('qzModalStatus').className = 'alert alert-success py-2 mb-3';
+                if (btnConectar) { btnConectar.classList.add('d-none'); }
+                if (btnDesconectar) { btnDesconectar.classList.remove('d-none'); }
+                if (btnRefresh) btnRefresh.disabled = false;
+                if (printerSel) printerSel.disabled = false;
+                if (btnSalvar) btnSalvar.disabled = false;
+
+                var savedPrinter = localStorage.getItem('qzPrinterSelecionada') || '';
+                var info = document.getElementById('qzPrinterSavedInfo');
+                if (info) {
+                    info.textContent = savedPrinter
+                        ? 'Impressora ativa: ' + savedPrinter
+                        : 'Nenhuma impressora QZ Tray selecionada.';
+                }
+            } else {
+                var savedPrinterDisc = localStorage.getItem('qzPrinterSelecionada') || '';
+                dot.style.background = savedPrinterDisc ? '#ffc107' : '#dc3545';
+                txt.textContent = savedPrinterDisc ? 'QZ: ' + savedPrinterDisc + ' (offline)' : 'QZ: Desconectado';
+                badge.className = savedPrinterDisc ? 'badge badge-warning mr-2' : 'badge badge-secondary mr-2';
+                if (modalDot) modalDot.style.background = '#dc3545';
+                if (modalTxt) modalTxt.textContent = savedPrinterDisc ? 'Desconectado (impressora salva: ' + savedPrinterDisc + ')' : 'Desconectado';
+                if (document.getElementById('qzModalStatus')) document.getElementById('qzModalStatus').className = 'alert alert-secondary py-2 mb-3';
+                if (btnConectar) { btnConectar.classList.remove('d-none'); }
+                if (btnDesconectar) { btnDesconectar.classList.add('d-none'); }
+                if (btnRefresh) btnRefresh.disabled = true;
+                if (printerSel) { printerSel.disabled = true; printerSel.innerHTML = '<option value="">— Conecte ao QZ Tray primeiro —</option>'; }
+                if (btnSalvar) btnSalvar.disabled = true;
+                var info = document.getElementById('qzPrinterSavedInfo');
+                if (info) {
+                    info.textContent = savedPrinterDisc
+                        ? 'Impressora salva: ' + savedPrinterDisc + ' — conecte para usar QZ Tray.'
+                        : 'Nenhuma impressora QZ Tray configurada.';
+                }
+            }
+        }
+
+        function abrirModalQZTray() {
+            var configAberta = $('#modalConfigImpressora').hasClass('show');
+            if (configAberta) {
+                $('#modalConfigImpressora').modal('hide');
+                $('#modalQZTray').one('hidden.bs.modal', function() {
+                    $('#modalConfigImpressora').modal('show');
+                });
+            }
+            qzAtualizarBadge();
+            $('#modalQZTray').modal('show');
+        }
+
+        function abrirModalHowToQZ() {
+            $('#modalHowToQZ').modal('show');
+        }
+
+        async function qzConectar() {
+            try {
+                var btnConectar = document.getElementById('btnQZConectar');
+                if (btnConectar) { btnConectar.disabled = true; btnConectar.textContent = 'Conectando…'; }
+                await qz.websocket.connect({
+                    host: 'localhost',
+                    port: { secure: [8181], insecure: [8182] },
+                    usingSecure: false,
+                    retries: 3,
+                    delay: 1
+                });
+                qzConnected = true;
+                qzAtualizarBadge();
+                await qzRefreshPrinters();
+            } catch (e) {
+                qzConnected = false;
+                qzAtualizarBadge();
+                alert('Erro ao conectar ao QZ Tray.\nVerifique se o QZ Tray está instalado e em execução.\n\nDetalhes: ' + e.message);
+            } finally {
+                var btnConectar = document.getElementById('btnQZConectar');
+                if (btnConectar) { btnConectar.disabled = false; btnConectar.textContent = 'Conectar'; }
+            }
+        }
+
+        async function qzDesconectar() {
+            try {
+                await qz.websocket.disconnect();
+            } catch (e) { /* ignora */ }
+            qzConnected = false;
+            // NÃO remove a impressora salva — ela será reutilizada no próximo acesso/refresh
+            qzAtualizarBadge();
+        }
+
+        function qzEsquecerImpressora() {
+            if (confirm('Remover a impressora QZ Tray salva?\nSelecione outra impressora antes de imprimir novamente.')) {
+                localStorage.removeItem('qzPrinterSelecionada');
+                qzAtualizarBadge();
+            }
+        }
+
+        async function qzRefreshPrinters() {
+            if (!qzConnected) { alert('Conecte ao QZ Tray primeiro.'); return; }
+            try {
+                var list = await qz.printers.find();
+                var sel = document.getElementById('qzPrinterSelect');
+                var savedPrinter = localStorage.getItem('qzPrinterSelecionada') || '';
+                sel.innerHTML = '<option value="">— Selecione a impressora —</option>';
+                list.forEach(function(p) {
+                    var o = document.createElement('option');
+                    o.value = p; o.textContent = p;
+                    if (p === savedPrinter) o.selected = true;
+                    sel.appendChild(o);
+                });
+            } catch (e) {
+                alert('Erro ao listar impressoras: ' + e.message);
+            }
+        }
+
+        function qzSalvarImpressora() {
+            var sel = document.getElementById('qzPrinterSelect');
+            var printerName = sel ? sel.value : '';
+            if (!printerName) {
+                alert('Selecione uma impressora da lista.');
+                return;
+            }
+            localStorage.setItem('qzPrinterSelecionada', printerName);
+            qzAtualizarBadge();
+            $('#modalQZTray').modal('hide');
+            alert('Impressora QZ Tray configurada: ' + printerName + '\n\nAs próximas impressões usarão QZ Tray diretamente.');
+        }
+
+        function exibirErroImpressaoQZ(error) {
+            if (window.erroImpressaoQZExibido) return;
+            window.erroImpressaoQZExibido = true;
+            alert('Não foi possível imprimir via QZ Tray.\n\n' + (error.message || error));
+        }
+
+        async function _ebiPrint(payload) {
+            // Aguarda o auto-connect terminar (nunca rejeita — catch interno)
+            if (qzReadyPromise) {
+                try { await qzReadyPromise; } catch (e) { /* falha silenciosa */ }
+            }
+
+            var printerName = localStorage.getItem('qzPrinterSelecionada') || '';
+            console.log('[_ebiPrint] printerName=' + printerName + ' qzConnected=' + qzConnected);
+
+            if (!printerName) {
+                throw new Error('Selecione uma impressora em Configurar Impressora e Instância.');
+            }
+            if (!qzConnected || !qz.websocket.isActive()) {
+                throw new Error('O QZ Tray não está conectado. Abra-o e conecte novamente.');
+            }
+
+            try {
+                var utf8Bytes = new TextEncoder().encode(payload.data);
+                var hex = '';
+                utf8Bytes.forEach(function(b) { hex += ('0' + b.toString(16)).slice(-2); });
+
+                var cfg = qz.configs.create(printerName);
+                await qz.print(cfg, [{ type: 'raw', format: 'hex', data: hex }]);
+                console.log('[QZ Tray] Etiqueta enviada para: ' + printerName);
+                return { ok: true, text: function() { return Promise.resolve('OK via QZ Tray (' + printerName + ')'); } };
+            } catch (e) {
+                console.error('[QZ Tray] Erro ao imprimir:', e);
+                qzConnected = false;
+                try { qzAtualizarBadge(); } catch (_) {}
+                throw e;
+            }
+        }
+
+        // Auto-connect iniciado IMEDIATAMENTE (fora do document.ready) para que
+        // qzReadyPromise esteja disponível quando os scripts de impressão rodarem.
+        // Os scripts de impressão ($scriptsImpressao) executam antes do DOMContentLoaded,
+        // por isso a conexão deve ser iniciada aqui e não dentro do $(document).ready().
+        (function() {
+            var savedPrinter = localStorage.getItem('qzPrinterSelecionada') || '';
+            if (!savedPrinter) {
+                qzReadyPromise = Promise.resolve(); // nenhuma impressora — resolve imediatamente
+                return;
+            }
+            console.log('[QZ Tray] Impressora salva: "' + savedPrinter + '". Iniciando auto-conexão...');
+            qzReadyPromise = qz.websocket.connect({
+                host: 'localhost',
+                port: { secure: [8181], insecure: [8182] },
+                usingSecure: false,
+                retries: 2,
+                delay: 1
+            }).then(function() {
+                qzConnected = true;
+                console.log('[QZ Tray] Auto-conectado. Impressões irão para: "' + savedPrinter + '"');
+                try { qzAtualizarBadge(); } catch(e) {}
+            }).catch(function(e) {
+                console.warn('[QZ Tray] Auto-conexão falhou:', e.message || e);
+                try { qzAtualizarBadge(); } catch(e) {}
+            });
+        })();
+
+        // Badge atualizado quando o DOM estiver pronto
+        $(document).ready(function() {
+            qzAtualizarBadge();
+            // Aguarda qzReadyPromise para atualizar badge após conexão resolver
+            if (qzReadyPromise) {
+                qzReadyPromise.then(function() { qzAtualizarBadge(); }).catch(function() {});
+            }
+        });
+
+    </script>
+
+    <?php if (!empty($scriptsImpressao)): ?>
+        <!-- Scripts de impressão gerados pelo servidor -->
+        <?php echo $scriptsImpressao; ?>
+    <?php endif; ?>
+</body>
+</html>
