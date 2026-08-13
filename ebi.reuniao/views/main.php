@@ -394,14 +394,8 @@
                 Reunião do Espaço Bíblico Infantil
             </h1>
             <div class="d-flex align-items-center" style="min-width: 220px; justify-content: flex-end;">
-                <a href="./saida/index.php" class="btn btn-outline-secondary btn-sm mr-1" target="_blank" id="linkSaida">Saída</a>
-                <a href="./saida/painel.php" class="btn btn-outline-secondary btn-sm mr-1" target="_blank">Painel Saída</a>
                 <a href="<?php echo sanitize_for_html($qrcodeUrl); ?>" class="btn btn-outline-secondary btn-sm mr-1" target="_blank">QrCode</a>
                 <a href="?acao=mobile" class="btn btn-outline-success btn-sm mr-1" target="_blank" title="Versão para Smartphone"><i class="fas fa-mobile-alt mr-1"></i>Mobile</a>
-                <button type="button" class="btn btn-outline-info btn-sm btn-ajuda" onclick="iniciarTourGuiado()" title="Tour guiado pelo sistema" id="btnTourGuiado">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-question-circle mr-1" viewBox="0 0 16 16"><path d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z"/></svg>
-                    Tour Guiado
-                </button>
             </div>
         </header>
 
@@ -423,17 +417,17 @@
             <div class="form-row form-labels d-none d-md-flex">
                 <div class="col col-nome-crianca">Função</div>
                 <div class="col col-responsavel">Nome</div>
-                <div class="col col-idade text-center">Idade</div>
+                <div class="col col-idade text-center">X</div>
                 <div class="col col-telefone">Telefone</div>
                 <div class="col col-comum">Comum</div>
                 <div class="col col-cidade" title="Cidade (opcional)">Cidade</div>
                 <div class="col col-estado text-center" title="Estado / UF (opcional)">UF</div>
-                <div class="col col-sexo text-center" title="M/F">M/F</div>
-                <div class="col col-nascimento text-center" title="Data de Nascimento">Data</div>
+                <div class="col col-sexo text-center" title="M/F">X</div>
+                <div class="col col-nascimento text-center" title="Data de Nascimento">X</div>
                 <div class="col col-acao text-center">Ação</div>
             </div>
 
-            <?php for ($linha = 0; $linha < NUM_LINHAS_FORMULARIO_CADASTRO; $linha++): ?>
+            <?php for ($linha = 0; $linha < 1; $linha++): ?>
             <div class="form-row align-items-center form-registro-linha">
                 <div class="form-group col-md col-nome-crianca">
                     <label for="input_<?php echo $linha; ?>_0" class="d-md-none">Função <?php echo $linha + 1; ?>:</label>
@@ -454,8 +448,8 @@
                     <input type="text" class="form-control form-control-sm cadastro-input" id="input_<?php echo $linha; ?>_1" name="nome_responsavel[]" data-linha="<?php echo $linha; ?>" data-col="1" placeholder="Nome">
                 </div>
                 <div class="form-group col-md col-idade">
-                    <label for="input_<?php echo $linha; ?>_2" class="d-md-none">Idade <?php echo $linha + 1; ?>:</label>
-                    <input type="number" class="form-control form-control-sm cadastro-input text-center meeting-fixed-value" id="input_<?php echo $linha; ?>_2" name="idade[]" min="0" data-linha="<?php echo $linha; ?>" data-col="2" value="3" placeholder="Idade">
+                    <label for="input_<?php echo $linha; ?>_2" class="d-md-none">X:</label>
+                    <input type="text" class="form-control form-control-sm cadastro-input text-center meeting-fixed-value" id="input_<?php echo $linha; ?>_2" name="idade[]" data-linha="<?php echo $linha; ?>" data-col="2" value="X" readonly>
                 </div>
                 <div class="form-group col-md col-telefone">
                     <label for="input_<?php echo $linha; ?>_3" class="d-md-none">Telefone <?php echo $linha + 1; ?>:</label>
@@ -503,14 +497,12 @@
                     </select>
                 </div>
                 <div class="form-group col-md col-sexo">
-                    <label for="input_<?php echo $linha; ?>_7" class="d-md-none" title="M/F">M/F <?php echo $linha + 1; ?>:</label>
-                    <select class="form-control form-control-sm cadastro-input text-center" id="input_<?php echo $linha; ?>_7" name="sexo[]" data-linha="<?php echo $linha; ?>" data-col="7" title="M/F" style="font-size:0.7rem;padding:0.2rem;">
-                        <option value="X" selected>X</option>
-                    </select>
+                    <label for="input_<?php echo $linha; ?>_7" class="d-md-none" title="M/F">X:</label>
+                    <input type="text" class="form-control form-control-sm cadastro-input text-center meeting-fixed-value" id="input_<?php echo $linha; ?>_7" name="sexo[]" data-linha="<?php echo $linha; ?>" data-col="7" title="M/F" value="X" readonly style="font-size:0.7rem;padding:0.2rem;">
                 </div>
                 <div class="form-group col-md col-nascimento">
-                    <label for="input_<?php echo $linha; ?>_8" class="d-md-none" title="Data de Nascimento">Data <?php echo $linha + 1; ?>:</label>
-                    <input type="text" inputmode="numeric" class="form-control form-control-sm data-nascimento-mask cadastro-input text-center meeting-fixed-value" id="input_<?php echo $linha; ?>_8" name="data_nascimento[]" data-linha="<?php echo $linha; ?>" data-col="8" title="Data de Nascimento" value="01/01/2023" placeholder="dd/mm/aaaa" maxlength="10" style="font-size:0.7rem;padding:0.2rem;">
+                    <label for="input_<?php echo $linha; ?>_8" class="d-md-none" title="Data de Nascimento">X:</label>
+                    <input type="text" class="form-control form-control-sm cadastro-input text-center meeting-fixed-value" id="input_<?php echo $linha; ?>_8" name="data_nascimento[]" data-linha="<?php echo $linha; ?>" data-col="8" title="Data de Nascimento" value="X" readonly style="font-size:0.7rem;padding:0.2rem;">
                 </div>
                 <div class="form-group col-md col-acao px-1 d-flex align-items-center justify-content-center">
                     <?php if ($linha > 0): ?>
@@ -584,19 +576,11 @@
             <?php echo csrf_field(); ?>
             <div class="mt-3 d-flex justify-content-between align-items-center">
                 <div class="d-flex align-items-center">
-                    <button type="submit" class="btn btn-success" name="imprimir" id="btnImprimir"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-printer-fill mr-2" viewBox="0 0 16 16"><path d="M5 1a2 2 0 0 0-2 2v1h10V3a2 2 0 0 0-2-2zm6 8H5a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1"/><path d="M0 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-1v-2a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2H2a2 2 0 0 1-2-2zm3 4a1 1 0 1 0 0-2 1 1 0 0 0 0 2"/></svg>Imprimir</button>
                     <div class="total-cadastros-info <?php if ($totalDeCadastrosGeral > 90) echo 'total-cadastros-alerta'; ?>" title="Total de crianças cadastradas"> 
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-people-fill" viewBox="0 0 16 16">
                             <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6m-5.784 6A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/>
                         </svg>
                         Total: <?php echo $totalDeCadastrosGeral; ?>
-                    </div>
-                    <div class="total-cadastros-info" title="Total de crianças com 3 anos">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-cake2" viewBox="0 0 16 16"><path d="M11.05 4.05a2.5 2.5 0 1 0-4.999.058A2.5 2.5 0 0 0 11.05 4.05zm-4.01-.034a1.5 1.5 0 1 1 2.998-.033A1.5 1.5 0 0 1 7.04 4.016z"/><path d="M6.536 6.072L5.85 7.305A.5.5 0 0 0 6.29 8h3.42a.5.5 0 0 0 .44-.695l-.686-1.233L13.617 5.25a.5.5 0 0 0-.39-.867H2.773a.5.5 0 0 0-.39.867l4.153.822z"/><path d="M12.572 6.092L12 6.224v4.248c.782.396 1.595.24 2.222-.457.628-.698.782-1.61.396-2.393-.386-.783-1.2-.937-1.932-.783zm-1.03 4.355V6.35H4.458v4.097c-.782-.396-1.595-.24-2.222.457-.628-.698-.782-1.61-.396-2.393.386.783 1.2.937 1.932.783A2.91 2.91 0 0 0 4.3 12.57a2.91 2.91 0 0 0 3.572 1.818c.782.396 1.595.24 2.222-.457.628-.698.782-1.61.396-2.393-.386-.783-1.2-.937-1.932-.783A2.91 2.91 0 0 0 11.542 10.447zM4.907 11.32c-.185.059-.354.15-.495.271-.14.12-.242.265-.304.423l-.066.165c-.073.188-.098.388-.066.58.03.18.113.348.235.485.122.137.28.238.458.29.178.053.368.057.546.013l.126-.03.11-.042.108-.054.092-.06a1.08 1.08 0 0 1 .23-.167c.05-.04.094-.085.132-.133.09-.114.155-.245.19-.383.036-.137.043-.28.023-.416a.97.97 0 0 0-.133-.437c-.08-.14-.19-.26-.32-.35-.13-.09-.27-.14-.41-.16l-.112-.01z"/></svg>
-                        3 Anos: <?php echo $totalCriancas3Anos; ?>
-                    </div>
-                    <div class="total-cadastros-info" title="Meninos / Meninas" style="background-color:#17a2b8;border-color:#117a8b;">
-                        👦 <?php echo $totalMeninos; ?> / 👧 <?php echo $totalMeninas; ?>
                     </div>
                     <?php if (!empty($palavrasChaveComumDestaque)): ?>
                     <div class="total-cadastros-info" title="Total de cadastros da comum configurada (<?php echo sanitize_for_html($nomeComumDestaque); ?>)">
@@ -1123,7 +1107,7 @@
     <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
     <script>
         var csrfToken = <?php echo json_encode(csrf_token()); ?>;
-        const NUM_LINHAS_FORM_CADASTRO = <?php echo NUM_LINHAS_FORMULARIO_CADASTRO; ?>;
+        const NUM_LINHAS_FORM_CADASTRO = 1;
         // QR Code inclui cidade, UF, sexo e data de nascimento em nove colunas.
         const NUM_CAMPOS_POR_LINHA_CADASTRO = 9;
 
@@ -1134,18 +1118,17 @@
         function limparLinhaCadastro(linha) {
             $('#input_' + linha + '_0').val('');
             $('#input_' + linha + '_1').val('');
-            $('#input_' + linha + '_2').val('');
+            $('#input_' + linha + '_2').val('X');
             $('#input_' + linha + '_3').val('').trigger('input');
             $('#input_' + linha + '_4').val('');
             $('#input_' + linha + '_5').val('');
             $('#input_' + linha + '_6').val('');
-            $('#input_' + linha + '_7').val('').trigger('input');
-            $('#input_' + linha + '_8').val('').trigger('input');
+            $('#input_' + linha + '_7').val('X');
+            $('#input_' + linha + '_8').val('X');
         }
 
         $(document).ready(function(){
             $('.telefone-mask').mask('(00) 00000-0000');
-            $('.data-nascimento-mask').mask('00/00/0000');
             $('.meeting-fixed-value').on('focus', function() { this.select(); });
 
             const portariaInputCadastro = $('#portaria_cadastro');
@@ -1169,7 +1152,7 @@
 
             <?php if ($focarPrimeiroCampoAposCadastro): ?>
                 focarPrimeiroCampoCadastro();
-                $('#formNovoCadastro .cadastro-input').val('');
+                $('#formNovoCadastro .cadastro-input').not('.meeting-fixed-value').val('');
                 // Auto-imprimir: apenas os cadastros recém-feitos (últimos N)
                 if (localStorage.getItem('autoImpressao') === 'true') {
                     var cadastrosRecentes = <?php echo (int)$cadastrosRecentesCount; ?>;
