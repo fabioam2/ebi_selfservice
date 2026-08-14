@@ -265,9 +265,12 @@ $totalHoje = count($cadastrosHojeMobile);
 </div>
 
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<?php if (defined('EBI_QR_CRYPTO_ENABLED') && EBI_QR_CRYPTO_ENABLED && defined('EBI_QR_CRYPTO_SCRIPT_URL')): ?>
+<script src="<?php echo sanitize_for_html(EBI_QR_CRYPTO_SCRIPT_URL); ?>"></script>
+<?php endif; ?>
 <script>
 (function(){
-    let sc = null, scanning = false, data = [];
+    let sc = null, scanning = false, reading = false, data = [];
     const el = id => document.getElementById(id);
     const port = el('portaria'), btn = el('btnScan'), status = el('status');
     const result = el('result'), resultData = el('resultData');
@@ -287,7 +290,7 @@ $totalHoje = count($cadastrosHojeMobile);
         if (!port.value.trim()) { port.focus(); toast('Defina a Portaria','err'); return; }
         if (scanning) { stop(); return; }
         // Reset
-        btnCad.classList.remove('show'); result.classList.remove('show'); data=[]; frmFields.innerHTML='';
+        btnCad.classList.remove('show'); result.classList.remove('show'); reading=false; data=[]; frmFields.innerHTML='';
         el('qr-reader').style.display='block';
         sc = new Html5Qrcode('qr-reader');
         sc.start({facingMode:'environment'},{fps:10,qrbox:{width:200,height:200}}, onRead)
@@ -299,9 +302,21 @@ $totalHoje = count($cadastrosHojeMobile);
         if(sc&&scanning) sc.stop().then(()=>{ scanning=false; btn.innerHTML='<i class="fas fa-camera mr-1"></i> Scan'; btn.classList.remove('active'); el('qr-reader').style.display='none'; });
     }
 
-    function onRead(text) {
+    async function onRead(text) {
+        if (reading) return;
+        reading = true;
+        if (text.indexOf('EBIQR1.') === 0) {
+            if (!window.EbiQrCrypto) {
+                reading=false; status.textContent='Leitor criptografado indisponível'; status.className='scan-status err'; return;
+            }
+            try {
+                text = await EbiQrCrypto.decrypt(text);
+            } catch (error) {
+                reading=false; status.textContent='QR criptografado inválido'; status.className='scan-status err'; return;
+            }
+        }
         const parsed = parseQrPayload(text);
-        if(!parsed.length){ status.textContent='QR inválido'; status.className='scan-status err'; return; }
+        if(!parsed.length){ reading=false; status.textContent='QR inválido'; status.className='scan-status err'; return; }
         data = parsed;
         stop();
         if(navigator.vibrate) navigator.vibrate(200);

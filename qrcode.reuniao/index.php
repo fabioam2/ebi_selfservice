@@ -9,6 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-masker/1.1.1/vanilla-masker.min.js"></script>
+    <script src="../qr-crypto.js"></script>
 
     <style>
         :root {
@@ -501,7 +502,7 @@
             return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         }
 
-        function generateQRCode() {
+        async function generateQRCode() {
             var nomePai = removeAccents(document.getElementById('nomePai').value);
             var telefone = removeAccents(document.getElementById('telefone').value);
             var cidade = removeAccents(document.getElementById('cidade').value);
@@ -537,6 +538,12 @@
                 // Mantém os nove campos lidos pela portaria: função, nome, idade,
                 // telefone, comum, cidade, UF, sexo e nascimento.
                 qrData = `${funcao}\t${nomePai}\t${idadeFixa}\t${telefone}\t${comum}\t${cidade}\t${estado}\t${sexoFixo}\t${dataNascimentoFixa}`;
+                try {
+                    qrData = await EbiQrCrypto.encrypt(qrData);
+                } catch (error) {
+                    alert('Não foi possível criptografar o QR Code.');
+                    return;
+                }
             }
 
             applyPhoneMask();
