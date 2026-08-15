@@ -2,13 +2,23 @@
     'use strict';
 
     var PREFIX = 'EBIQR1';
-    var PASSPHRASE = 'Bonfim123';
+    var passphrase = '';
     var ITERATIONS = 100000;
 
     function requireWebCrypto() {
         if (!global.crypto || !global.crypto.subtle) {
             throw new Error('Criptografia do navegador indisponivel.');
         }
+    }
+
+    function requirePassphrase() {
+        if (passphrase === '') {
+            throw new Error('Chave de criptografia do QR Code não configurada.');
+        }
+    }
+
+    function configure(value) {
+        passphrase = typeof value === 'string' ? value : '';
     }
 
     function bytesToBase64Url(bytes) {
@@ -36,9 +46,10 @@
     }
 
     async function deriveKey(salt) {
+        requirePassphrase();
         var sourceKey = await global.crypto.subtle.importKey(
             'raw',
-            new TextEncoder().encode(PASSPHRASE),
+            new TextEncoder().encode(passphrase),
             'PBKDF2',
             false,
             ['deriveKey']
@@ -106,6 +117,7 @@
     }
 
     global.EbiQrCrypto = Object.freeze({
+        configure: configure,
         decrypt: decrypt,
         encrypt: encrypt,
         isEncrypted: isEncrypted

@@ -1,3 +1,7 @@
+<?php
+require_once __DIR__ . '/../ebi/template/inc/qr_crypto_config.php';
+$qrCodeCryptoKey = ebi_obter_chave_criptografia_qr(__DIR__ . '/../ebi/template/config.ini');
+?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -9,6 +13,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-masker/1.1.1/vanilla-masker.min.js"></script>
+    <script src="../qr-crypto.js"></script>
+    <script>EbiQrCrypto.configure(<?php echo json_encode($qrCodeCryptoKey); ?>);</script>
 
     <style>
         :root {
@@ -696,7 +702,7 @@
             }
         }
 
-        function generateQRCode() {
+        async function generateQRCode() {
             var nomePai = removeAccents(document.getElementById('nomePai').value);
             var telefone = removeAccents(document.getElementById('telefone').value);
             var cidade = removeAccents(document.getElementById('cidade').value);
@@ -772,6 +778,12 @@
             const qrcodeContainer = document.getElementById('qrcode-container');
 
             if (isValid && qrData) {
+                try {
+                    qrData = await EbiQrCrypto.encrypt(qrData);
+                } catch (error) {
+                    alert('Não foi possível criptografar o QR Code. Verifique a chave no config.ini.');
+                    return;
+                }
                 document.getElementById('qrcode').innerHTML = '';
                 var qrcode = new QRCode(document.getElementById("qrcode"), {
                     text: qrData,

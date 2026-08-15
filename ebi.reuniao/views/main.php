@@ -1105,7 +1105,10 @@
     <script src="https://cdn.jsdelivr.net/npm/qz-tray@2/qz-tray.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+    <?php if (QR_CODE_CRYPTO_ENABLED): ?>
     <script src="../qr-crypto.js"></script>
+    <script>EbiQrCrypto.configure(<?php echo json_encode(QR_CODE_CRYPTO_KEY); ?>);</script>
+    <?php endif; ?>
     <script>
         var csrfToken = <?php echo json_encode(csrf_token()); ?>;
         const NUM_LINHAS_FORM_CADASTRO = 1;

@@ -1,3 +1,7 @@
+<?php
+require_once __DIR__ . '/../ebi/template/inc/qr_crypto_config.php';
+$qrCodeCryptoKey = ebi_obter_chave_criptografia_qr(__DIR__ . '/../ebi/template/config.ini');
+?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -10,6 +14,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-masker/1.1.1/vanilla-masker.min.js"></script>
     <script src="../qr-crypto.js"></script>
+    <script>EbiQrCrypto.configure(<?php echo json_encode($qrCodeCryptoKey); ?>);</script>
 
     <style>
         :root {

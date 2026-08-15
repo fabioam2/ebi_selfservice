@@ -83,6 +83,8 @@ define('SENHA_ADMIN_HASH',  (string)($config['SEGURANCA']['SENHA_ADMIN_HASH']  ?
 define('SENHA_ADMIN_REAL',  (string)($config['SEGURANCA']['SENHA_ADMIN_REAL']  ?? '')); // legado
 define('SENHA_LOGIN',        SENHA_ADMIN_REAL);
 define('CAMINHO_CONFIG_INI', $config_file);
+define('QR_CODE_CRYPTO_KEY', trim((string)($config['SEGURANCA']['QR_CODE_CRYPTO_KEY'] ?? '')));
+define('QR_CODE_CRYPTO_ENABLED', QR_CODE_CRYPTO_KEY !== '');
 
 // ── Constantes da impressora ZPL ──────────────────────────────────────────────
 define('PALAVRA_CONTADOR_COMUM',       $config['IMPRESSORA_ZPL']['PALAVRA_CONTADOR_COMUM']         ?? 'bonfim');
@@ -154,6 +156,14 @@ if (isset($_SESSION['logado']) && $_SESSION['logado'] === true) {
 
 function sanitize_for_html($string) {
     return htmlspecialchars(trim((string)($string ?? '')), ENT_QUOTES, 'UTF-8');
+}
+
+function ebi_qr_crypto_script_url(): string {
+    if (defined('INSTANCE_DIR')) {
+        $prefix = defined('INSTANCE_PROJECT_URL_PREFIX') ? INSTANCE_PROJECT_URL_PREFIX : '../../../';
+        return rtrim($prefix, '/') . '/qr-crypto.js';
+    }
+    return '../../qr-crypto.js';
 }
 
 function sanitize_for_file($string) {

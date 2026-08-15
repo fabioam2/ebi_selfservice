@@ -11,9 +11,6 @@ require __DIR__ . '/inc/bootstrap.php';
 require __DIR__ . '/inc/auth.php';
 require __DIR__ . '/inc/funcoes.php';
 
-define('EBI_QR_CRYPTO_ENABLED', true);
-define('EBI_QR_CRYPTO_SCRIPT_URL', '../../qr-crypto.js');
-
 // ── Preview de backup (GET) ───────────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'GET'
     && isset($_GET['acao']) && $_GET['acao'] === 'preview_backup'

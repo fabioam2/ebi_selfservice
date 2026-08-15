@@ -265,8 +265,9 @@ $totalHoje = count($cadastrosHojeMobile);
 </div>
 
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-<?php if (defined('EBI_QR_CRYPTO_ENABLED') && EBI_QR_CRYPTO_ENABLED && defined('EBI_QR_CRYPTO_SCRIPT_URL')): ?>
-<script src="<?php echo sanitize_for_html(EBI_QR_CRYPTO_SCRIPT_URL); ?>"></script>
+<?php if (QR_CODE_CRYPTO_ENABLED): ?>
+<script src="<?php echo sanitize_for_html(ebi_qr_crypto_script_url()); ?>"></script>
+<script>EbiQrCrypto.configure(<?php echo json_encode(QR_CODE_CRYPTO_KEY); ?>);</script>
 <?php endif; ?>
 <script>
 (function(){

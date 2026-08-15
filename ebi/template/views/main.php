@@ -1113,6 +1113,10 @@
     <script src="https://cdn.jsdelivr.net/npm/qz-tray@2/qz-tray.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+    <?php if (QR_CODE_CRYPTO_ENABLED): ?>
+    <script src="<?php echo sanitize_for_html(ebi_qr_crypto_script_url()); ?>"></script>
+    <script>EbiQrCrypto.configure(<?php echo json_encode(QR_CODE_CRYPTO_KEY); ?>);</script>
+    <?php endif; ?>
     <script>
         var csrfToken = <?php echo json_encode(csrf_token()); ?>;
         const NUM_LINHAS_FORM_CADASTRO = <?php echo NUM_LINHAS_FORMULARIO_CADASTRO; ?>;
@@ -1121,6 +1125,73 @@
 
         function focarPrimeiroCampoCadastro() {
             $('#input_0_0').focus();
+        }
+
+        var leituraQrCriptografado = { valor: '', ultimoEventoEm: 0 };
+        var LIMITE_INTERVALO_QR_CRIPTO_MS = 250;
+
+        function resetarLeituraQrCriptografado() {
+            leituraQrCriptografado.valor = '';
+            leituraQrCriptografado.ultimoEventoEm = 0;
+        }
+
+        function capturarQrCriptografado(evento) {
+            if (!window.EbiQrCrypto || evento.ctrlKey || evento.metaKey || evento.altKey) {
+                resetarLeituraQrCriptografado();
+                return { capturada: false };
+            }
+
+            var agora = Date.now();
+            if (leituraQrCriptografado.ultimoEventoEm > 0
+                && agora - leituraQrCriptografado.ultimoEventoEm > LIMITE_INTERVALO_QR_CRIPTO_MS) {
+                resetarLeituraQrCriptografado();
+            }
+
+            if (evento.key.length === 1) {
+                var tentativa = leituraQrCriptografado.valor + evento.key;
+                if ('EBIQR1.'.indexOf(tentativa) === 0 || EbiQrCrypto.isEncrypted(leituraQrCriptografado.valor)) {
+                    leituraQrCriptografado.valor = tentativa;
+                    leituraQrCriptografado.ultimoEventoEm = agora;
+                    return { capturada: true };
+                }
+                resetarLeituraQrCriptografado();
+                return { capturada: false };
+            }
+
+            if ((evento.key === 'Enter' || evento.key === 'Tab') && EbiQrCrypto.isEncrypted(leituraQrCriptografado.valor)) {
+                var payload = leituraQrCriptografado.valor;
+                resetarLeituraQrCriptografado();
+                return { capturada: true, payload: payload };
+            }
+
+            resetarLeituraQrCriptografado();
+            return { capturada: false };
+        }
+
+        async function preencherQrCriptografado(payload) {
+            try {
+                const dados = await EbiQrCrypto.decrypt(payload);
+                const campos = dados.split('\t');
+                if (campos.length === 0 || campos.length % NUM_CAMPOS_POR_LINHA_CADASTRO !== 0) {
+                    throw new Error('Formato de QR inválido.');
+                }
+
+                const linhas = Math.min(campos.length / NUM_CAMPOS_POR_LINHA_CADASTRO, NUM_LINHAS_FORM_CADASTRO);
+                $('#formNovoCadastro .cadastro-input').val('');
+                for (let linha = 0; linha < linhas; linha++) {
+                    for (let coluna = 0; coluna < NUM_CAMPOS_POR_LINHA_CADASTRO; coluna++) {
+                        const campo = $('#input_' + linha + '_' + coluna);
+                        campo.val(campos[(linha * NUM_CAMPOS_POR_LINHA_CADASTRO) + coluna]);
+                        if (coluna === 3) campo.trigger('input');
+                    }
+                }
+                $('#portaria_cadastro').focus();
+                resetarLeituraQrCriptografado();
+            } catch (error) {
+                $('#input_0_0').val('');
+                resetarLeituraQrCriptografado();
+                alert('Não foi possível ler o QR Code criptografado.');
+            }
         }
 
         function limparLinhaCadastro(linha) {
@@ -1279,16 +1350,35 @@
                 }, atraso);
             }
 
-            $('.cadastro-input').on('keydown', function(e) {
+            $('.cadastro-input').on('keydown', async function(e) {
                 const key = e.key;
+                const leituraCriptografada = capturarQrCriptografado(e);
+                if (leituraCriptografada.capturada) {
+                    e.preventDefault();
+                    if (leituraCriptografada.payload) {
+                        await preencherQrCriptografado(leituraCriptografada.payload);
+                    }
+                    return;
+                }
+
                 registrarTeclaDaPistola(e);
+                const target = e.target;
+
+                if (key === 'Enter'
+                    && target.id === 'input_0_0'
+                    && window.EbiQrCrypto
+                    && EbiQrCrypto.isEncrypted($(target).val().trim())) {
+                    e.preventDefault();
+                    await preencherQrCriptografado($(target).val().trim());
+                    return;
+                }
+
                 if (key !== 'Enter' && key !== 'Tab') {
                     return;
                 }
                 e.preventDefault();
                 if (autoSubmitTimer) { clearTimeout(autoSubmitTimer); autoSubmitTimer = null; }
 
-                const target = e.target;
                 const currentLinha = parseInt($(target).data('linha'));
                 const currentCol = parseInt($(target).data('col'));
 
