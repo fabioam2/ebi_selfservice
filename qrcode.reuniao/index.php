@@ -29,8 +29,6 @@ $qrCodeCryptoKey = ebi_obter_chave_criptografia_qr(__DIR__ . '/../ebi.reuniao/co
             --brand-soft: rgba(14, 116, 144, 0.14);
             --success-bg: #dff8ea;
             --success-border: #1f9d61;
-            --warning-bg: #fff4dc;
-            --warning-border: #e8a100;
             --danger: #b91c1c;
         }
 
@@ -122,53 +120,6 @@ $qrCodeCryptoKey = ebi_obter_chave_criptografia_qr(__DIR__ . '/../ebi.reuniao/co
         }
 
         .info-box i { color: var(--brand); margin-right: 6px; }
-
-        .important-box {
-            background: var(--warning-bg);
-            border-left: 4px solid var(--warning-border);
-            padding: 13px 15px;
-            margin-bottom: 16px;
-            border-radius: 9px;
-            color: #6b4600;
-            font-size: 0.88rem;
-            line-height: 1.5;
-        }
-
-        .important-box i { color: var(--warning-border); margin-right: 6px; }
-
-        details.instructions-collapse { margin-bottom: 20px; }
-        details.instructions-collapse summary {
-            cursor: pointer;
-            font-weight: 700;
-            color: var(--brand-strong);
-            font-size: 0.9rem;
-            list-style: none;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        details.instructions-collapse summary::-webkit-details-marker { display: none; }
-        details.instructions-collapse summary .chev { margin-left: auto; transition: transform 0.2s ease; }
-        details.instructions-collapse[open] summary .chev { transform: rotate(180deg); }
-        details.instructions-collapse ul {
-            margin: 10px 0 0;
-            padding-left: 18px;
-            font-size: 0.85rem;
-            color: var(--text-soft);
-            line-height: 1.6;
-        }
-
-        .section-title {
-            font-weight: 800;
-            color: var(--text-main);
-            font-size: 0.95rem;
-            margin: 18px 0 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .section-title i { color: var(--brand); }
-        .section-title:first-of-type { margin-top: 4px; }
 
         .form-group label { font-weight: 600; color: #173146; margin-bottom: 6px; font-size: 0.88rem; }
 
@@ -377,19 +328,6 @@ $qrCodeCryptoKey = ebi_obter_chave_criptografia_qr(__DIR__ . '/../ebi.reuniao/co
                 <p>Espaço Bíblico Infantil</p>
             </div>
 
-            <div class="important-box">
-                <i class="fas fa-exclamation-triangle"></i>
-                <strong>QR Code para Reunião do Espaço Bíblico Infantil</strong>
-            </div>
-
-            <details class="instructions-collapse">
-                <summary><i class="fas fa-info-circle"></i> Como funciona <i class="fas fa-chevron-down chev"></i></summary>
-                <ul>
-                    <li>Selecione a função e informe os dados para gerar o QR Code da reunião.</li>
-                    <li>Guarde o QR Code gerado para apresentá-lo na reunião.</li>
-                </ul>
-            </details>
-
             <form id="qrForm">
                 <div class="form-group">
                     <label for="nomePai">Nome:</label>
@@ -416,45 +354,6 @@ $qrCodeCryptoKey = ebi_obter_chave_criptografia_qr(__DIR__ . '/../ebi.reuniao/co
                         <span id="errorCidade" class="error"></span>
                     </div>
                 </div>
-                <div class="form-row">
-                    <div class="form-group col-12">
-                        <label for="estado">Estado <span class="text-muted" style="font-weight:400;">(opcional)</span></label>
-                        <select class="form-control" id="estado" name="estado">
-                            <option value="">—</option>
-                            <option value="AC">AC - Acre</option>
-                            <option value="AL">AL - Alagoas</option>
-                            <option value="AP">AP - Amapá</option>
-                            <option value="AM">AM - Amazonas</option>
-                            <option value="BA">BA - Bahia</option>
-                            <option value="CE">CE - Ceará</option>
-                            <option value="DF">DF - Distrito Federal</option>
-                            <option value="ES">ES - Espírito Santo</option>
-                            <option value="GO">GO - Goiás</option>
-                            <option value="MA">MA - Maranhão</option>
-                            <option value="MT">MT - Mato Grosso</option>
-                            <option value="MS">MS - Mato Grosso do Sul</option>
-                            <option value="MG">MG - Minas Gerais</option>
-                            <option value="PA">PA - Pará</option>
-                            <option value="PB">PB - Paraíba</option>
-                            <option value="PR">PR - Paraná</option>
-                            <option value="PE">PE - Pernambuco</option>
-                            <option value="PI">PI - Piauí</option>
-                            <option value="RJ">RJ - Rio de Janeiro</option>
-                            <option value="RN">RN - Rio Grande do Norte</option>
-                            <option value="RS">RS - Rio Grande do Sul</option>
-                            <option value="RO">RO - Rondônia</option>
-                            <option value="RR">RR - Roraima</option>
-                            <option value="SC">SC - Santa Catarina</option>
-                            <option value="SP">SP - São Paulo</option>
-                            <option value="SE">SE - Sergipe</option>
-                            <option value="TO">TO - Tocantins</option>
-                        </select>
-                        <span id="errorEstado" class="error"></span>
-                    </div>
-                </div>
-
-                <div class="section-title"><i class="fas fa-clipboard-list"></i>Dados da Reunião</div>
-
                 <div class="form-group">
                     <label for="funcao">Função:</label>
                     <select class="form-control" id="funcao" name="funcao">
@@ -511,7 +410,7 @@ $qrCodeCryptoKey = ebi_obter_chave_criptografia_qr(__DIR__ . '/../ebi.reuniao/co
             var nomePai = removeAccents(document.getElementById('nomePai').value);
             var telefone = removeAccents(document.getElementById('telefone').value);
             var cidade = removeAccents(document.getElementById('cidade').value);
-            var estado = document.getElementById('estado').value;
+            var estado = '';
             var comum = removeAccents(document.getElementById('comum').value);
             var funcao = removeAccents(document.getElementById('funcao').value);
             var idadeFixa = 3;
@@ -525,7 +424,6 @@ $qrCodeCryptoKey = ebi_obter_chave_criptografia_qr(__DIR__ . '/../ebi.reuniao/co
             document.getElementById('errorNomePai').innerText = '';
             document.getElementById('errorTelefone').innerText = '';
             document.getElementById('errorCidade').innerText = '';
-            document.getElementById('errorEstado').innerText = '';
             document.getElementById('errorComum').innerText = '';
             document.getElementById('errorFuncao').innerText = '';
 

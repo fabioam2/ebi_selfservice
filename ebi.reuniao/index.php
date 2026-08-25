@@ -5,8 +5,23 @@
  */
 
 require __DIR__ . '/inc/bootstrap.php';
+
+$acaoSolicitada = (string)($_GET['acao'] ?? '');
+if ($acaoSolicitada === 'desktop') {
+    $_SESSION['retorno_ebi_reuniao_desktop'] = true;
+} elseif ($_SERVER['REQUEST_METHOD'] === 'GET' && $acaoSolicitada === '') {
+    $acaoRedirecionada = !empty($_SESSION['retorno_ebi_reuniao_desktop']) ? 'desktop' : 'mobile';
+    unset($_SESSION['retorno_ebi_reuniao_desktop']);
+    header('Location: ' . sanitize_for_html($_SERVER['PHP_SELF']) . '?acao=' . $acaoRedirecionada);
+    exit;
+}
+
 require __DIR__ . '/inc/auth.php';
 require __DIR__ . '/inc/funcoes.php';
+
+if ($acaoSolicitada === 'desktop') {
+    unset($_SESSION['retorno_ebi_reuniao_desktop']);
+}
 
 // ── Preview de backup (GET) ───────────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'GET'
@@ -129,7 +144,7 @@ if (($_GET['acao'] ?? '') === 'stats') {
 }
 
 // ── View mobile (smartphone) ──────────────────────────────────────────────────
-if (($_GET['acao'] ?? '') === 'mobile') {
+if ($acaoSolicitada === 'mobile') {
     require __DIR__ . '/views/mobile.php';
     exit;
 }

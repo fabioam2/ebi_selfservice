@@ -84,6 +84,8 @@ define('SENHA_ADMIN_HASH',  (string)($config['SEGURANCA']['SENHA_ADMIN_HASH']  ?
 define('SENHA_ADMIN_REAL',  (string)($config['SEGURANCA']['SENHA_ADMIN_REAL']  ?? '')); // legado
 define('SENHA_LOGIN',        SENHA_ADMIN_REAL);
 define('CAMINHO_CONFIG_INI', $config_file);
+define('QR_CODE_CRYPTO_KEY', trim((string)($config['SEGURANCA']['QR_CODE_CRYPTO_KEY'] ?? '')));
+define('QR_CODE_CRYPTO_ENABLED', QR_CODE_CRYPTO_KEY !== '');
 
 // ── Constantes da impressora ZPL ──────────────────────────────────────────────
 define('PALAVRA_CONTADOR_COMUM',       $config['IMPRESSORA_ZPL']['PALAVRA_CONTADOR_COMUM']         ?? 'bonfim');

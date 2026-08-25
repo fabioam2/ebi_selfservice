@@ -126,7 +126,7 @@ $totalHoje = count($cadastrosHojeMobile);
 </head>
 <body>
 <div class="page">
-    <a href="<?php echo sanitize_for_html($_SERVER['PHP_SELF']); ?>" class="back-link"><i class="fas fa-arrow-left"></i> Voltar</a>
+    <a href="<?php echo sanitize_for_html($_SERVER['PHP_SELF']); ?>?acao=desktop" class="back-link"><i class="fas fa-desktop"></i> Reunião EBI</a>
 
     <div class="header">
         <h1><i class="fas fa-mobile-alt"></i> Reunião EBI</h1>
@@ -181,6 +181,14 @@ $totalHoje = count($cadastrosHojeMobile);
             <label for="manualNome">Nome</label>
             <input type="text" id="manualNome" autocomplete="name" placeholder="Nome e sobrenome">
         </div>
+        <div class="manual-field">
+            <label for="manualCidade">Cidade</label>
+            <input type="text" id="manualCidade" autocomplete="address-level2" placeholder="Informe a cidade">
+        </div>
+        <div class="manual-field">
+            <label for="manualComum">Comum</label>
+            <input type="text" id="manualComum" autocomplete="organization" placeholder="Informe a comum">
+        </div>
         <button type="button" class="btn-manual" id="btnCadManual" onclick="cadastrarManual()"><i class="fas fa-check-circle mr-1"></i> Cadastrar</button>
     </div>
 
@@ -228,6 +236,7 @@ $totalHoje = count($cadastrosHojeMobile);
     const result = el('result'), resultData = el('resultData');
     const btnCad = el('btnCad'), frmPort = el('frmPort'), frmFields = el('frmFields');
     const manualFuncao = el('manualFuncao'), manualNome = el('manualNome');
+    const manualCidade = el('manualCidade'), manualComum = el('manualComum');
 
     // Persistir portaria
     const sv = localStorage.getItem('ebi_mobile_portaria');
@@ -311,9 +320,14 @@ $totalHoje = count($cadastrosHojeMobile);
     window.cadastrarManual = function() {
         const funcao = manualFuncao.value.trim();
         const nome = manualNome.value.trim();
-        if (!funcao || !nome) {
-            toast('Informe Função e Nome','err');
-            if (!funcao) manualFuncao.focus(); else manualNome.focus();
+        const cidade = manualCidade.value.trim();
+        const comum = manualComum.value.trim();
+        if (!funcao || !nome || !cidade || !comum) {
+            toast('Informe Função, Nome, Cidade e Comum','err');
+            if (!funcao) manualFuncao.focus();
+            else if (!nome) manualNome.focus();
+            else if (!cidade) manualCidade.focus();
+            else manualComum.focus();
             return;
         }
         enviarCadastro([{
@@ -321,8 +335,8 @@ $totalHoje = count($cadastrosHojeMobile);
             resp: nome,
             idade: '3',
             tel: '',
-            comum: '',
-            cidade: '',
+            comum: comum,
+            cidade: cidade,
             estado: '',
             sexo: 'X',
             nasc: '01/01/2023',
