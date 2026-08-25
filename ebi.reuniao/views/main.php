@@ -422,7 +422,6 @@
                 </div>
             </div>
             <h1 class="text-center mb-0">
-                <img src="https://placehold.co/60x60/007bff/white?text=Kids" alt="Ícone de Criança" style="vertical-align: middle; border-radius: 50%; margin-right: 10px;">
                 Reunião do Espaço Bíblico Infantil
             </h1>
             <div class="d-flex align-items-center" style="min-width: 220px; justify-content: flex-end;">
