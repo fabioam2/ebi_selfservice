@@ -1172,6 +1172,27 @@
             leituraQrCriptografado.ultimoEventoEm = 0;
         }
 
+        function normalizarValorQr(valor) {
+            return String(valor || '')
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLocaleLowerCase('pt-BR')
+                .trim();
+        }
+
+        function preencherCampoQr(campo, valor) {
+            if (!campo.is('select')) {
+                campo.val(valor);
+                return;
+            }
+
+            var valorNormalizado = normalizarValorQr(valor);
+            var opcaoCompativel = campo.find('option').filter(function() {
+                return normalizarValorQr(this.value) === valorNormalizado;
+            }).first();
+            campo.val(opcaoCompativel.length ? opcaoCompativel.val() : valor);
+        }
+
         function capturarQrCriptografado(evento) {
             if (!window.EbiQrCrypto || evento.ctrlKey || evento.metaKey || evento.altKey) {
                 resetarLeituraQrCriptografado();
@@ -1221,7 +1242,7 @@
                 for (let linha = 0; linha < linhas; linha++) {
                     for (let coluna = 0; coluna < NUM_CAMPOS_POR_LINHA_CADASTRO; coluna++) {
                         const campo = $('#input_' + linha + '_' + coluna);
-                        campo.val(campos[(linha * NUM_CAMPOS_POR_LINHA_CADASTRO) + coluna]);
+                        preencherCampoQr(campo, campos[(linha * NUM_CAMPOS_POR_LINHA_CADASTRO) + coluna]);
                         if (coluna === 3) campo.trigger('input');
                     }
                 }
