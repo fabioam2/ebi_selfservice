@@ -223,7 +223,7 @@ $totalHoje = count($cadastrosHojeMobile);
     <div class="footer">v<?php echo defined('VERSAO_SISTEMA') ? VERSAO_SISTEMA : date('YmdHi'); ?></div>
 </div>
 
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js'"></script>
 <?php if (QR_CODE_CRYPTO_ENABLED): ?>
 <script src="../qr-crypto.js"></script>
 <script>EbiQrCrypto.configure(<?php echo json_encode(QR_CODE_CRYPTO_KEY); ?>);</script>
@@ -251,14 +251,44 @@ $totalHoje = count($cadastrosHojeMobile);
     window.scan = function() {
         if (!port.value.trim()) { port.focus(); toast('Defina a Portaria','err'); return; }
         if (scanning) { stop(); return; }
+        if (!window.isSecureContext || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            status.textContent='A câmera no celular exige acesso por HTTPS';
+            status.className='scan-status err';
+            return;
+        }
+        if (typeof window.Html5Qrcode !== 'function') {
+            status.textContent='Leitor não carregou. Verifique a conexão e tente novamente';
+            status.className='scan-status err';
+            return;
+        }
         // Reset
         btnCad.classList.remove('show'); result.classList.remove('show'); reading=false; data=[]; frmFields.innerHTML='';
         el('qr-reader').style.display='block';
-        sc = new Html5Qrcode('qr-reader');
-        sc.start({facingMode:'environment'},{fps:10,qrbox:{width:200,height:200}}, onRead)
-          .then(()=>{ scanning=true; btn.innerHTML='<i class="fas fa-stop mr-1"></i> Parar'; btn.classList.add('active'); status.textContent='Aponte para o QR Code...'; status.className='scan-status'; })
-          .catch(e=>{ status.textContent='Erro câmera'; status.className='scan-status err'; el('qr-reader').style.display='none'; });
+        try {
+            sc = new window.Html5Qrcode('qr-reader');
+            sc.start({facingMode:'environment'},{fps:10,qrbox:{width:200,height:200}}, onRead)
+              .then(()=>{ scanning=true; btn.innerHTML='<i class="fas fa-stop mr-1"></i> Parar'; btn.classList.add('active'); status.textContent='Aponte para o QR Code...'; status.className='scan-status'; })
+              .catch(mostrarErroCamera);
+        } catch (error) {
+            mostrarErroCamera(error);
+        }
     };
+
+    function mostrarErroCamera(error) {
+        const detalhe = String(error && (error.name || error.message) || error || '');
+        if (/notallowed|permissiondenied/i.test(detalhe)) {
+            status.textContent='Permita o uso da câmera no navegador e tente novamente';
+        } else if (/notreadable|trackstart/i.test(detalhe)) {
+            status.textContent='A câmera está em uso por outro aplicativo';
+        } else if (/notfound|devicesnotfound/i.test(detalhe)) {
+            status.textContent='Nenhuma câmera foi encontrada neste aparelho';
+        } else {
+            status.textContent='Não foi possível abrir a câmera. Tente novamente';
+        }
+        status.className='scan-status err';
+        el('qr-reader').style.display='none';
+        sc=null;
+    }
 
     function stop() {
         if(sc&&scanning) sc.stop().then(()=>{ scanning=false; btn.innerHTML='<i class="fas fa-camera mr-1"></i> Scan'; btn.classList.remove('active'); el('qr-reader').style.display='none'; });
