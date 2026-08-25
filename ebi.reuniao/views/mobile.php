@@ -108,6 +108,13 @@ $totalHoje = count($cadastrosHojeMobile);
             background: linear-gradient(135deg, #16a34a, #15803d);
             color: #fff; font-weight: 800; font-size: 1rem; cursor: pointer;
         }
+        .manual-card { padding-bottom: 12px; }
+        .manual-card h2 { margin-bottom: 0; }
+        .manual-toggle { margin-left: auto; width: 36px; height: 36px; border: none; border-radius: 8px; background: var(--brand-soft); color: var(--brand-strong); cursor: pointer; }
+        .manual-toggle i { transition: transform 0.18s ease; }
+        .manual-toggle[aria-expanded="true"] i { transform: rotate(180deg); }
+        .manual-content { display: none; padding-top: 14px; }
+        .manual-content.show { display: block; }
 
         .lista-card { max-height: 260px; overflow-y: auto; }
         .lista-item { display: flex; align-items: center; padding: 7px 0; border-bottom: 1px solid #eee; font-size: 0.78rem; }
@@ -178,35 +185,40 @@ $totalHoje = count($cadastrosHojeMobile);
         </button>
     </div>
 
-    <div class="card">
-        <h2><i class="fas fa-user-plus"></i> Cadastro Manual</h2>
-        <div class="manual-field">
-            <label for="manualFuncao">Função</label>
-            <select id="manualFuncao">
-                <option value="">Selecione a função</option>
-                <option value="Coordenadora">Coordenadora</option>
-                <option value="Colaboradora">Colaboradora</option>
-                <option value="Ancião">Ancião</option>
-                <option value="Cooperador do Ofício">Cooperador do Ofício</option>
-                <option value="Cooperador de Jovens">Cooperador de Jovens</option>
-                <option value="Diácono">Diácono</option>
-                <option value="Adm">Adm</option>
-                <option value="Outros">Outros</option>
-            </select>
+    <div class="card manual-card">
+        <h2>
+            <i class="fas fa-user-plus"></i> Cadastro Manual
+            <button type="button" class="manual-toggle" id="manualToggle" aria-expanded="false" aria-controls="manualContent" aria-label="Expandir cadastro manual" title="Expandir cadastro manual" onclick="alternarCadastroManual()"><i class="fas fa-chevron-down"></i></button>
+        </h2>
+        <div id="manualContent" class="manual-content">
+            <div class="manual-field">
+                <label for="manualFuncao">Função</label>
+                <select id="manualFuncao">
+                    <option value="">Selecione a função</option>
+                    <option value="Coordenadora">Coordenadora</option>
+                    <option value="Colaboradora">Colaboradora</option>
+                    <option value="Ancião">Ancião</option>
+                    <option value="Cooperador do Ofício">Cooperador do Ofício</option>
+                    <option value="Cooperador de Jovens">Cooperador de Jovens</option>
+                    <option value="Diácono">Diácono</option>
+                    <option value="Adm">Adm</option>
+                    <option value="Outros">Outros</option>
+                </select>
+            </div>
+            <div class="manual-field">
+                <label for="manualNome">Nome</label>
+                <input type="text" id="manualNome" autocomplete="name" placeholder="Nome e sobrenome">
+            </div>
+            <div class="manual-field">
+                <label for="manualCidade">Cidade</label>
+                <input type="text" id="manualCidade" autocomplete="address-level2" placeholder="Informe a cidade">
+            </div>
+            <div class="manual-field">
+                <label for="manualComum">Comum</label>
+                <input type="text" id="manualComum" autocomplete="organization" placeholder="Informe a comum">
+            </div>
+            <button type="button" class="btn-manual" id="btnCadManual" onclick="cadastrarManual()"><i class="fas fa-check-circle mr-1"></i> Cadastrar</button>
         </div>
-        <div class="manual-field">
-            <label for="manualNome">Nome</label>
-            <input type="text" id="manualNome" autocomplete="name" placeholder="Nome e sobrenome">
-        </div>
-        <div class="manual-field">
-            <label for="manualCidade">Cidade</label>
-            <input type="text" id="manualCidade" autocomplete="address-level2" placeholder="Informe a cidade">
-        </div>
-        <div class="manual-field">
-            <label for="manualComum">Comum</label>
-            <input type="text" id="manualComum" autocomplete="organization" placeholder="Informe a comum">
-        </div>
-        <button type="button" class="btn-manual" id="btnCadManual" onclick="cadastrarManual()"><i class="fas fa-check-circle mr-1"></i> Cadastrar</button>
     </div>
 
     <!-- Lista dos cadastros de hoje -->
@@ -255,11 +267,27 @@ $totalHoje = count($cadastrosHojeMobile);
     const cameraHelp = el('cameraHelp');
     const manualFuncao = el('manualFuncao'), manualNome = el('manualNome');
     const manualCidade = el('manualCidade'), manualComum = el('manualComum');
+    const manualContent = el('manualContent'), manualToggle = el('manualToggle');
 
     // Persistir portaria
     const sv = localStorage.getItem('ebi_mobile_portaria');
     if (sv) port.value = sv;
     port.addEventListener('input', function(){ this.value=this.value.toUpperCase(); if(this.value) localStorage.setItem('ebi_mobile_portaria',this.value); });
+
+    function definirCadastroManualAberto(aberto, salvar) {
+        manualContent.classList.toggle('show', aberto);
+        manualToggle.setAttribute('aria-expanded', String(aberto));
+        const acao = aberto ? 'Minimizar' : 'Expandir';
+        manualToggle.setAttribute('aria-label', acao + ' cadastro manual');
+        manualToggle.setAttribute('title', acao + ' cadastro manual');
+        if (salvar) localStorage.setItem('ebi_mobile_cadastro_manual_aberto', aberto ? '1' : '0');
+    }
+
+    window.alternarCadastroManual = function() {
+        definirCadastroManualAberto(!manualContent.classList.contains('show'), true);
+    };
+
+    definirCadastroManualAberto(localStorage.getItem('ebi_mobile_cadastro_manual_aberto') === '1', false);
 
     window.toast = function(msg, type) {
         const t = el('toast'); t.textContent=msg; t.className='toast '+type; t.style.display='block';
@@ -372,6 +400,7 @@ $totalHoje = count($cadastrosHojeMobile);
         const cidade = manualCidade.value.trim();
         const comum = manualComum.value.trim();
         if (!funcao || !nome || !cidade || !comum) {
+            definirCadastroManualAberto(true, true);
             toast('Informe Função, Nome, Cidade e Comum','err');
             if (!funcao) manualFuncao.focus();
             else if (!nome) manualNome.focus();
