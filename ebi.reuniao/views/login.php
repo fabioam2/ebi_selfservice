@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo defined('EBI_REUNIAO_PRESENCIAL') ? 'Reunião Regional - EBI' : 'Acesso à Reunião - Espaço Bíblico Infantil'; ?></title>
+    <title><?php echo defined('EBI_REUNIAO_PRESENCIAL_ADMIN') ? 'Administração Regional - EBI' : (defined('EBI_REUNIAO_PRESENCIAL') ? 'Reunião Regional - EBI' : 'Acesso à Reunião - Espaço Bíblico Infantil'); ?></title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -156,10 +156,10 @@
     $comumLogin = defined('INSTANCE_COMUM') ? trim((string)INSTANCE_COMUM) : '';
     $contextoLogin = trim($cidadeLogin . ' - ' . $comumLogin, ' -');
     ?>
-    <div class="login-context"><?php echo sanitize_for_html($contextoLogin !== '' ? $contextoLogin : (defined('EBI_REUNIAO_PRESENCIAL') ? 'Reunião Regional - EBI' : 'Reunião do Espaço Bíblico Infantil')); ?></div>
+    <div class="login-context"><?php echo sanitize_for_html($contextoLogin !== '' ? $contextoLogin : (defined('EBI_REUNIAO_PRESENCIAL_ADMIN') ? 'Administração Regional - EBI' : (defined('EBI_REUNIAO_PRESENCIAL') ? 'Reunião Regional - EBI' : 'Reunião do Espaço Bíblico Infantil'))); ?></div>
     <main class="login-container" aria-labelledby="login-title">
         <div class="login-brand" aria-hidden="true"><i class="fas fa-child"></i></div>
-        <h1 id="login-title"><?php echo defined('EBI_REUNIAO_PRESENCIAL') ? 'Reunião Regional - EBI' : 'Acesso à Reunião'; ?></h1>
+        <h1 id="login-title"><?php echo defined('EBI_REUNIAO_PRESENCIAL_ADMIN') ? 'Administração Regional' : (defined('EBI_REUNIAO_PRESENCIAL') ? 'Reunião Regional - EBI' : 'Acesso à Reunião'); ?></h1>
         <p class="login-subtitle">Espaço Bíblico Infantil</p>
         <?php if (!empty($loginPageMensagemSucesso)): ?>
             <div class="alert alert-success alert-login"><?php echo $loginPageMensagemSucesso; ?></div>

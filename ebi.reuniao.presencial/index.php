@@ -3,8 +3,10 @@ define('INSTANCE_DIR', __DIR__);
 define('EBI_REUNIAO_PRESENCIAL', true);
 
 require __DIR__ . '/../ebi.reuniao/inc/bootstrap.php';
-require __DIR__ . '/../ebi.reuniao/inc/auth.php';
 require __DIR__ . '/../ebi.reuniao/inc/funcoes.php';
+require __DIR__ . '/inc/registros.php';
+
+header('Cache-Control: no-store, max-age=0');
 
 $databaseWasMissing = !file_exists(DB_INSTANCE_PATH);
 $pdo = ebi_db();
@@ -12,24 +14,7 @@ if ($databaseWasMissing && file_exists(DB_INSTANCE_PATH)) {
     @chmod(DB_INSTANCE_PATH, 0600);
 }
 
-$pdo->exec(
-    'CREATE TABLE IF NOT EXISTS reuniao_presencial_registros (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        funcao TEXT NOT NULL,
-        nome TEXT NOT NULL,
-        cidade TEXT NOT NULL DEFAULT \'\',
-        comum TEXT NOT NULL,
-        created_at TEXT NOT NULL DEFAULT (strftime(\'%Y-%m-%d %H:%M:%S\', \'now\', \'localtime\'))
-    )'
-);
-$colunasPresencial = array_column(
-    $pdo->query('PRAGMA table_info(reuniao_presencial_registros)')->fetchAll(),
-    'name'
-);
-if (!in_array('cidade', $colunasPresencial, true)) {
-    $pdo->exec('ALTER TABLE reuniao_presencial_registros ADD COLUMN cidade TEXT NOT NULL DEFAULT \'\'');
-}
-$pdo->exec('CREATE INDEX IF NOT EXISTS idx_reuniao_presencial_data ON reuniao_presencial_registros(date(created_at))');
+reuniao_presencial_preparar_banco($pdo);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['cadastrar_presenca'])) {
     csrf_validate();
@@ -62,15 +47,6 @@ $mensagemSucesso = (string)($_SESSION['mensagemSucesso'] ?? '');
 $mensagemErro = (string)($_SESSION['mensagemErro'] ?? '');
 unset($_SESSION['mensagemSucesso'], $_SESSION['mensagemErro']);
 
-$hoje = date('Y-m-d');
-$stmt = $pdo->prepare(
-    'SELECT id, funcao, nome, cidade, comum, created_at
-     FROM reuniao_presencial_registros
-     WHERE date(created_at) = ?
-     ORDER BY id DESC'
-);
-$stmt->execute([$hoje]);
-$registrosHoje = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -92,7 +68,6 @@ $registrosHoje = $stmt->fetchAll();
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: linear-gradient(130deg, var(--bg-1) 0%, var(--bg-2) 58%, #083358 100%); min-height: 100vh; font-family: 'Manrope', sans-serif; padding: 14px 10px 30px; display: flex; flex-direction: column; align-items: center; }
         .page { width: 100%; max-width: 420px; }
-        .back-link { display: inline-flex; align-items: center; gap: 4px; color: rgba(255,255,255,0.7); font-size: 0.75rem; text-decoration: none; margin-bottom: 10px; }
         .header { text-align: center; color: #fff; margin-bottom: 14px; }
         .header h1 { font-size: 1.3rem; font-weight: 800; }
         .header p { font-size: 0.75rem; opacity: 0.72; margin-top: 2px; }
@@ -106,14 +81,6 @@ $registrosHoje = $stmt->fetchAll();
         .field input, .field select { width: 100%; min-height: 44px; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 10px; color: var(--text-main); font: inherit; font-size: 0.88rem; background: #fff; }
         .field input:focus, .field select:focus { outline: none; border-color: var(--brand); box-shadow: 0 0 0 3px var(--brand-soft); }
         .btn-register { width: 100%; padding: 15px; border: 0; border-radius: 12px; background: linear-gradient(135deg, #16a34a, #15803d); color: #fff; font-weight: 800; font-size: 1rem; cursor: pointer; }
-        .lista-card { max-height: 330px; overflow-y: auto; }
-        .lista-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 10px; padding: 9px 0; border-bottom: 1px solid #e5e7eb; }
-        .lista-item:last-child { border-bottom: 0; }
-        .lista-item .nome { color: var(--text-main); font-size: 0.82rem; font-weight: 700; }
-        .lista-item .funcao, .lista-item .local, .lista-item .horario { color: var(--text-soft); font-size: 0.7rem; }
-        .lista-item .local { grid-column: 1; }
-        .lista-item .horario { grid-column: 2; grid-row: 1 / span 2; align-self: center; text-align: right; }
-        .empty { text-align: center; color: var(--text-soft); font-size: 0.8rem; padding: 16px 0; }
         .toast { margin: 0 0 12px; padding: 10px 16px; border-radius: 10px; font-size: 0.8rem; font-weight: 700; text-align: center; }
         .toast.ok { color: #166534; background: var(--success-bg); border: 1px solid var(--success-border); }
         .toast.err { color: var(--danger); background: var(--danger-bg); border: 1px solid var(--danger); }
@@ -122,11 +89,9 @@ $registrosHoje = $stmt->fetchAll();
 </head>
 <body>
 <main class="page">
-    <a href="../selfservice/selfservice.php" class="back-link"><i class="fas fa-arrow-left"></i> Voltar</a>
-
     <header class="header">
         <h1><i class="fas fa-users"></i> Reunião Regional - EBI</h1>
-        <p>Registro de presença</p>
+        <p>Check-in individual</p>
     </header>
 
     <?php if ($mensagemSucesso !== ''): ?>
@@ -137,9 +102,8 @@ $registrosHoje = $stmt->fetchAll();
     <?php endif; ?>
 
     <section class="card" aria-labelledby="cadastro-title">
-        <div class="total-row"><span>Hoje</span> <?php echo count($registrosHoje); ?> presença(s)</div>
         <h2 id="cadastro-title"><i class="fas fa-user-check"></i> Registrar presença</h2>
-        <form method="post" autocomplete="on">
+        <form method="post" autocomplete="off">
             <?php echo csrf_field(); ?>
             <input type="hidden" name="cadastrar_presenca" value="1">
             <div class="field">
@@ -162,36 +126,18 @@ $registrosHoje = $stmt->fetchAll();
             </div>
             <div class="field">
                 <label for="nome">Nome Completo</label>
-                <input id="nome" name="nome" type="text" autocomplete="name" placeholder="Nome e sobrenome" required>
+                <input id="nome" name="nome" type="text" autocomplete="off" placeholder="Nome e sobrenome" required>
             </div>
             <div class="field">
                 <label for="cidade">Cidade</label>
-                <input id="cidade" name="cidade" type="text" autocomplete="address-level2" placeholder="Informe a cidade" required>
+                <input id="cidade" name="cidade" type="text" autocomplete="off" placeholder="Informe a cidade" required>
             </div>
             <div class="field">
                 <label for="comum">Comum</label>
-                <input id="comum" name="comum" type="text" autocomplete="organization" placeholder="Informe a comum" required>
+                <input id="comum" name="comum" type="text" autocomplete="off" placeholder="Informe a comum" required>
             </div>
             <button class="btn-register" type="submit"><i class="fas fa-check-circle mr-1"></i> Registrar</button>
         </form>
-    </section>
-
-    <section class="card" aria-labelledby="registros-title">
-        <h2 id="registros-title"><i class="fas fa-list"></i> Presenças de hoje (<?php echo count($registrosHoje); ?>)</h2>
-        <div class="lista-card">
-            <?php if ($registrosHoje === []): ?>
-                <div class="empty"><i class="fas fa-inbox" style="font-size:1.5rem;opacity:0.3;display:block;margin-bottom:6px;"></i>Nenhuma presença registrada hoje</div>
-            <?php else: ?>
-                <?php foreach ($registrosHoje as $registro): ?>
-                    <div class="lista-item">
-                        <span class="nome"><?php echo sanitize_for_html($registro['nome']); ?></span>
-                        <span class="funcao"><?php echo sanitize_for_html($registro['funcao']); ?></span>
-                        <span class="local"><?php echo sanitize_for_html($registro['cidade']) . ' · ' . sanitize_for_html($registro['comum']); ?></span>
-                        <span class="horario"><?php echo sanitize_for_html(substr((string)$registro['created_at'], 11, 5)); ?></span>
-                    </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
-        </div>
     </section>
 
     <div class="footer">v<?php echo defined('VERSAO_SISTEMA') ? VERSAO_SISTEMA : date('YmdHi'); ?></div>
