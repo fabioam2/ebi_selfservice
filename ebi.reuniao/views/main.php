@@ -49,6 +49,37 @@
         .col-nascimento { flex: 0 0 7%; max-width: 7%; }
         .col-acao { flex: 0 0 9%; max-width: 9%; }
 
+        #painelTesteImpressao,
+        #qzStatusBadge,
+        #modalQZTray,
+        #modalHowToQZ,
+        #modalConfigImpressora,
+        #modalDebugZPL { display: none !important; }
+
+        .meeting-printer-only { display: none !important; }
+
+        #formNovoCadastro .col-idade,
+        #formNovoCadastro .col-sexo,
+        #formNovoCadastro .col-nascimento { display: none !important; }
+
+        #formNovoCadastro .col-nome-crianca { flex: 0 0 20%; max-width: 20%; }
+        #formNovoCadastro .col-responsavel { flex: 0 0 20%; max-width: 20%; }
+        #formNovoCadastro .col-telefone { flex: 0 0 15%; max-width: 15%; }
+        #formNovoCadastro .col-comum { flex: 0 0 15%; max-width: 15%; }
+        #formNovoCadastro .col-cidade { flex: 0 0 15%; max-width: 15%; }
+        #formNovoCadastro .col-estado { flex: 0 0 5%; max-width: 5%; }
+        #formNovoCadastro .col-acao { flex: 0 0 10%; max-width: 10%; }
+
+        .meeting-desktop-table th:nth-child(1), .meeting-desktop-table td:nth-child(1),
+        .meeting-desktop-table th:nth-child(2), .meeting-desktop-table td:nth-child(2),
+        .meeting-desktop-table th:nth-child(4), .meeting-desktop-table td:nth-child(4),
+        .meeting-desktop-table th:nth-child(5), .meeting-desktop-table td:nth-child(5),
+        .meeting-desktop-table th:nth-child(9), .meeting-desktop-table td:nth-child(9),
+        .meeting-desktop-table th:nth-child(10), .meeting-desktop-table td:nth-child(10),
+        .meeting-desktop-table th:nth-child(11), .meeting-desktop-table td:nth-child(11) { display: none; }
+
+        .meeting-desktop-table td[colspan] { display: table-cell !important; }
+
         .dropdown-menu { border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); border: 1px solid #e2e8f0; }
         .dropdown-menu button.dropdown-item, .dropdown-menu a.dropdown-item { cursor: pointer; font-size: 0.85rem; border-radius: 6px; margin: 2px 6px; padding: 6px 12px; }
         .dropdown-item:hover { background-color: rgba(14,116,144,0.08); }
@@ -300,17 +331,17 @@
                             </button>
                         </div>
                     </div>
-                    <div class="dropdown-divider"></div>
-                    <h6 class="dropdown-header">Impressora</h6>
-                    <a class="dropdown-item" href="calibrar.php" target="_blank" id="menuCalibrar">
+                    <div class="dropdown-divider meeting-printer-only"></div>
+                    <h6 class="dropdown-header meeting-printer-only">Impressora</h6>
+                    <a class="dropdown-item meeting-printer-only" href="calibrar.php" target="_blank" id="menuCalibrar">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-sliders mr-1" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M11.5 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM9.05 3a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0V3h9.05zM4.5 7a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM2.05 8a2.5 2.5 0 0 1 4.9 0H16v1H6.95a2.5 2.5 0 0 1-4.9 0H0V8h2.05zm9.45 4a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm-2.45 1a2.5 2.5 0 0 1 4.9 0H16v1h-2.05a2.5 2.5 0 0 1-4.9 0H0v-1h9.05z"/></svg>
                         Calibrar
                     </a>
-                    <button class="dropdown-item" type="button" onclick="abrirModalQZTray()">
+                    <button class="dropdown-item meeting-printer-only" type="button" onclick="abrirModalQZTray()">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-usb-plug-fill mr-1" viewBox="0 0 16 16"><path d="M6.5 6a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z"/><path d="M3 10.5a.5.5 0 0 1 .5-.5H4V9H2V7H1.5a.5.5 0 0 1-.5-.5v-2a.5.5 0 0 1 .5-.5H4V3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v1h2.5a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-.5.5H14v2h-1v1h.5a.5.5 0 0 1 0 1h-3l-1 1H7l-1-1H3.5a.5.5 0 0 1-.5-.5z"/></svg>
                         Impressora QZ Tray
                     </button>
-                    <div class="dropdown-submenu">
+                    <div class="dropdown-submenu meeting-printer-only">
                         <a class="dropdown-item dropdown-toggle" href="#" id="menuInstalar">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-download mr-1" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/></svg>
                             Instalar Impressora
@@ -345,7 +376,7 @@
                             </a>
                         </div>
                     </div>
-                    <div class="dropdown-submenu">
+                    <div class="dropdown-submenu meeting-printer-only">
                         <a class="dropdown-item dropdown-toggle" href="#" id="menuAvancado">
                             <i class="fas fa-tools mr-1"></i>
                             Avançado
@@ -361,12 +392,12 @@
                             </button>
                         </div>
                     </div>
-                    <div class="dropdown-divider"></div>
-                    <button class="dropdown-item" type="button" onclick="abrirModalConfigImpressora()">
+                    <div class="dropdown-divider meeting-printer-only"></div>
+                    <button class="dropdown-item meeting-printer-only" type="button" onclick="abrirModalConfigImpressora()">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear mr-1" viewBox="0 0 16 16"><path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492M5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0"/><path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115z"/></svg>
                         Configurar Impressora e Instância
                     </button>
-                    <button class="dropdown-item" type="button" onclick="toggleAutoImpressao()" id="btnToggleAutoImpressao">
+                    <button class="dropdown-item meeting-printer-only" type="button" onclick="toggleAutoImpressao()" id="btnToggleAutoImpressao">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-lightning mr-1" viewBox="0 0 16 16"><path d="M5.52.359A.5.5 0 0 1 6 0h4a.5.5 0 0 1 .474.658L8.694 6H12.5a.5.5 0 0 1 .395.807l-7 9a.5.5 0 0 1-.873-.454L6.823 9.5H3.5a.5.5 0 0 1-.48-.641z"/></svg>
                         <span id="labelAutoImpressao">Auto-Imprimir: OFF</span>
                     </button>
@@ -607,7 +638,7 @@
             </div>
 
             <div class="tabela-scrollable shadow-sm mt-3">
-                <table class="table table-striped table-hover table-bordered">
+                <table class="table table-striped table-hover table-bordered meeting-desktop-table">
                     <thead>
                         <tr>
                             <th style="width: 4%;" class="no-print"><input type="checkbox" id="selecionarTodos" title="Selecionar todos" aria-label="Selecionar todos"></th>
@@ -1186,6 +1217,24 @@
             }
         }
 
+        document.addEventListener('keydown', async function(evento) {
+            var tag = (evento.target && evento.target.tagName) || '';
+            if (evento.defaultPrevented || ['INPUT', 'SELECT', 'TEXTAREA'].includes(tag)) {
+                return;
+            }
+
+            var leitura = capturarQrCriptografado(evento);
+            if (!leitura.capturada) {
+                return;
+            }
+
+            evento.preventDefault();
+            evento.stopImmediatePropagation();
+            if (leitura.payload) {
+                await preencherQrCriptografado(leitura.payload);
+            }
+        }, true);
+
         function limparLinhaCadastro(linha) {
             $('#input_' + linha + '_0').val('');
             $('#input_' + linha + '_1').val('');
@@ -1288,6 +1337,18 @@
                 }
             }
 
+            function focarProximoCampoCadastro(linha, colunaInicial) {
+                for (var coluna = colunaInicial; coluna < NUM_CAMPOS_POR_LINHA_CADASTRO; coluna++) {
+                    var campo = $('#input_' + linha + '_' + coluna);
+                    if (campo.is(':visible') && !campo.prop('disabled')) {
+                        campo.focus();
+                        return true;
+                    }
+                }
+                $('#portaria_cadastro').focus();
+                return false;
+            }
+
             function registrarTeclaDaPistola(evento) {
                 if (evento.ctrlKey || evento.metaKey || evento.altKey) {
                     resetarLeituraPistola();
@@ -1377,7 +1438,7 @@
 
                 if (key === 'Tab') {
                     if (currentCol < NUM_CAMPOS_POR_LINHA_CADASTRO - 1) {
-                        $('#input_' + currentLinha + '_' + (currentCol + 1)).focus();
+                        focarProximoCampoCadastro(currentLinha, currentCol + 1);
                     } else if (currentLinha < NUM_LINHAS_FORM_CADASTRO - 1) {
                         $('#input_' + (currentLinha + 1) + '_0').focus();
                     } else {
@@ -1602,26 +1663,18 @@
 
             // Função auxiliar para extrair dados visíveis da tabela
             function extrairDadosTabelaVisivel() {
-                var headers = ['Impresso', 'Portaria', 'Codigo', 'Cod Resp', 'Nome da Crianca', 'Nome do Responsavel', 'Telefone', 'Idade', 'M/F', 'Data', 'Comum'];
+                var headers = ['Portaria', 'Função', 'Nome', 'Telefone', 'Comum'];
                 var rows = [];
                 $('#lista-criancas tr').each(function() {
                     if ($(this).is(':visible')) {
                         var $cells = $(this).find('td');
                         if ($cells.length === 0) return;
-                        var impresso = $cells.eq(1).find('svg').length > 0 ? 'Sim' : 'Nao';
-                        // Usar data-nome para evitar emojis de aniversário
                         var nomeCrianca = $cells.eq(5).attr('data-nome') || $cells.eq(5).text().trim();
                         var row = [
-                            impresso,
                             $cells.eq(2).text().trim(),
-                            $cells.eq(3).text().trim(),
-                            $cells.eq(4).text().trim(),
                             nomeCrianca,
                             $cells.eq(6).text().trim(),
                             $cells.eq(7).text().trim(),
-                            $cells.eq(8).text().trim(),
-                            $cells.eq(9).text().trim(),
-                            $cells.eq(10).text().trim(),
                             $cells.eq(11).text().trim()
                         ];
                         rows.push(row);
