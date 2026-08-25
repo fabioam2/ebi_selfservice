@@ -74,6 +74,13 @@ $totalDeCadastrosGeral = count($todosOsCadastros);
 $totalCriancas3Anos = 0;
 $totalMeninos = 0;
 $totalMeninas = 0;
+$totaisPorFuncaoReuniao = [
+    'Coordenadora' => 0,
+    'Colaboradora' => 0,
+    'Adm' => 0,
+    'Outros' => 0,
+    'Ministerio' => 0,
+];
 foreach ($todosOsCadastros as $c) {
     if (in_array(trim((string)($c['idade'] ?? '')), ['3', '03'], true)) {
         $totalCriancas3Anos++;
@@ -81,6 +88,13 @@ foreach ($todosOsCadastros as $c) {
     $sexo = strtoupper(trim($c['sexo'] ?? ''));
     if ($sexo === 'M') $totalMeninos++;
     elseif ($sexo === 'F') $totalMeninas++;
+
+    $funcao = trim((string)($c['nomeCrianca'] ?? ''));
+    if (array_key_exists($funcao, $totaisPorFuncaoReuniao)) {
+        $totaisPorFuncaoReuniao[$funcao]++;
+    } elseif (in_array($funcao, ['Ancião', 'Diácono', 'Cooperador do Ofício', 'Cooperador de Jovens'], true)) {
+        $totaisPorFuncaoReuniao['Ministerio']++;
+    }
 }
 
 // ── Contador "Comum destaque" ─────────────────────────────────────────────────

@@ -141,6 +141,7 @@
             margin-right: 0.35rem;
             vertical-align: -0.1em; 
         }
+        .total-funcao-info { font-size: 0.72rem; padding: 0.3rem 0.55rem; }
         
         .total-cadastros-alerta {
              background-color: #dc3545 !important; /* Vermelho de perigo do Bootstrap */
@@ -445,6 +446,14 @@
 
         <form method="post" action="<?php echo sanitize_for_html($_SERVER["PHP_SELF"]); ?>" class="mb-3 p-3 border rounded bg-light shadow-sm" id="formNovoCadastro">
             <?php echo csrf_field(); ?>
+            <input type="hidden" name="desktop" value="1">
+            <div class="form-row mb-2">
+                <div class="col-12">
+                    <label for="leitorQrEntrada" class="small font-weight-bold mb-1"><i class="fas fa-barcode mr-1"></i>Leitor QR</label>
+                    <input type="text" class="form-control form-control-sm" id="leitorQrEntrada" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Aguardando leitura pela pistola..." aria-describedby="leitorQrAjuda">
+                    <small id="leitorQrAjuda" class="form-text text-muted">Mantenha este campo selecionado e aponte a pistola para o QR Code.</small>
+                </div>
+            </div>
             <div class="form-row form-labels d-none d-md-flex">
                 <div class="col col-nome-crianca">Função</div>
                 <div class="col col-responsavel">Nome</div>
@@ -606,13 +615,18 @@
         <form method="post" action="<?php echo sanitize_for_html($_SERVER["PHP_SELF"]); ?>" id="formListaCriancas">
             <?php echo csrf_field(); ?>
             <div class="mt-3 d-flex justify-content-between align-items-center">
-                <div class="d-flex align-items-center">
+                <div class="d-flex flex-wrap align-items-center">
                     <div class="total-cadastros-info <?php if ($totalDeCadastrosGeral > 90) echo 'total-cadastros-alerta'; ?>" title="Total de crianças cadastradas"> 
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-people-fill" viewBox="0 0 16 16">
                             <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6m-5.784 6A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"/>
                         </svg>
                         Total: <?php echo $totalDeCadastrosGeral; ?>
                     </div>
+                    <div class="total-cadastros-info total-funcao-info" title="Total de coordenadoras">Coordenadora: <?php echo $totaisPorFuncaoReuniao['Coordenadora']; ?></div>
+                    <div class="total-cadastros-info total-funcao-info" title="Total de colaboradoras">Colaboradora: <?php echo $totaisPorFuncaoReuniao['Colaboradora']; ?></div>
+                    <div class="total-cadastros-info total-funcao-info" title="Total de administradores">Adm: <?php echo $totaisPorFuncaoReuniao['Adm']; ?></div>
+                    <div class="total-cadastros-info total-funcao-info" title="Total de outros">Outros: <?php echo $totaisPorFuncaoReuniao['Outros']; ?></div>
+                    <div class="total-cadastros-info total-funcao-info" title="Anciãos, diáconos e cooperadores">Ministério: <?php echo $totaisPorFuncaoReuniao['Ministerio']; ?></div>
                     <?php if (!empty($palavrasChaveComumDestaque)): ?>
                     <div class="total-cadastros-info" title="Total de cadastros da comum configurada (<?php echo sanitize_for_html($nomeComumDestaque); ?>)">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-house-heart-fill" viewBox="0 0 16 16">
@@ -1147,11 +1161,12 @@
         const NUM_CAMPOS_POR_LINHA_CADASTRO = 9;
 
         function focarPrimeiroCampoCadastro() {
-            $('#input_0_0').focus();
+            $('#leitorQrEntrada').focus();
         }
 
         var leituraQrCriptografado = { valor: '', ultimoEventoEm: 0 };
         var LIMITE_INTERVALO_QR_CRIPTO_MS = 250;
+        var cadastroQrEmAndamento = false;
 
         function resetarLeituraQrCriptografado() {
             leituraQrCriptografado.valor = '';
@@ -1191,7 +1206,10 @@
             return { capturada: false };
         }
 
-        async function preencherQrCriptografado(payload) {
+        async function preencherQrCriptografado(payload, cadastrarAutomaticamente) {
+            if (cadastroQrEmAndamento) return;
+            cadastroQrEmAndamento = true;
+            var envioIniciado = false;
             try {
                 const dados = await EbiQrCrypto.decrypt(payload);
                 const campos = dados.split('\t');
@@ -1208,12 +1226,26 @@
                         if (coluna === 3) campo.trigger('input');
                     }
                 }
+                if (cadastrarAutomaticamente) {
+                    if ($('#portaria_cadastro').val().trim().length !== 1) {
+                        $('#portaria_cadastro').focus();
+                        alert('Informe a Portaria antes de usar o leitor QR.');
+                        return;
+                    }
+                    $('#btnCadastrar').trigger('click');
+                    envioIniciado = true;
+                    return;
+                }
                 $('#portaria_cadastro').focus();
                 resetarLeituraQrCriptografado();
             } catch (error) {
                 $('#input_0_0').val('');
                 resetarLeituraQrCriptografado();
                 alert('Não foi possível ler o QR Code criptografado.');
+            } finally {
+                if (!envioIniciado) {
+                    cadastroQrEmAndamento = false;
+                }
             }
         }
 
@@ -1250,6 +1282,18 @@
         $(document).ready(function(){
             $('.telefone-mask').mask('(00) 00000-0000');
             $('.meeting-fixed-value').on('focus', function() { this.select(); });
+
+            $('#leitorQrEntrada').on('keydown', async function(e) {
+                const leituraCriptografada = capturarQrCriptografado(e);
+                if (!leituraCriptografada.capturada) {
+                    return;
+                }
+                e.preventDefault();
+                if (leituraCriptografada.payload) {
+                    $(this).val('');
+                    await preencherQrCriptografado(leituraCriptografada.payload, true);
+                }
+            });
 
             const portariaInputCadastro = $('#portaria_cadastro');
             const storedPortaria = localStorage.getItem('ultimaPortariaCadastro');
@@ -1309,6 +1353,10 @@
                 focarPrimeiroCampoCadastro();
             <?php elseif (!empty($mensagemErro)): ?>
             <?php endif; ?>
+
+            if (!<?php echo $focarPrimeiroCampoAposCadastro || $focarAposAcao ? 'true' : 'false'; ?>) {
+                focarPrimeiroCampoCadastro();
+            }
 
 
             // Leitores QR enviam uma sequência de teclas muito mais rápida que a digitação manual.

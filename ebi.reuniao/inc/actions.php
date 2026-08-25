@@ -122,10 +122,12 @@ if (isset($_POST['cadastrar'])) {
         $_SESSION['cadastros_ok_count'] = $cadastrosOk;
     }
 
-    // Redirect: se veio do mobile, voltar para ?acao=mobile
+    // Redirect: retornar à interface que originou o cadastro.
     $redirectUrl = sanitize_for_html($_SERVER['PHP_SELF']);
     if (!empty($_POST['mobile'])) {
         $redirectUrl .= '?acao=mobile';
+    } elseif (!empty($_POST['desktop'])) {
+        $redirectUrl .= '?acao=desktop';
     }
     header('Location: ' . $redirectUrl);
     return;
