@@ -1116,6 +1116,9 @@ if (!empty($_SESSION['contas_existentes'])) {
             <a href="../qrcode.reuniao/index.php" class="btn btn-sm meeting-link-btn" target="_blank" rel="noopener">
                 <i class="fas fa-qrcode mr-1"></i>QR Code Reunião
             </a>
+            <a href="../ebi.reuniao.presencial/index.php" class="btn btn-sm meeting-link-btn" target="_blank" rel="noopener">
+                <i class="fas fa-user-check mr-1"></i>Reunião Regional
+            </a>
         </div>
     </section>
 
