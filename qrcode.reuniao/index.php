@@ -402,17 +402,13 @@ $qrCodeCryptoKey = ebi_obter_chave_criptografia_qr(__DIR__ . '/../ebi.reuniao/co
     <script>
         let qrCodeCanvas;
 
-        function removeAccents(text) {
-            return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-        }
-
         async function generateQRCode() {
-            var nomePai = removeAccents(document.getElementById('nomePai').value);
-            var telefone = removeAccents(document.getElementById('telefone').value);
-            var cidade = removeAccents(document.getElementById('cidade').value);
+            var nomePai = document.getElementById('nomePai').value.trim();
+            var telefone = document.getElementById('telefone').value.trim();
+            var cidade = document.getElementById('cidade').value.trim();
             var estado = '';
-            var comum = removeAccents(document.getElementById('comum').value);
-            var funcao = removeAccents(document.getElementById('funcao').value);
+            var comum = document.getElementById('comum').value.trim();
+            var funcao = document.getElementById('funcao').value.trim();
             var idadeFixa = 3;
             var sexoFixo = 'X';
             var dataNascimentoFixa = '01/01/2023';
