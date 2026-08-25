@@ -66,6 +66,12 @@ $totalHoje = count($cadastrosHojeMobile);
         .scan-status { text-align: center; font-size: 0.78rem; color: var(--text-soft); padding: 6px; }
         .scan-status.ok { color: var(--success-border); font-weight: 700; }
         .scan-status.err { color: var(--danger); font-weight: 600; }
+        .camera-help { display: none; margin: 8px 0 2px; padding: 10px; border: 1px solid #fecaca; border-radius: 10px; background: #fff7ed; }
+        .camera-help.show { display: block; }
+        .camera-help button { width: 100%; min-height: 38px; border: 1px solid #d97706; border-radius: 8px; background: #fff; color: #9a3412; font: inherit; font-size: 0.78rem; font-weight: 700; cursor: pointer; }
+        .camera-help details { margin-top: 8px; color: var(--text-main); font-size: 0.74rem; line-height: 1.45; }
+        .camera-help summary { color: #9a3412; font-weight: 700; cursor: pointer; }
+        .camera-help ol { margin: 7px 0 0 18px; }
 
         .btn-scan {
             width: 100%; padding: 14px; border: none; border-radius: 12px;
@@ -151,8 +157,19 @@ $totalHoje = count($cadastrosHojeMobile);
 
         <h2><i class="fas fa-qrcode"></i> Scanner</h2>
         <div id="qr-reader"></div>
-        <div id="status" class="scan-status">Toque em Scan para abrir a câmera</div>
+        <div id="status" class="scan-status" aria-live="polite">Toque em Scan para abrir a câmera</div>
         <button type="button" class="btn-scan" id="btnScan" onclick="scan()"><i class="fas fa-camera mr-1"></i> Scan</button>
+        <div id="cameraHelp" class="camera-help">
+            <button type="button" onclick="scan()"><i class="fas fa-redo-alt mr-1"></i> Tentar abrir câmera</button>
+            <details>
+                <summary>Como liberar no Android</summary>
+                <ol>
+                    <li>Toque no ícone ao lado de <strong>ebi.ccbcampinas.org.br</strong> na barra de endereço.</li>
+                    <li>Abra <strong>Permissões</strong> e defina <strong>Câmera</strong> como <strong>Permitir</strong>.</li>
+                    <li>Volte para esta página e toque em <strong>Tentar abrir câmera</strong>.</li>
+                </ol>
+            </details>
+        </div>
 
         <div id="result" class="result-box"><div id="resultData"></div></div>
 
@@ -235,6 +252,7 @@ $totalHoje = count($cadastrosHojeMobile);
     const port = el('portaria'), btn = el('btnScan'), status = el('status');
     const result = el('result'), resultData = el('resultData');
     const btnCad = el('btnCad'), frmPort = el('frmPort'), frmFields = el('frmFields');
+    const cameraHelp = el('cameraHelp');
     const manualFuncao = el('manualFuncao'), manualNome = el('manualNome');
     const manualCidade = el('manualCidade'), manualComum = el('manualComum');
 
@@ -262,7 +280,7 @@ $totalHoje = count($cadastrosHojeMobile);
             return;
         }
         // Reset
-        btnCad.classList.remove('show'); result.classList.remove('show'); reading=false; data=[]; frmFields.innerHTML='';
+        cameraHelp.classList.remove('show'); btnCad.classList.remove('show'); result.classList.remove('show'); reading=false; data=[]; frmFields.innerHTML='';
         el('qr-reader').style.display='block';
         try {
             sc = new window.Html5Qrcode('qr-reader');
@@ -277,7 +295,8 @@ $totalHoje = count($cadastrosHojeMobile);
     function mostrarErroCamera(error) {
         const detalhe = String(error && (error.name || error.message) || error || '');
         if (/notallowed|permissiondenied/i.test(detalhe)) {
-            status.textContent='Permita o uso da câmera no navegador e tente novamente';
+            status.textContent='A câmera não foi permitida';
+            cameraHelp.classList.add('show');
         } else if (/notreadable|trackstart/i.test(detalhe)) {
             status.textContent='A câmera está em uso por outro aplicativo';
         } else if (/notfound|devicesnotfound/i.test(detalhe)) {
