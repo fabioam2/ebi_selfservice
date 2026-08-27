@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__ . '/../ebi/template/inc/qr_crypto_config.php';
+require_once __DIR__ . '/../selfservice/inc/qr_stats.php';
 $qrCodeCryptoKey = ebi_obter_chave_criptografia_qr(__DIR__ . '/../ebi/template/config.ini');
+$qrStatsCsrfToken = qr_stats_csrf_token();
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -515,7 +517,7 @@ $qrCodeCryptoKey = ebi_obter_chave_criptografia_qr(__DIR__ . '/../ebi/template/c
             </div>
 
             <div class="privacy-note">
-                <i class="fas fa-lock"></i> Privacidade: os dados inseridos para gerar o QR Code não são armazenados.
+                <i class="fas fa-lock"></i> Privacidade: dados pessoais não são armazenados. Apenas estatísticas agrupadas são contabilizadas.
             </div>
 
             <div class="text-center mt-4 mb-2" style="font-size:9px;color:#b0b0b0;opacity:0.6">v<?php echo defined('VERSAO_SISTEMA') ? VERSAO_SISTEMA : date('YmdHi'); ?></div>
@@ -526,6 +528,21 @@ $qrCodeCryptoKey = ebi_obter_chave_criptografia_qr(__DIR__ . '/../ebi/template/c
         let qrCodeCanvas;
         let childCount = 1;
         const maxChildren = 5;
+        const qrStatsCsrfToken = <?php echo json_encode($qrStatsCsrfToken); ?>;
+
+        function registrarEstatisticaQr(payload) {
+            if (!window.fetch || !qrStatsCsrfToken) return;
+
+            fetch('../selfservice/registrar_qr_stat.php', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-QR-Stats-CSRF': qrStatsCsrfToken
+                },
+                body: JSON.stringify(payload)
+            }).catch(function() {});
+        }
 
         function removeAccents(text) {
             return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
@@ -699,6 +716,7 @@ $qrCodeCryptoKey = ebi_obter_chave_criptografia_qr(__DIR__ . '/../ebi/template/c
             var cidade = removeAccents(document.getElementById('cidade').value);
             var estado = document.getElementById('estado').value;
             var comum = removeAccents(document.getElementById('comum').value);
+            var criancasParaEstatistica = [];
 
             var qrData = "";
             var isValid = true;
@@ -758,6 +776,7 @@ $qrCodeCryptoKey = ebi_obter_chave_criptografia_qr(__DIR__ . '/../ebi/template/c
                     // NomeFilho \t NomePai \t IdadeFilho \t TelefonePai \t ComumPai \t CidadePai \t EstadoPai \t Gênero \t DataNascimentoFilho
                     const sexoFilho = document.getElementById(`sexoFilho${i}`).value || 'M';
                     qrData += `${nomeFilho}\t${nomePai}\t${idade}\t${telefone}\t${comum}\t${cidade}\t${estado}\t${sexoFilho}\t${dataNascimentoMaskValue}`;
+                    criancasParaEstatistica.push({ idade: idade, sexo: sexoFilho });
 
                     if (i < childCount) {
                         qrData += '\t'; // Tab entre crianças (Enter só no final pelo scanner)
@@ -787,6 +806,12 @@ $qrCodeCryptoKey = ebi_obter_chave_criptografia_qr(__DIR__ . '/../ebi/template/c
                 qrCodeCanvas = document.querySelector('#qrcode canvas');
                 qrcodeContainer.style.display = 'block';
                 if (qrCodeCanvas) {
+                    registrarEstatisticaQr({
+                        source: 'infantil',
+                        comum: document.getElementById('comum').value.trim(),
+                        cidade: document.getElementById('cidade').value.trim(),
+                        criancas: criancasParaEstatistica
+                    });
                     document.getElementById('msgBtn').style.display = 'block';
                     displayiPhoneMessage();
                 } else {
