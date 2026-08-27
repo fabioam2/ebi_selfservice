@@ -73,6 +73,21 @@ function _central_db_init(PDO $pdo): void {
         CREATE INDEX IF NOT EXISTS idx_admin_stats_date ON admin_daily_stats(date);
         CREATE INDEX IF NOT EXISTS idx_admin_stats_user ON admin_daily_stats(user_id);
 
+        CREATE TABLE IF NOT EXISTS qr_daily_stats (
+            source          TEXT NOT NULL,
+            date            TEXT NOT NULL,
+            dimension       TEXT NOT NULL,
+            dimension_value TEXT NOT NULL,
+            total           INTEGER NOT NULL DEFAULT 0,
+            updated_at      TEXT,
+            PRIMARY KEY (source, date, dimension, dimension_value)
+        );
+
+        CREATE INDEX IF NOT EXISTS idx_qr_daily_stats_source_date
+            ON qr_daily_stats(source, date);
+        CREATE INDEX IF NOT EXISTS idx_qr_daily_stats_dimension
+            ON qr_daily_stats(source, dimension, date);
+
         CREATE TABLE IF NOT EXISTS instance_quarantine (
             user_id        TEXT PRIMARY KEY,
             reason         TEXT NOT NULL DEFAULT 'user_request',
@@ -264,6 +279,157 @@ function db_registrar_admin_stat(
     } catch (PDOException $e) {
         error_log('[EBI Stats] admin stat error: ' . $e->getMessage());
     }
+}
+
+// ── Estatísticas dos geradores públicos de QR ──────────────────────────────
+
+function db_qr_stats_normalizar_texto(mixed $value, string $fallback = 'Não informado'): string {
+    $text = trim((string)$value);
+    $text = preg_replace('/[\p{C}]/u', '', $text) ?? '';
+    $text = preg_replace('/\s+/u', ' ', $text) ?? '';
+
+    if ($text === '') {
+        return $fallback;
+    }
+
+    return function_exists('mb_substr') ? mb_substr($text, 0, 120) : substr($text, 0, 120);
+}
+
+/**
+ * Registra uma geração de QR somente como contagens agregadas.
+ * Nenhum nome, telefone ou conteúdo de QR é aceito ou armazenado.
+ */
+function db_registrar_qr_stat(string $source, array $event, ?string $overridePath = null, ?string $date = null): bool {
+    $allowedSources = ['infantil', 'reuniao'];
+    if (!in_array($source, $allowedSources, true)) {
+        return false;
+    }
+
+    $today = $date !== null && preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)
+        ? $date
+        : date('Y-m-d');
+    $increments = [
+        'qrcode\0total' => ['qrcode', 'total', 1],
+        'comum\0' . db_qr_stats_normalizar_texto($event['comum'] ?? '') => ['comum', db_qr_stats_normalizar_texto($event['comum'] ?? ''), 1],
+        'cidade\0' . db_qr_stats_normalizar_texto($event['cidade'] ?? '') => ['cidade', db_qr_stats_normalizar_texto($event['cidade'] ?? ''), 1],
+    ];
+
+    if ($source === 'reuniao') {
+        $allowedFunctions = [
+            'Coordenadora',
+            'Colaboradora',
+            'Ancião',
+            'Cooperador do Ofício',
+            'Cooperador de Jovens',
+            'Diácono',
+            'Adm',
+            'Outros',
+        ];
+        $function = (string)($event['funcao'] ?? '');
+        if (!in_array($function, $allowedFunctions, true)) {
+            return false;
+        }
+        $increments['funcao\0' . $function] = ['funcao', $function, 1];
+    } else {
+        $children = $event['criancas'] ?? null;
+        if (!is_array($children) || count($children) < 1 || count($children) > 5) {
+            return false;
+        }
+
+        $increments['crianca\0total'] = ['crianca', 'total', count($children)];
+        foreach ($children as $child) {
+            if (!is_array($child)) {
+                return false;
+            }
+
+            $age = filter_var($child['idade'] ?? null, FILTER_VALIDATE_INT);
+            $sex = $child['sexo'] ?? '';
+            if ($age === false || $age < 3 || $age > 11 || !in_array($sex, ['M', 'F'], true)) {
+                return false;
+            }
+
+            $ageKey = 'idade\0' . $age;
+            $sexKey = 'sexo\0' . $sex;
+            if (!isset($increments[$ageKey])) {
+                $increments[$ageKey] = ['idade', (string)$age, 0];
+            }
+            if (!isset($increments[$sexKey])) {
+                $increments[$sexKey] = ['sexo', $sex, 0];
+            }
+            $increments[$ageKey][2]++;
+            $increments[$sexKey][2]++;
+        }
+    }
+
+    try {
+        $pdo = central_db($overridePath);
+        $statement = $pdo->prepare(
+            'INSERT INTO qr_daily_stats (source, date, dimension, dimension_value, total, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?)
+             ON CONFLICT(source, date, dimension, dimension_value) DO UPDATE SET
+                total = total + excluded.total,
+                updated_at = excluded.updated_at'
+        );
+
+        $pdo->beginTransaction();
+        foreach ($increments as [$dimension, $value, $count]) {
+            $statement->execute([$source, $today, $dimension, $value, $count, date('Y-m-d H:i:s')]);
+        }
+        $pdo->commit();
+        return true;
+    } catch (Throwable $error) {
+        if (isset($pdo) && $pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+        error_log('[EBI QR Stats] registrar: ' . $error->getMessage());
+        return false;
+    }
+}
+
+function db_qr_stats_totais(string $source, string $desde): array {
+    $stmt = central_db()->prepare(
+        "SELECT
+            COALESCE(SUM(CASE WHEN dimension = 'qrcode' THEN total ELSE 0 END), 0) AS qrcodes,
+            COALESCE(SUM(CASE WHEN dimension = 'crianca' THEN total ELSE 0 END), 0) AS criancas
+         FROM qr_daily_stats
+         WHERE source = ? AND date >= ?"
+    );
+    $stmt->execute([$source, $desde]);
+    return $stmt->fetch() ?: ['qrcodes' => 0, 'criancas' => 0];
+}
+
+function db_qr_stats_por_dia(string $source, string $desde): array {
+    $stmt = central_db()->prepare(
+        "SELECT date,
+                COALESCE(SUM(CASE WHEN dimension = 'qrcode' THEN total ELSE 0 END), 0) AS qrcodes,
+                COALESCE(SUM(CASE WHEN dimension = 'crianca' THEN total ELSE 0 END), 0) AS criancas
+         FROM qr_daily_stats
+         WHERE source = ? AND date >= ?
+         GROUP BY date
+         ORDER BY date ASC"
+    );
+    $stmt->execute([$source, $desde]);
+    return $stmt->fetchAll();
+}
+
+function db_qr_stats_por_dimensao(string $source, string $desde, string $dimension): array {
+    $allowedDimensions = ['comum', 'cidade', 'funcao', 'sexo', 'idade'];
+    if (!in_array($dimension, $allowedDimensions, true)) {
+        return [];
+    }
+
+    $orderBy = $dimension === 'idade'
+        ? 'CAST(dimension_value AS INTEGER) ASC'
+        : 'total DESC, dimension_value ASC';
+    $stmt = central_db()->prepare(
+        "SELECT dimension_value, SUM(total) AS total, COUNT(DISTINCT date) AS dias_ativos
+         FROM qr_daily_stats
+         WHERE source = ? AND date >= ? AND dimension = ?
+         GROUP BY dimension_value
+         ORDER BY {$orderBy}"
+    );
+    $stmt->execute([$source, $desde, $dimension]);
+    return $stmt->fetchAll();
 }
 
 // ── Queries para o painel admin ──────────────────────────────────────────────

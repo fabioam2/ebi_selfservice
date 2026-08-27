@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__ . '/../ebi/template/inc/qr_crypto_config.php';
+require_once __DIR__ . '/../selfservice/inc/qr_stats.php';
 $qrCodeCryptoKey = ebi_obter_chave_criptografia_qr(__DIR__ . '/../ebi.reuniao/config.ini');
+$qrStatsCsrfToken = qr_stats_csrf_token();
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -392,7 +394,7 @@ $qrCodeCryptoKey = ebi_obter_chave_criptografia_qr(__DIR__ . '/../ebi.reuniao/co
             </div>
 
             <div class="privacy-note">
-                <i class="fas fa-lock"></i> Privacidade: os dados inseridos para gerar o QR Code não são armazenados.
+                <i class="fas fa-lock"></i> Privacidade: dados pessoais não são armazenados. Apenas estatísticas agrupadas são contabilizadas.
             </div>
 
             <div class="text-center mt-4 mb-2" style="font-size:9px;color:#b0b0b0;opacity:0.6">v<?php echo defined('VERSAO_SISTEMA') ? VERSAO_SISTEMA : date('YmdHi'); ?></div>
@@ -401,6 +403,21 @@ $qrCodeCryptoKey = ebi_obter_chave_criptografia_qr(__DIR__ . '/../ebi.reuniao/co
 
     <script>
         let qrCodeCanvas;
+        const qrStatsCsrfToken = <?php echo json_encode($qrStatsCsrfToken); ?>;
+
+        function registrarEstatisticaQr(payload) {
+            if (!window.fetch || !qrStatsCsrfToken) return;
+
+            fetch('../selfservice/registrar_qr_stat.php', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-QR-Stats-CSRF': qrStatsCsrfToken
+                },
+                body: JSON.stringify(payload)
+            }).catch(function() {});
+        }
 
         async function generateQRCode() {
             var nomePai = document.getElementById('nomePai').value.trim();
@@ -461,6 +478,12 @@ $qrCodeCryptoKey = ebi_obter_chave_criptografia_qr(__DIR__ . '/../ebi.reuniao/co
                 qrCodeCanvas = document.querySelector('#qrcode canvas');
                 qrcodeContainer.style.display = 'block';
                 if (qrCodeCanvas) {
+                    registrarEstatisticaQr({
+                        source: 'reuniao',
+                        comum: document.getElementById('comum').value.trim(),
+                        cidade: document.getElementById('cidade').value.trim(),
+                        funcao: document.getElementById('funcao').value
+                    });
                     document.getElementById('msgBtn').style.display = 'block';
                     displayiPhoneMessage();
                 } else {

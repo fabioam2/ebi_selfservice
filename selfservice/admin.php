@@ -1199,6 +1199,9 @@ function processarMarkdownSimples($texto) {
                     <a class="nav-link <?php echo $page === 'stats' ? 'active' : ''; ?>" href="?page=stats">
                         <i class="fas fa-chart-bar"></i> Estatísticas
                     </a>
+                    <a class="nav-link <?php echo $page === 'qr-stats' ? 'active' : ''; ?>" href="?page=qr-stats">
+                        <i class="fas fa-qrcode"></i> Estatísticas QR
+                    </a>
                     <a class="nav-link <?php echo $page === 'settings' ? 'active' : ''; ?>" href="?page=settings">
                         <i class="fas fa-cog"></i> Configurações
                     </a>
@@ -1254,6 +1257,9 @@ function processarMarkdownSimples($texto) {
                         break;
                     case 'stats':
                         include __DIR__ . '/inc/admin_stats.php';
+                        break;
+                    case 'qr-stats':
+                        include __DIR__ . '/inc/admin_qr_stats.php';
                         break;
                     case 'links':
                         include __DIR__ . '/inc/admin_links.php';
