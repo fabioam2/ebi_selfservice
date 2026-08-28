@@ -1129,10 +1129,29 @@
 
         var leituraQrCriptografado = { valor: '', ultimoEventoEm: 0 };
         var LIMITE_INTERVALO_QR_CRIPTO_MS = 250;
+        var temporizadorLeituraQrCriptografado = null;
 
         function resetarLeituraQrCriptografado() {
             leituraQrCriptografado.valor = '';
             leituraQrCriptografado.ultimoEventoEm = 0;
+            if (temporizadorLeituraQrCriptografado) {
+                clearTimeout(temporizadorLeituraQrCriptografado);
+                temporizadorLeituraQrCriptografado = null;
+            }
+        }
+
+        function agendarLeituraQrCriptografado(obterPayload) {
+            if (temporizadorLeituraQrCriptografado) {
+                clearTimeout(temporizadorLeituraQrCriptografado);
+            }
+
+            temporizadorLeituraQrCriptografado = setTimeout(async function() {
+                temporizadorLeituraQrCriptografado = null;
+                var payload = obterPayload().trim();
+                if (window.EbiQrCrypto && EbiQrCrypto.isEncrypted(payload)) {
+                    await preencherQrCriptografado(payload);
+                }
+            }, 350);
         }
 
         function capturarQrCriptografado(evento) {
@@ -1357,6 +1376,10 @@
                     e.preventDefault();
                     if (leituraCriptografada.payload) {
                         await preencherQrCriptografado(leituraCriptografada.payload);
+                    } else {
+                        agendarLeituraQrCriptografado(function() {
+                            return leituraQrCriptografado.valor;
+                        });
                     }
                     return;
                 }
@@ -1402,6 +1425,15 @@
                 }
 
                 agendarAutoCadastroPorPistola(300);
+            });
+
+            $('.cadastro-input').on('input', function() {
+                const target = this;
+                if (window.EbiQrCrypto && EbiQrCrypto.isEncrypted($(target).val().trim())) {
+                    agendarLeituraQrCriptografado(function() {
+                        return $(target).val();
+                    });
+                }
             });
 
             $('#portaria_cadastro').on('keydown', function(e) {
