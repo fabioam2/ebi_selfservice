@@ -1130,6 +1130,11 @@
         const NUM_CAMPOS_POR_LINHA_CADASTRO = 9;
 
         function focarPrimeiroCampoCadastro() {
+            const leitorQr = $('#leitor_qr_criptografado');
+            if (leitorQr.length) {
+                leitorQr.focus();
+                return;
+            }
             $('#input_0_0').focus();
         }
 
