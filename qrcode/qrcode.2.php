@@ -795,12 +795,15 @@ $qrStatsCsrfToken = qr_stats_csrf_token();
                     alert('Não foi possível criptografar o QR Code.');
                     return;
                 }
+                const usarQrAmpliado = childCount >= 3;
+                const tamanhoQr = usarQrAmpliado ? 400 : 220;
+                const correcaoQr = usarQrAmpliado ? QRCode.CorrectLevel.M : QRCode.CorrectLevel.H;
                 document.getElementById('qrcode').innerHTML = '';
                 var qrcode = new QRCode(document.getElementById("qrcode"), {
                     text: qrData,
-                    width: 220,
-                    height: 220,
-                    correctLevel: QRCode.CorrectLevel.H
+                    width: tamanhoQr,
+                    height: tamanhoQr,
+                    correctLevel: correcaoQr
                 });
 
                 qrCodeCanvas = document.querySelector('#qrcode canvas');
