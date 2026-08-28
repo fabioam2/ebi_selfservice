@@ -91,6 +91,12 @@ function criarInstanciaUsuario(string $user_id, string $nome, string $email, str
         // Diretórios base (agora usando caminhos dinâmicos)
         $instancesDir = INSTANCE_BASE_PATH . '/';
         $templateDir = TEMPLATE_PATH . '/';
+        $templateConfig = @parse_ini_file($templateDir . 'config.ini', true, INI_SCANNER_TYPED);
+        $qrCodeCryptoKey = trim((string)($templateConfig['SEGURANCA']['QR_CODE_CRYPTO_KEY'] ?? ''));
+        if ($qrCodeCryptoKey === '') {
+            throw new Exception('Chave de criptografia QR não configurada no template.');
+        }
+        $qrCodeCryptoKey = sanitize_ini_value($qrCodeCryptoKey);
         
         // Criar diretório da instância do usuário
         // Estrutura simplificada (URL enxuta):
@@ -152,7 +158,7 @@ SENHA_ADMIN_HASH = \"$senha_hash\"
 SENHA_PAINEL_HASH = \"$senha_hash\"
 SENHA_ADMIN_REAL = \"\"
 SENHA_PAINEL = \"\"
-QR_CODE_CRYPTO_KEY = \"Bonfim123\"
+QR_CODE_CRYPTO_KEY = \"$qrCodeCryptoKey\"
 TEMPO_SESSAO = 1800
 MAX_TENTATIVAS_LOGIN = 5
 TEMPO_BLOQUEIO = 300

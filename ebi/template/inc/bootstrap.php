@@ -83,7 +83,12 @@ define('SENHA_ADMIN_HASH',  (string)($config['SEGURANCA']['SENHA_ADMIN_HASH']  ?
 define('SENHA_ADMIN_REAL',  (string)($config['SEGURANCA']['SENHA_ADMIN_REAL']  ?? '')); // legado
 define('SENHA_LOGIN',        SENHA_ADMIN_REAL);
 define('CAMINHO_CONFIG_INI', $config_file);
-define('QR_CODE_CRYPTO_KEY', trim((string)($config['SEGURANCA']['QR_CODE_CRYPTO_KEY'] ?? '')));
+$qrCodeCryptoKey = trim((string)($config['SEGURANCA']['QR_CODE_CRYPTO_KEY'] ?? ''));
+if ($qrCodeCryptoKey === '' && defined('INSTANCE_DIR')) {
+    $templateConfig = @parse_ini_file(__DIR__ . '/../config.ini', true, INI_SCANNER_TYPED);
+    $qrCodeCryptoKey = trim((string)($templateConfig['SEGURANCA']['QR_CODE_CRYPTO_KEY'] ?? ''));
+}
+define('QR_CODE_CRYPTO_KEY', $qrCodeCryptoKey);
 define('QR_CODE_CRYPTO_ENABLED', QR_CODE_CRYPTO_KEY !== '');
 
 // ── Constantes da impressora ZPL ──────────────────────────────────────────────

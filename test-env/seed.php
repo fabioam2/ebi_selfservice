@@ -17,6 +17,11 @@ if (PHP_SAPI !== 'cli') {
 $root = dirname(__DIR__);
 $template = $root . '/ebi/template';
 $instDir = __DIR__ . '/instance';
+$templateConfig = @parse_ini_file($template . '/config.ini', true, INI_SCANNER_TYPED);
+$qrCodeCryptoKey = trim((string)($templateConfig['SEGURANCA']['QR_CODE_CRYPTO_KEY'] ?? ''));
+if ($qrCodeCryptoKey === '') {
+    exit("Chave de criptografia QR não configurada no template.\n");
+}
 
 echo "🔧 Semeando ambiente de teste em $instDir\n";
 
@@ -69,6 +74,7 @@ SENHA_ADMIN_HASH = "$hash"
 SENHA_PAINEL_HASH = "$hash"
 SENHA_ADMIN_REAL = ""
 SENHA_PAINEL = ""
+QR_CODE_CRYPTO_KEY = "$qrCodeCryptoKey"
 TEMPO_SESSAO = 1800
 MAX_TENTATIVAS_LOGIN = 5
 TEMPO_BLOQUEIO = 300
