@@ -420,6 +420,12 @@
 
         <form method="post" action="<?php echo sanitize_for_html($_SERVER["PHP_SELF"]); ?>" class="mb-3 p-3 border rounded bg-light shadow-sm" id="formNovoCadastro">
             <?php echo csrf_field(); ?>
+            <?php if (QR_CODE_CRYPTO_ENABLED): ?>
+            <div class="form-group mb-3">
+                <label for="leitor_qr_criptografado" class="font-weight-bold mb-1">Leitura de QR Code</label>
+                <input type="text" class="form-control" id="leitor_qr_criptografado" autocomplete="off" placeholder="Código QR criptografado" autofocus>
+            </div>
+            <?php endif; ?>
             <div class="form-row form-labels d-none d-md-flex">
                 <div class="col col-nome-crianca">Nome Criança</div>
                 <div class="col col-responsavel">Responsável</div>
@@ -1140,16 +1146,27 @@
             }
         }
 
-        function agendarLeituraQrCriptografado(obterPayload) {
+        function obterPayloadQrCriptografado(valor, aceitarPrefixoSemE) {
+            var payload = String(valor || '').trim();
+            if (window.EbiQrCrypto && EbiQrCrypto.isEncrypted(payload)) {
+                return payload;
+            }
+            if (aceitarPrefixoSemE && payload.indexOf('BIQR1.') === 0) {
+                return 'E' + payload;
+            }
+            return '';
+        }
+
+        function agendarLeituraQrCriptografado(obterPayload, campoOrigem, aceitarPrefixoSemE) {
             if (temporizadorLeituraQrCriptografado) {
                 clearTimeout(temporizadorLeituraQrCriptografado);
             }
 
             temporizadorLeituraQrCriptografado = setTimeout(async function() {
                 temporizadorLeituraQrCriptografado = null;
-                var payload = obterPayload().trim();
-                if (window.EbiQrCrypto && EbiQrCrypto.isEncrypted(payload)) {
-                    await preencherQrCriptografado(payload);
+                var payload = obterPayloadQrCriptografado(obterPayload(), aceitarPrefixoSemE);
+                if (payload) {
+                    await preencherQrCriptografado(payload, campoOrigem);
                 }
             }, 350);
         }
@@ -1187,7 +1204,7 @@
             return { capturada: false };
         }
 
-        async function preencherQrCriptografado(payload) {
+        async function preencherQrCriptografado(payload, campoOrigem) {
             try {
                 const dados = await EbiQrCrypto.decrypt(payload);
                 const campos = dados.split('\t');
@@ -1204,10 +1221,17 @@
                         if (coluna === 3) campo.trigger('input');
                     }
                 }
+                if (campoOrigem) {
+                    $(campoOrigem).val('');
+                }
                 $('#portaria_cadastro').focus();
                 resetarLeituraQrCriptografado();
             } catch (error) {
-                $('#input_0_0').val('');
+                if (campoOrigem) {
+                    $(campoOrigem).val('').focus();
+                } else {
+                    $('#input_0_0').val('');
+                }
                 resetarLeituraQrCriptografado();
                 alert('Não foi possível ler o QR Code criptografado.');
             }
@@ -1433,6 +1457,33 @@
                     agendarLeituraQrCriptografado(function() {
                         return $(target).val();
                     });
+                }
+            });
+
+            $('#leitor_qr_criptografado').on('focus', function() {
+                $(this).val('');
+                resetarLeituraQrCriptografado();
+            }).on('input', function() {
+                const target = this;
+                if (obterPayloadQrCriptografado($(target).val(), true)) {
+                    agendarLeituraQrCriptografado(function() {
+                        return $(target).val();
+                    }, target, true);
+                }
+            }).on('keydown', async function(e) {
+                if (e.key !== 'Enter' && e.key !== 'Tab') {
+                    return;
+                }
+
+                const target = this;
+                const payload = obterPayloadQrCriptografado($(target).val(), true);
+                if (payload) {
+                    e.preventDefault();
+                    if (temporizadorLeituraQrCriptografado) {
+                        clearTimeout(temporizadorLeituraQrCriptografado);
+                        temporizadorLeituraQrCriptografado = null;
+                    }
+                    await preencherQrCriptografado(payload, target);
                 }
             });
 
