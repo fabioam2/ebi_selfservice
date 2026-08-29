@@ -160,6 +160,22 @@ $qrStatsCsrfToken = qr_stats_csrf_token();
             line-height: 1.6;
         }
 
+        .compact-mode {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            margin: 0 0 18px;
+            padding: 11px 13px;
+            border: 1px solid rgba(14, 116, 144, 0.24);
+            border-radius: 9px;
+            background: #f2fbff;
+            color: var(--text-main);
+            cursor: pointer;
+            font-size: 0.86rem;
+            font-weight: 700;
+        }
+        .compact-mode input { width: 18px; height: 18px; accent-color: var(--brand); }
+
         .section-title {
             font-weight: 800;
             color: var(--text-main);
@@ -385,6 +401,11 @@ $qrStatsCsrfToken = qr_stats_csrf_token();
                     <li><strong>Novidade (v2):</strong> este QR Code inclui a data de nascimento de cada criança, permitindo identificar aniversários e calcular a idade exata.</li>
                 </ul>
             </details>
+
+            <label class="compact-mode" for="usarQrCompacto">
+                <input type="checkbox" id="usarQrCompacto">
+                Usar formato compacto (teste)
+            </label>
 
             <form id="qrForm">
                 <div class="section-title"><i class="fas fa-user"></i>Dados do Responsável</div>
@@ -714,6 +735,7 @@ $qrStatsCsrfToken = qr_stats_csrf_token();
             var criancasParaEstatistica = [];
 
             var qrData = "";
+            var camposCompactos = ['EBIC1', nomePai, telefone, comum, cidade, estado];
             var isValid = true;
 
             // Limpa mensagens de erro do Responsável
@@ -771,6 +793,12 @@ $qrStatsCsrfToken = qr_stats_csrf_token();
                     // NomeFilho \t NomePai \t IdadeFilho \t TelefonePai \t ComumPai \t CidadePai \t EstadoPai \t Gênero \t DataNascimentoFilho
                     const sexoFilho = document.getElementById(`sexoFilho${i}`).value || 'M';
                     qrData += `${nomeFilho}\t${nomePai}\t${idade}\t${telefone}\t${comum}\t${cidade}\t${estado}\t${sexoFilho}\t${dataNascimentoMaskValue}`;
+                    camposCompactos.push(
+                        nomeFilho,
+                        String(idade),
+                        sexoFilho,
+                        dataNascimentoMaskValue.replace(/\D/g, '')
+                    );
                     criancasParaEstatistica.push({ idade: idade, sexo: sexoFilho });
 
                     if (i < childCount) {
@@ -780,6 +808,10 @@ $qrStatsCsrfToken = qr_stats_csrf_token();
             }
 
             applyPhoneMask();
+
+            if (isValid && document.getElementById('usarQrCompacto').checked) {
+                qrData = camposCompactos.join('\t');
+            }
 
             const qrcodeContainer = document.getElementById('qrcode-container');
 

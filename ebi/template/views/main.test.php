@@ -1153,7 +1153,10 @@
         async function preencherQrCriptografado(payload) {
             try {
                 const dados = await EbiQrCrypto.decrypt(payload);
-                const campos = dados.split('\t');
+                const dadosNormalizados = window.EbiQrCompactTest
+                    ? window.EbiQrCompactTest.expandPayload(dados)
+                    : dados;
+                const campos = dadosNormalizados.split('\t');
                 if (campos.length === 0 || campos.length % NUM_CAMPOS_POR_LINHA_CADASTRO !== 0) {
                     throw new Error('Formato de QR inválido.');
                 }
