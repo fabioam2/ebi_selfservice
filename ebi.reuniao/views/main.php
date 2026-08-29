@@ -1166,6 +1166,7 @@
         var leituraQrCriptografado = { valor: '', ultimoEventoEm: 0 };
         var LIMITE_INTERVALO_QR_CRIPTO_MS = 250;
         var cadastroQrEmAndamento = false;
+        var leitorQrInputTimer = null;
 
         function resetarLeituraQrCriptografado() {
             leituraQrCriptografado.valor = '';
@@ -1224,6 +1225,35 @@
 
             resetarLeituraQrCriptografado();
             return { capturada: false };
+        }
+
+        function obterPayloadQrCompleto(valor) {
+            var payload = String(valor || '').trim();
+            if (!window.EbiQrCrypto || !EbiQrCrypto.isEncrypted(payload)) {
+                return '';
+            }
+
+            var partes = payload.split('.');
+            if (partes.length !== 4 || partes.some(function(parte) { return !/^[A-Za-z0-9_-]+$/.test(parte); })) {
+                return '';
+            }
+
+            return payload;
+        }
+
+        async function processarQrDoCampoLeitor(campo) {
+            var payload = obterPayloadQrCompleto(campo.val());
+            if (payload === '') {
+                return false;
+            }
+
+            if (leitorQrInputTimer) {
+                clearTimeout(leitorQrInputTimer);
+                leitorQrInputTimer = null;
+            }
+            campo.val('');
+            await preencherQrCriptografado(payload, true);
+            return true;
         }
 
         async function preencherQrCriptografado(payload, cadastrarAutomaticamente) {
@@ -1306,6 +1336,9 @@
             $('#leitorQrEntrada').on('keydown', async function(e) {
                 const leituraCriptografada = capturarQrCriptografado(e);
                 if (!leituraCriptografada.capturada) {
+                    if ((e.key === 'Enter' || e.key === 'Tab') && await processarQrDoCampoLeitor($(this))) {
+                        e.preventDefault();
+                    }
                     return;
                 }
                 e.preventDefault();
@@ -1313,6 +1346,20 @@
                     $(this).val('');
                     await preencherQrCriptografado(leituraCriptografada.payload, true);
                 }
+            }).on('input', function() {
+                var campo = $(this);
+                if (leitorQrInputTimer) {
+                    clearTimeout(leitorQrInputTimer);
+                    leitorQrInputTimer = null;
+                }
+
+                if (obterPayloadQrCompleto(campo.val()) === '') {
+                    return;
+                }
+
+                leitorQrInputTimer = setTimeout(function() {
+                    processarQrDoCampoLeitor(campo);
+                }, 120);
             });
 
             const portariaInputCadastro = $('#portaria_cadastro');
