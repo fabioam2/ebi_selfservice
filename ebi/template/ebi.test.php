@@ -11,6 +11,22 @@ require __DIR__ . '/inc/bootstrap.php';
 require __DIR__ . '/inc/auth.php';
 require __DIR__ . '/inc/funcoes.php';
 
+function renderizarViewTesteComLeitorCompacto(string $view): void {
+    extract($GLOBALS, EXTR_SKIP);
+    ob_start();
+    require $view;
+    $html = ob_get_clean();
+
+    $script = "    <script src=\"assets/compact-qr-reader.test.js\"></script>\n";
+    $bodyEnd = strrpos($html, '</body>');
+    if ($bodyEnd === false) {
+        echo $html;
+        return;
+    }
+
+    echo substr($html, 0, $bodyEnd) . $script . substr($html, $bodyEnd);
+}
+
 // ── Preview de backup (GET) ───────────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'GET'
     && isset($_GET['acao']) && $_GET['acao'] === 'preview_backup'
@@ -133,7 +149,7 @@ if (($_GET['acao'] ?? '') === 'stats') {
 
 // ── View mobile (smartphone) ──────────────────────────────────────────────────
 if (($_GET['acao'] ?? '') === 'mobile') {
-    require __DIR__ . '/views/mobile.php';
+    renderizarViewTesteComLeitorCompacto(__DIR__ . '/views/mobile.php');
     exit;
 }
 
@@ -167,4 +183,4 @@ function verificarAniversario(string $dataNascimento): string {
     return '';
 }
 
-require __DIR__ . '/views/main.test.php';
+renderizarViewTesteComLeitorCompacto(__DIR__ . '/views/main.test.php');
