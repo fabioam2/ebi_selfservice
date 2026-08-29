@@ -48,9 +48,32 @@
         return records.join('\t');
     }
 
-    window.EbiQrCompactTest = Object.freeze({
+    window.EbiQrCompactDev = Object.freeze({
         expandPayload: expandPayload
     });
+
+    var originalDesktopReader = window.preencherQrCriptografado;
+    if (typeof originalDesktopReader === 'function' && !originalDesktopReader.__ebiCompactPayloadAdapter) {
+        var adaptedDesktopReader = async function (payload, sourceField) {
+            if (typeof payload === 'string'
+                && window.EbiQrCrypto
+                && window.EbiQrCrypto.isEncrypted(payload)) {
+                try {
+                    var decryptedPayload = await window.EbiQrCrypto.decrypt(payload);
+                    var normalizedPayload = expandPayload(decryptedPayload);
+                    if (normalizedPayload !== decryptedPayload) {
+                        payload = await window.EbiQrCrypto.encrypt(normalizedPayload);
+                    }
+                } catch (error) {
+                    // The current EBI reader handles invalid encrypted payloads.
+                }
+            }
+
+            return originalDesktopReader.call(this, payload, sourceField);
+        };
+        adaptedDesktopReader.__ebiCompactPayloadAdapter = true;
+        window.preencherQrCriptografado = adaptedDesktopReader;
+    }
 
     var scannerPrototype = window.Html5Qrcode && window.Html5Qrcode.prototype;
     if (!scannerPrototype || scannerPrototype.__ebiCompactPayloadAdapter) {

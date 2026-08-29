@@ -9,7 +9,7 @@ $qrStatsCsrfToken = qr_stats_csrf_token();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-    <title>Gerador de QR Code v2 – Espaço Bíblico Infantil</title>
+    <title>QR Code DEV – Espaço Bíblico Infantil</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
@@ -387,8 +387,8 @@ $qrStatsCsrfToken = qr_stats_csrf_token();
         <div class="qr-container">
             <div class="qr-header">
                 <i class="fas fa-qrcode icon-header"></i>
-                <h1>Gerador de QR Code <span class="badge badge-warning" style="font-size:.55em;vertical-align:middle">v2</span></h1>
-                <p>Espaço Bíblico Infantil — inclui data de nascimento</p>
+                <h1>Gerador de QR Code <span class="badge badge-warning" style="font-size:.55em;vertical-align:middle">DEV</span></h1>
+                <p>Espaço Bíblico Infantil — ambiente de desenvolvimento</p>
             </div>
 
             <details class="instructions-collapse">
@@ -398,13 +398,13 @@ $qrStatsCsrfToken = qr_stats_csrf_token();
                     <li>Cada família deve gerar apenas um QR Code por responsável.</li>
                     <li>Guarde o QR Code gerado. Caso o perca, poderá gerar um novo facilmente.</li>
                     <li>O responsável precisa ser maior de idade.</li>
-                    <li><strong>Novidade (v2):</strong> este QR Code inclui a data de nascimento de cada criança, permitindo identificar aniversários e calcular a idade exata.</li>
+                    <li><strong>Formato compacto:</strong> reduz a repetição de dados familiares para testes de leitura.</li>
                 </ul>
             </details>
 
             <label class="compact-mode" for="usarQrCompacto">
                 <input type="checkbox" id="usarQrCompacto">
-                Usar formato compacto (teste)
+                Usar formato compacto
             </label>
 
             <form id="qrForm">
