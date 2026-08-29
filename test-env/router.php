@@ -56,6 +56,12 @@ if ($real !== false && is_file($real)) {
     return false;
 }
 
+// Emula o DirectoryIndex do servidor web para URLs de diretório.
+if ($real !== false && is_dir($real) && is_file($real . '/index.php')) {
+    require $real . '/index.php';
+    return true;
+}
+
 // Raiz — mostra menu de teste
 if ($uri === '/' || $uri === '') {
     header('Content-Type: text/html; charset=utf-8');
