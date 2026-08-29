@@ -375,11 +375,6 @@ $qrStatsCsrfToken = qr_stats_csrf_token();
                 <p>Espaço Bíblico Infantil — inclui data de nascimento</p>
             </div>
 
-            <div class="important-box">
-                <i class="fas fa-exclamation-triangle"></i>
-                <strong>O QR Code NÃO garante vaga no EBI</strong>, sendo necessário retirar a senha ao chegar na igreja.
-            </div>
-
             <details class="instructions-collapse">
                 <summary><i class="fas fa-info-circle"></i> Como funciona <i class="fas fa-chevron-down chev"></i></summary>
                 <ul>
