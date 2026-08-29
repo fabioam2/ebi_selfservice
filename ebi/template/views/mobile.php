@@ -91,6 +91,29 @@ $totalHoje = count($cadastrosHojeMobile);
             50% { box-shadow: 0 0 0 10px rgba(22,163,74,0); }
         }
 
+        .manual-toggle {
+            width: 100%; border: 0; background: transparent; color: var(--brand-strong);
+            padding: 2px 0; display: flex; align-items: center; justify-content: space-between;
+            font: inherit; font-size: 0.85rem; font-weight: 800; cursor: pointer;
+        }
+        .manual-toggle i:last-child { transition: transform 0.2s ease; }
+        .manual-toggle[aria-expanded="true"] i:last-child { transform: rotate(180deg); }
+        .manual-form { display: none; margin-top: 14px; padding-top: 14px; border-top: 1px solid #dce6ed; }
+        .manual-form.show { display: block; }
+        .manual-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .manual-field { min-width: 0; }
+        .manual-field.full { grid-column: 1 / -1; }
+        .manual-field label { display: block; margin-bottom: 4px; color: var(--text-main); font-size: 0.72rem; font-weight: 700; }
+        .manual-field input, .manual-field select {
+            width: 100%; min-height: 39px; border: 1px solid #b7c8d6; border-radius: 8px;
+            padding: 8px; background: #fff; color: var(--text-main); font: inherit; font-size: 0.8rem;
+        }
+        .manual-field input:focus, .manual-field select:focus { outline: 2px solid rgba(14,116,144,0.28); border-color: var(--brand); }
+        .manual-submit {
+            width: 100%; margin-top: 14px; min-height: 45px; border: 0; border-radius: 10px;
+            background: var(--brand); color: #fff; font: inherit; font-size: 0.9rem; font-weight: 800; cursor: pointer;
+        }
+
         .lista-card { max-height: 260px; overflow-y: auto; }
         .lista-item { display: flex; align-items: center; padding: 7px 0; border-bottom: 1px solid #eee; font-size: 0.78rem; }
         .lista-item:last-child { border-bottom: none; }
@@ -223,6 +246,68 @@ $totalHoje = count($cadastrosHojeMobile);
         </button>
     </div>
 
+    <div class="card">
+        <button type="button" class="manual-toggle" id="btnManual" aria-expanded="false" aria-controls="cadastroManual">
+            <span><i class="fas fa-keyboard"></i> Cadastro manual</span>
+            <i class="fas fa-chevron-down" aria-hidden="true"></i>
+        </button>
+        <form method="post" action="<?php echo sanitize_for_html($_SERVER['PHP_SELF']); ?>?acao=mobile" id="cadastroManual" class="manual-form">
+            <?php echo csrf_field(); ?>
+            <input type="hidden" name="cadastrar" value="1">
+            <input type="hidden" name="mobile" value="1">
+            <input type="hidden" name="portaria_cadastro" id="manualPortaria" value="">
+            <div class="manual-grid">
+                <div class="manual-field full">
+                    <label for="manualNomeCrianca">Nome da criança</label>
+                    <input type="text" id="manualNomeCrianca" name="nome_crianca[]" autocomplete="name" required>
+                </div>
+                <div class="manual-field full">
+                    <label for="manualNomeResponsavel">Nome do responsável</label>
+                    <input type="text" id="manualNomeResponsavel" name="nome_responsavel[]" autocomplete="name" required>
+                </div>
+                <div class="manual-field">
+                    <label for="manualIdade">Idade</label>
+                    <input type="number" id="manualIdade" name="idade[]" min="0" max="17" inputmode="numeric" required>
+                </div>
+                <div class="manual-field">
+                    <label for="manualTelefone">Telefone</label>
+                    <input type="tel" id="manualTelefone" name="telefone[]" autocomplete="tel" required>
+                </div>
+                <div class="manual-field full">
+                    <label for="manualComum">Comum</label>
+                    <input type="text" id="manualComum" name="comum[]" required>
+                </div>
+                <div class="manual-field">
+                    <label for="manualCidade">Cidade</label>
+                    <input type="text" id="manualCidade" name="cidade[]" autocomplete="address-level2">
+                </div>
+                <div class="manual-field">
+                    <label for="manualEstado">UF</label>
+                    <select id="manualEstado" name="estado[]" autocomplete="address-level1">
+                        <option value="">UF</option>
+                        <?php foreach (['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'] as $uf): ?>
+                            <option value="<?php echo $uf; ?>"><?php echo $uf; ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="manual-field">
+                    <label for="manualSexo">Sexo</label>
+                    <select id="manualSexo" name="sexo[]">
+                        <option value="">Não informado</option>
+                        <option value="M">Masculino</option>
+                        <option value="F">Feminino</option>
+                        <option value="X">Outro</option>
+                    </select>
+                </div>
+                <div class="manual-field">
+                    <label for="manualNascimento">Nascimento</label>
+                    <input type="text" id="manualNascimento" name="data_nascimento[]" inputmode="numeric" placeholder="dd/mm/aaaa" maxlength="10">
+                </div>
+            </div>
+            <button type="submit" class="manual-submit"><i class="fas fa-check-circle"></i> Cadastrar criança</button>
+        </form>
+    </div>
+
     <!-- Lista dos cadastros de hoje -->
     <div class="card" id="listaHojeCard">
         <h2><i class="fas fa-list"></i> Cadastros de Hoje (<?php echo $totalHoje; ?>)</h2>
@@ -276,11 +361,29 @@ $totalHoje = count($cadastrosHojeMobile);
     const port = el('portaria'), btn = el('btnScan'), status = el('status');
     const result = el('result'), resultData = el('resultData');
     const btnCad = el('btnCad'), frmPort = el('frmPort'), frmFields = el('frmFields');
+    const btnManual = el('btnManual'), cadastroManual = el('cadastroManual'), manualPortaria = el('manualPortaria');
 
     // Persistir portaria
     const sv = localStorage.getItem('ebi_mobile_portaria');
     if (sv) port.value = sv;
     port.addEventListener('input', function(){ this.value=this.value.toUpperCase(); if(this.value) localStorage.setItem('ebi_mobile_portaria',this.value); });
+
+    btnManual.addEventListener('click', function() {
+        const aberto = cadastroManual.classList.toggle('show');
+        btnManual.setAttribute('aria-expanded', aberto ? 'true' : 'false');
+        if (aberto) el('manualNomeCrianca').focus();
+    });
+
+    cadastroManual.addEventListener('submit', function(event) {
+        const portaria = port.value.trim().toUpperCase();
+        if (!/^[A-Z]$/.test(portaria)) {
+            event.preventDefault();
+            port.focus();
+            toast('Defina a Portaria','err');
+            return;
+        }
+        manualPortaria.value = portaria;
+    });
 
     window.toast = function(msg, type) {
         const t = el('toast'); t.textContent=msg; t.className='toast '+type; t.style.display='block';
