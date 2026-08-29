@@ -102,6 +102,7 @@ function ss_enviar_acessos_existentes(string $email): array {
 
 $mensagem = '';
 $tipo_mensagem = '';
+$mostrar_modal_recuperacao_email = false;
 
 // ============================================================================
 // PROCESSAR AÇÃO DE RECUPERAR CONTAS POR EMAIL
@@ -129,6 +130,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && (isset($_POST['recuperar_conta_email
                 if (!empty($envio['sucesso'])) {
                     $tipo_mensagem = 'success';
                     $mensagem = 'Enviamos os links das contas para o e-mail informado.';
+                    $mostrar_modal_recuperacao_email = true;
                 } else {
                     $tipo_mensagem = 'danger';
                     $mensagem = 'Não foi possível enviar o e-mail de recuperação: ' . htmlspecialchars((string)($envio['erro'] ?? 'erro desconhecido'));
@@ -998,7 +1000,7 @@ if (!empty($_SESSION['contas_existentes'])) {
                 </div>
             </div>
             
-            <?php if ($mensagem): ?>
+            <?php if ($mensagem && !$mostrar_modal_recuperacao_email): ?>
                 <div class="alert alert-<?php echo $tipo_mensagem; ?> alert-dismissible fade show" role="alert">
                     <?php echo $mensagem; ?>
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -1088,6 +1090,25 @@ if (!empty($_SESSION['contas_existentes'])) {
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-copy" onclick="copiarLink()"><i class="fas fa-copy mr-1"></i> Copiar Link</button>
+                    <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Fechar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+
+    <?php if ($mostrar_modal_recuperacao_email): ?>
+    <div class="modal fade" id="modalRecuperacaoEmailEnviado" tabindex="-1" role="dialog" aria-labelledby="tituloRecuperacaoEmailEnviado" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tituloRecuperacaoEmailEnviado"><i class="fas fa-check-circle mr-2"></i>E-mail enviado</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Fechar"><span aria-hidden="true">&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    Enviamos os links das suas contas para o e-mail informado.
+                </div>
+                <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Fechar</button>
                 </div>
             </div>
@@ -1244,6 +1265,12 @@ if (!empty($_SESSION['contas_existentes'])) {
                 instruction.text('No computador, use Command+D. No celular, abra o menu do navegador e escolha adicionar aos favoritos.');
             }
             $('#modalSalvarFavorito').modal('show');
+        });
+        <?php endif; ?>
+
+        <?php if ($mostrar_modal_recuperacao_email): ?>
+        $(function() {
+            $('#modalRecuperacaoEmailEnviado').modal('show');
         });
         <?php endif; ?>
     </script>
