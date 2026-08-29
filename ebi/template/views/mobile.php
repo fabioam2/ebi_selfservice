@@ -354,6 +354,7 @@ $totalHoje = count($cadastrosHojeMobile);
 <script src="<?php echo sanitize_for_html(ebi_qr_crypto_script_url()); ?>"></script>
 <script>EbiQrCrypto.configure(<?php echo json_encode(QR_CODE_CRYPTO_KEY); ?>);</script>
 <?php endif; ?>
+<script><?php readfile(__DIR__ . '/../assets/compact-qr-reader.js'); ?></script>
 <script>
 (function(){
     let sc = null, scanning = false, reading = false, data = [];
@@ -415,6 +416,9 @@ $totalHoje = count($cadastrosHojeMobile);
             }
             try {
                 text = await EbiQrCrypto.decrypt(text);
+                if (window.EbiQrCompact) {
+                    text = window.EbiQrCompact.expandPayload(text);
+                }
             } catch (error) {
                 reading=false; status.textContent='QR criptografado inválido'; status.className='scan-status err'; return;
             }

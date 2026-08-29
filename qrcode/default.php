@@ -386,6 +386,7 @@ $qrStatsCsrfToken = qr_stats_csrf_token();
                     <li>Cada família deve gerar apenas um QR Code por responsável.</li>
                     <li>Guarde o QR Code gerado. Caso o perca, poderá gerar um novo facilmente.</li>
                     <li>O responsável precisa ser maior de idade.</li>
+                    <li>O QR Code usa o formato compacto para reduzir a repetição de dados familiares.</li>
                 </ul>
             </details>
 
@@ -722,7 +723,7 @@ $qrStatsCsrfToken = qr_stats_csrf_token();
             var comum = removeAccents(document.getElementById('comum').value);
             var criancasParaEstatistica = [];
 
-            var qrData = "";
+            var camposCompactos = ['EBIC1', nomePai, telefone, comum, cidade, estado];
             var isValid = true;
 
             // Limpa mensagens de erro do Responsável
@@ -776,18 +777,20 @@ $qrStatsCsrfToken = qr_stats_csrf_token();
                 }
 
                 if (isValid && nomeFilho && idade !== null) {
-                    // Nome, responsável, idade, telefone, comum, cidade, UF, sexo e nascimento.
                     const sexoFilho = document.getElementById(`sexoFilho${i}`).value || 'M';
-                    qrData += `${nomeFilho}\t${nomePai}\t${idade}\t${telefone}\t${comum}\t${cidade}\t${estado}\t${sexoFilho}\t${dataNascimentoMaskValue}`;
+                    camposCompactos.push(
+                        nomeFilho,
+                        String(idade),
+                        sexoFilho,
+                        dataNascimentoMaskValue.replace(/\D/g, '')
+                    );
                     criancasParaEstatistica.push({ idade: idade, sexo: sexoFilho });
-
-                    if (i < childCount) {
-                        qrData += '\t'; // Tab entre crianças; Enter fica reservado ao fim da leitura.
-                    }
                 }
             }
 
             applyPhoneMask();
+
+            var qrData = camposCompactos.join('\t');
 
             const qrcodeContainer = document.getElementById('qrcode-container');
 

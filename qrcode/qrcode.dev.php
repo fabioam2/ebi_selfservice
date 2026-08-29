@@ -160,22 +160,6 @@ $qrStatsCsrfToken = qr_stats_csrf_token();
             line-height: 1.6;
         }
 
-        .compact-mode {
-            display: flex;
-            align-items: center;
-            gap: 9px;
-            margin: 0 0 18px;
-            padding: 11px 13px;
-            border: 1px solid rgba(14, 116, 144, 0.24);
-            border-radius: 9px;
-            background: #f2fbff;
-            color: var(--text-main);
-            cursor: pointer;
-            font-size: 0.86rem;
-            font-weight: 700;
-        }
-        .compact-mode input { width: 18px; height: 18px; accent-color: var(--brand); }
-
         .section-title {
             font-weight: 800;
             color: var(--text-main);
@@ -398,14 +382,9 @@ $qrStatsCsrfToken = qr_stats_csrf_token();
                     <li>Cada família deve gerar apenas um QR Code por responsável.</li>
                     <li>Guarde o QR Code gerado. Caso o perca, poderá gerar um novo facilmente.</li>
                     <li>O responsável precisa ser maior de idade.</li>
-                    <li><strong>Formato compacto:</strong> reduz a repetição de dados familiares para testes de leitura.</li>
+                    <li>O QR Code usa o formato compacto para reduzir a repetição de dados familiares.</li>
                 </ul>
             </details>
-
-            <label class="compact-mode" for="usarQrCompacto">
-                <input type="checkbox" id="usarQrCompacto">
-                Usar formato compacto
-            </label>
 
             <form id="qrForm">
                 <div class="section-title"><i class="fas fa-user"></i>Dados do Responsável</div>
@@ -734,7 +713,6 @@ $qrStatsCsrfToken = qr_stats_csrf_token();
             var comum = removeAccents(document.getElementById('comum').value);
             var criancasParaEstatistica = [];
 
-            var qrData = "";
             var camposCompactos = ['EBIC1', nomePai, telefone, comum, cidade, estado];
             var isValid = true;
 
@@ -789,10 +767,7 @@ $qrStatsCsrfToken = qr_stats_csrf_token();
                 }
 
                 if (isValid && nomeFilho && idade !== null) {
-                    // Estrutura de dados por linha (uma criança) — formato v2:
-                    // NomeFilho \t NomePai \t IdadeFilho \t TelefonePai \t ComumPai \t CidadePai \t EstadoPai \t Gênero \t DataNascimentoFilho
                     const sexoFilho = document.getElementById(`sexoFilho${i}`).value || 'M';
-                    qrData += `${nomeFilho}\t${nomePai}\t${idade}\t${telefone}\t${comum}\t${cidade}\t${estado}\t${sexoFilho}\t${dataNascimentoMaskValue}`;
                     camposCompactos.push(
                         nomeFilho,
                         String(idade),
@@ -800,18 +775,12 @@ $qrStatsCsrfToken = qr_stats_csrf_token();
                         dataNascimentoMaskValue.replace(/\D/g, '')
                     );
                     criancasParaEstatistica.push({ idade: idade, sexo: sexoFilho });
-
-                    if (i < childCount) {
-                        qrData += '\t'; // Tab entre crianças (Enter só no final pelo scanner)
-                    }
                 }
             }
 
             applyPhoneMask();
 
-            if (isValid && document.getElementById('usarQrCompacto').checked) {
-                qrData = camposCompactos.join('\t');
-            }
+            var qrData = camposCompactos.join('\t');
 
             const qrcodeContainer = document.getElementById('qrcode-container');
 
@@ -819,7 +788,7 @@ $qrStatsCsrfToken = qr_stats_csrf_token();
                 try {
                     qrData = await EbiQrCrypto.encrypt(qrData);
                 } catch (error) {
-                    alert('Não foi possível criptografar o QR Code.');
+                    alert('Não foi possível criptografar o QR Code. Verifique a chave no config.ini.');
                     return;
                 }
                 const usarQrAmpliado = childCount >= 3;

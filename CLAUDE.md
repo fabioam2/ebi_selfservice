@@ -12,12 +12,11 @@ Estas regras são padrão obrigatório para toda IA que trabalhar aqui.
 - **Dois bancos**: `selfservice/data/ebi.db` (central) e `ebi/i/user_XXX/data/instance.db` (por instância)
 - **Thin stubs**: novas instâncias em `ebi/i/user_XXX/` recebem stubs mínimos que definem `INSTANCE_DIR` e fazem `require` para `ebi/template/`
 
-## Ambientes de desenvolvimento do QR Code
+## QR Code compacto
 
-- `qrcode/qrcode.dev.php` é o gerador de QR Code de desenvolvimento. A opção **Usar formato compacto** gera o payload cifrado `EBIC1`, que registra dados compartilhados da família uma única vez.
-- `ebi/template/ebi.dev.php` é o leitor de desenvolvimento e usa as views atuais de `ebi/template/index.php`; o sufixo `?acao=mobile` abre a versão mobile atual.
-- O leitor DEV aceita tanto o formato normal quanto o compacto `EBIC1`. O adaptador fica isolado em `ebi/template/assets/compact-qr-reader.dev.js`.
-- Não mover o formato compacto para `qrcode/default.php`, `ebi/template/index.php`, `ebi/template/views/main.php` ou `ebi/template/views/mobile.php` sem uma solicitação explícita e uma validação completa.
+- `qrcode/default.php` e `qrcode/qrcode.dev.php` sempre geram o payload cifrado compacto `EBIC1`, que registra dados compartilhados da família uma única vez.
+- Os leitores atual e DEV usam as mesmas views. Desktop e `?acao=mobile` aceitam tanto o formato anterior quanto o compacto `EBIC1`.
+- O adaptador compartilhado fica em `ebi/template/assets/compact-qr-reader.js` e normaliza o QR compacto para os nove campos esperados pelos leitores.
 
 ## Senhas
 

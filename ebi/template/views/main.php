@@ -1123,6 +1123,7 @@
     <script src="<?php echo sanitize_for_html(ebi_qr_crypto_script_url()); ?>"></script>
     <script>EbiQrCrypto.configure(<?php echo json_encode(QR_CODE_CRYPTO_KEY); ?>);</script>
     <?php endif; ?>
+    <script><?php readfile(__DIR__ . '/../assets/compact-qr-reader.js'); ?></script>
     <script>
         var csrfToken = <?php echo json_encode(csrf_token()); ?>;
         const NUM_LINHAS_FORM_CADASTRO = <?php echo NUM_LINHAS_FORMULARIO_CADASTRO; ?>;
@@ -1211,7 +1212,10 @@
 
         async function preencherQrCriptografado(payload, campoOrigem) {
             try {
-                const dados = await EbiQrCrypto.decrypt(payload);
+                let dados = await EbiQrCrypto.decrypt(payload);
+                if (window.EbiQrCompact) {
+                    dados = window.EbiQrCompact.expandPayload(dados);
+                }
                 const campos = dados.split('\t');
                 if (campos.length === 0 || campos.length % NUM_CAMPOS_POR_LINHA_CADASTRO !== 0) {
                     throw new Error('Formato de QR inválido.');

@@ -1,14 +1,14 @@
 <?php
 /**
  * Entry point — Ambiente de desenvolvimento do Cadastro de Crianças (EBI).
- * Renderiza as views atuais do EBI e acrescenta suporte ao QR compacto de desenvolvimento.
+ * Renderiza as views atuais do EBI com o atalho para o gerador QR de desenvolvimento.
  */
 
 require __DIR__ . '/inc/bootstrap.php';
 require __DIR__ . '/inc/auth.php';
 require __DIR__ . '/inc/funcoes.php';
 
-function renderizarViewDevComLeitorCompacto(string $view): void {
+function renderizarViewDev(string $view): void {
     extract($GLOBALS, EXTR_SKIP);
     ob_start();
     require $view;
@@ -19,14 +19,7 @@ function renderizarViewDevComLeitorCompacto(string $view): void {
         $html
     );
 
-    $script = "    <script src=\"assets/compact-qr-reader.dev.js\"></script>\n";
-    $bodyEnd = strrpos($html, '</body>');
-    if ($bodyEnd === false) {
-        echo $html;
-        return;
-    }
-
-    echo substr($html, 0, $bodyEnd) . $script . substr($html, $bodyEnd);
+    echo $html;
 }
 
 // ── Preview de backup (GET) ───────────────────────────────────────────────────
@@ -151,7 +144,7 @@ if (($_GET['acao'] ?? '') === 'stats') {
 
 // ── View mobile (smartphone) ──────────────────────────────────────────────────
 if (($_GET['acao'] ?? '') === 'mobile') {
-    renderizarViewDevComLeitorCompacto(__DIR__ . '/views/mobile.php');
+    renderizarViewDev(__DIR__ . '/views/mobile.php');
     exit;
 }
 
@@ -178,4 +171,4 @@ function verificarAniversario(string $dataNascimento): string {
     return $diferenca >= -7 && $diferenca <= 7 ? 'semana' : '';
 }
 
-renderizarViewDevComLeitorCompacto(__DIR__ . '/views/main.php');
+renderizarViewDev(__DIR__ . '/views/main.php');
