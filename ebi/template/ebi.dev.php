@@ -1,23 +1,25 @@
 <?php
 /**
- * Entry point — Cadastro de Crianças (EBI) — PÁGINA DE TESTE (v2).
- * Cópia de index.php para testar o conceito de leitura de 2 formatos de QR Code
- * (o atual, com 5 colunas, e um novo com 6 colunas incluindo data de nascimento).
- * Não afeta a página de produção (index.php / views/main.php).
- * Suporta modo direto (config.ini em __DIR__) e modo thin stub (INSTANCE_DIR pré-definido).
+ * Entry point — Ambiente de desenvolvimento do Cadastro de Crianças (EBI).
+ * Renderiza as views atuais do EBI e acrescenta suporte ao QR compacto de desenvolvimento.
  */
 
 require __DIR__ . '/inc/bootstrap.php';
 require __DIR__ . '/inc/auth.php';
 require __DIR__ . '/inc/funcoes.php';
 
-function renderizarViewTesteComLeitorCompacto(string $view): void {
+function renderizarViewDevComLeitorCompacto(string $view): void {
     extract($GLOBALS, EXTR_SKIP);
     ob_start();
     require $view;
     $html = ob_get_clean();
+    $html = str_replace(
+        'href="../../qrcode/default.php"',
+        'href="../../qrcode/qrcode.dev.php"',
+        $html
+    );
 
-    $script = "    <script src=\"assets/compact-qr-reader.test.js\"></script>\n";
+    $script = "    <script src=\"assets/compact-qr-reader.dev.js\"></script>\n";
     $bodyEnd = strrpos($html, '</body>');
     if ($bodyEnd === false) {
         echo $html;
@@ -149,38 +151,31 @@ if (($_GET['acao'] ?? '') === 'stats') {
 
 // ── View mobile (smartphone) ──────────────────────────────────────────────────
 if (($_GET['acao'] ?? '') === 'mobile') {
-    renderizarViewTesteComLeitorCompacto(__DIR__ . '/views/mobile.php');
+    renderizarViewDevComLeitorCompacto(__DIR__ . '/views/mobile.php');
     exit;
 }
 
-// ── Helper: verificar aniversário ─────────────────────────────────────────────
 function verificarAniversario(string $dataNascimento): string {
     if ($dataNascimento === '') return '';
-    // Formato esperado: dd/mm/aaaa
+
     $partes = explode('/', $dataNascimento);
     if (count($partes) !== 3) return '';
+
     $dia = (int)$partes[0];
     $mes = (int)$partes[1];
     if ($dia < 1 || $dia > 31 || $mes < 1 || $mes > 12) return '';
 
     $hoje = new DateTime('today');
-    $diaHoje = (int)$hoje->format('d');
-    $mesHoje = (int)$hoje->format('m');
-
-    if ($dia === $diaHoje && $mes === $mesHoje) {
+    if ($dia === (int)$hoje->format('d') && $mes === (int)$hoje->format('m')) {
         return 'hoje';
     }
 
-    // Verificar se fez aniversário na semana (últimos 7 dias ou próximos 7 dias)
     $anoAtual = (int)$hoje->format('Y');
-    $anivEsteAno = DateTime::createFromFormat('Y-m-d', "$anoAtual-$mes-$dia");
-    if ($anivEsteAno === false) return '';
+    $aniversario = DateTime::createFromFormat('Y-m-d', "$anoAtual-$mes-$dia");
+    if ($aniversario === false) return '';
 
-    $diff = (int)$hoje->diff($anivEsteAno)->format('%r%a');
-    if ($diff >= -7 && $diff <= 7 && $diff !== 0) {
-        return 'semana';
-    }
-    return '';
+    $diferenca = (int)$hoje->diff($aniversario)->format('%r%a');
+    return $diferenca >= -7 && $diferenca <= 7 ? 'semana' : '';
 }
 
-renderizarViewTesteComLeitorCompacto(__DIR__ . '/views/main.test.php');
+renderizarViewDevComLeitorCompacto(__DIR__ . '/views/main.php');

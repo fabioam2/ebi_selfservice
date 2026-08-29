@@ -1128,11 +1128,11 @@ if (!empty($_SESSION['contas_existentes'])) {
     <div class="test-links">
         <span class="test-links-label"><i class="fas fa-flask mr-1"></i>DEV</span>
         <div class="test-links-buttons">
-            <a href="../ebi/template/ebi.test.php" class="btn btn-sm test-link-btn" target="_blank">
-                <i class="fas fa-child mr-1"></i>EBI (teste)
+            <a href="../ebi/template/ebi.dev.php" class="btn btn-sm test-link-btn" target="_blank">
+                <i class="fas fa-child mr-1"></i>EBI DEV
             </a>
-            <a href="../qrcode/qrcode.2.php" class="btn btn-sm test-link-btn" target="_blank">
-                <i class="fas fa-qrcode mr-1"></i>QR Code (teste)
+            <a href="../qrcode/qrcode.dev.php" class="btn btn-sm test-link-btn" target="_blank">
+                <i class="fas fa-qrcode mr-1"></i>QR Code DEV
             </a>
         </div>
     </div>

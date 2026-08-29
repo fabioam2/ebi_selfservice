@@ -9,6 +9,7 @@ ebi/template/
 ├── CLAUDE.md                  # Este arquivo
 ├── config.ini                 # Configuração da instância (NÃO expor publicamente)
 ├── index.php                  # Entry point principal
+├── ebi.dev.php                # Ambiente de desenvolvimento com leitor QR compacto
 ├── calibrar.php               # Utilitário de calibração da impressora
 ├── zerar_dados.php            # Utilitário para zerar o arquivo de dados
 ├── index.original.php         # Cópia original do index para referência
@@ -105,7 +106,13 @@ ID|NomeCriança|NomeResponsável|Telefone|Idade|Comum|StatusImpresso|Portaria
 
 ## Impressão de pulseiras
 
-A impressão usa exclusivamente o **QZ Tray** via JavaScript nas telas `views/main.php` e `views/main.test.php`. O código ZPL é gerado em `inc/funcoes.php` e enviado diretamente para a impressora selecionada no navegador.
+A impressão usa exclusivamente o **QZ Tray** via JavaScript na tela `views/main.php`. O código ZPL é gerado em `inc/funcoes.php` e enviado diretamente para a impressora selecionada no navegador.
+
+## Ambiente de desenvolvimento QR Code
+
+- `ebi.dev.php` renderiza as views atuais do EBI com `assets/compact-qr-reader.dev.js` injetado somente nesse entry point.
+- O adaptador aceita o formato cifrado compacto `EBIC1` e o converte em memória para o formato normal de nove campos antes da leitura.
+- `?acao=mobile` usa a view mobile atual; somente nesse acesso DEV, o adaptador normaliza o QR compacto recebido pela câmera.
 
 Parâmetros ZPL calculados:
 - `PULSEIRAUTIL = (TAMPULSEIRA - FECHO) * DOTS`
